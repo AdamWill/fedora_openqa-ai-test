@@ -73,11 +73,6 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
-    "QA:Testcase_install_to_SATA": {
-        "section": "Storage devices",
-        "env": "x86",
-        "type": "Installation",
-    },
     "QA:Testcase_partitioning_guided_multi_select": {
         "section": "Guided storage configuration",
         "env": "$BOOTMETHOD$",
@@ -271,8 +266,7 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_sata_multi": [
-        "QA:Testcase_install_to_SATA",
+    "server_multi": [
         "QA:Testcase_partitioning_guided_multi_select",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
