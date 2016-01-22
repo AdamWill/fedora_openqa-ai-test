@@ -1,0 +1,39 @@
+# fedora-openqa-schedule (both CLI and module) will read configuration from
+# /etc/fedora-qa/schedule.conf or ~/.config/fedora-qa/schedule.conf (with the
+# latter taking priority if both exist). Most of these settings may be
+# overridden with CLI arguments, when using the CLI. Values in this sample
+# config indicate the defaults.
+
+[cli]
+# File to log to (if not set, will log to stdout)
+log-file:
+
+# Logging level (debug, info, warning, error, critical)
+log-level: info
+
+[report]
+# Whether to submit results to the Wiki (if false, just log them)
+submit: true
+
+# Minutes to wait for openQA jobs to be complete (0 means 'do not wait')
+wait-jobs: 360
+
+[schedule]
+# Where to download ISOs (should be the directory openQA will look in)
+iso-path: /var/lib/openqa/factory/iso/
+
+# Minutes to wait for the compose to be complete, when scheduling jobs for a
+# specific compose. 'current' never waits.
+compose-wait: 480
+
+# Image types to download, space-separated list - boot, live, dvd
+imagetype: boot live dvd
+
+# Architectures to download, space-separated list - x86_64, i386
+arches: x86_64 i386
+
+# Payloads to download, space-separated list - server, generic or one of desktops
+payload: server generic workstation kde
+
+# Where file with info about latest checked version is located
+persistent: /var/tmp/openqa_watcher.json

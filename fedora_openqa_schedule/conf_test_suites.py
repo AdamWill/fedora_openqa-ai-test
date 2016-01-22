@@ -1,0 +1,481 @@
+# Copyright (C) 2015 Red Hat
+#
+# This file is part of fedora-openqa-schedule.
+#
+# fedora-openqa-schedule is free software; you can redistribute it
+# and/or modify it under the terms of the GNU General Public License
+# as published by the Free Software Foundation, either version 3 of
+# the License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Author(s): Jan Sedlak <jsedlak@redhat.com>
+#            Josef Skladanka <jskladan@redhat.com>
+#            Adam Williamson <awilliam@redhat.com>
+
+"""This module contains data for mapping openQA jobs to Wikitcms test
+instances.
+"""
+
+TESTCASES = {
+    # the following strings in values will be replaced with strings
+    # derived from openQA job settings, this is used for e.g. to get
+    # the correct 'environment' or 'testname'.
+    #
+    #   special value       replacement
+    #
+    #   $RUNARCH_OR_UEFI$ - "i386", "x86_64", or "UEFI" for x86_64 UEFI
+    #   $RUNARCH$         - "i386", "x86_64"
+    #   $BOOTMETHOD$      - "x86 BIOS", "x86 UEFI"
+    #   $PAYLOAD$         - fedfind 'payload': "Server", "KDE"..."generic" is changed to "Server"
+    #   $IMAGETYPE$       - fedfind 'imagetype': "netinst", "live"... "boot" -> "netinst", "dvd" -> "offline"
+    #   $FS$              - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
+
+    "QA:Testcase_Boot_default_install": {
+        "name": "$PAYLOAD$_$IMAGETYPE$",
+        "section": 'Default boot and install',
+        "env": "$RUNARCH_OR_UEFI$",
+        "type": "Installation",
+    },
+    "QA:Testcase_install_to_VirtIO": {
+        "section": "Storage devices",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_guided_empty": {
+        "section": "Guided storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_Anaconda_User_Interface_Graphical": {
+        "section": "User interface",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_Anaconda_user_creation": {
+        "section": "Miscellaneous",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_install_to_PATA": {
+        "section": "Storage devices",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_guided_delete_all": {
+        "section": "Guided storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_install_to_SATA": {
+        "section": "Storage devices",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_guided_multi_select": {
+        "section": "Guided storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_install_to_SCSI": {
+        "section": "Storage devices",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_Anaconda_updates.img_via_URL": {
+        "section": "Miscellaneous",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_kickstart_user_creation": {
+        "section": "Kickstart",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_Kickstart_Http_Server_Ks_Cfg": {
+        "section": "Kickstart",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_install_repository_Mirrorlist_graphical": {
+        "section": "Installation repositories",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_install_repository_HTTP/FTP_graphical": {
+        "section": "Installation repositories",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_install_repository_HTTP/FTP_variation": {
+        "section": "Installation repositories",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_Package_Sets_Minimal_Package_Install": {
+        "section": "Package sets",
+        "env": "$RUNARCH$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_guided_encrypted": {
+        "section": "Guided storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_guided_delete_partial": {
+        "section": "Guided storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_guided_free_space": {
+        "section": "Guided storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_guided_multi_empty_all": {
+        "section": "Guided storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_custom_software_RAID": {
+        "section": "Custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_custom_btrfs": {
+        "section": "Custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_custom_lvmthin": {
+        "section": "Custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_custom_standard_partition_ext3": {
+        "section": "Custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_custom_standard_partition_xfs": {
+        "section": "Custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_custom_no_swap": {
+        "section": "Custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_Kickstart_Hd_Device_Path_Ks_Cfg": {
+        "section": "Kickstart",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_current_minimal": {
+        "section": "Upgrade",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_current_workstation": {
+        "section": "Upgrade",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_current_any": {
+        "section": "Upgrade",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_previous_minimal": {
+        "section": "Upgrade",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_previous_workstation": {
+        "section": "Upgrade",
+        "env": "x86",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_previous_any": {
+        "section": "Upgrade",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_Anaconda_updates.img_via_local_media": {
+        "section": "Miscellaneous",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_guided_shrink": {
+        "section": "Guided storage shrinking",
+        "env": "$FS$",
+        "type": "Installation",
+    },
+    "QA:Testcase_Non-English_European_Language_Install": {
+        "section": "Internationalization and Localization",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_Package_Sets_KDE_Package_Install": {
+        "section": "Package sets",
+        "env": "$RUNARCH$",
+        "type": "Installation",
+    },
+    "QA:Testcase_base_selinux": {
+        "env": "$PAYLOAD$",
+        "type": "Base",
+    },
+    "QA:Testcase_Services_start": {
+        "env": "$PAYLOAD$",
+        "type": "Base",
+    },
+    "QA:Testcase_base_service_manipulation": {
+        "env": "$PAYLOAD$",
+        "type": "Base",
+    },
+    #        "": {
+    #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
+    #            "section": "", # optional, some result pages have no sections
+    #            "env": "x86",
+    #            "type": "Installation",
+    #            },
+}
+
+
+TESTSUITES = {
+    "default_install": [
+        "QA:Testcase_Boot_default_install",
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        ],
+    "package_set_minimal": [
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_delete_pata": [
+        "QA:Testcase_install_to_PATA",
+        "QA:Testcase_partitioning_guided_delete_all",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_sata_multi": [
+        "QA:Testcase_install_to_SATA",
+        "QA:Testcase_partitioning_guided_multi_select",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_scsi_updates_img": [
+        "QA:Testcase_install_to_SCSI",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_updates.img_via_URL",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_kickstart_user_creation": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_kickstart_user_creation",
+        "QA:Testcase_Kickstart_Http_Server_Ks_Cfg",
+        ],
+    "server_mirrorlist_graphical": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_install_repository_Mirrorlist_graphical",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_repository_http_graphical": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_install_repository_HTTP/FTP_graphical",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_repository_http_variation": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_install_repository_HTTP/FTP_variation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_mirrorlist_http_variation": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_install_repository_HTTP/FTP_variation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_simple_encrypted": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        "QA:Testcase_partitioning_guided_encrypted",
+        ],
+    "server_delete_partial": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_delete_partial",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_simple_free_space": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_free_space",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_multi_empty": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_multi_empty_all",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_software_raid": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_software_RAID",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_kickstart_hdd": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_kickstart_user_creation",
+        "QA:Testcase_Kickstart_Hd_Device_Path_Ks_Cfg",
+        ],
+    "upgrade_minimal_64bit": [
+        "QA:Testcase_upgrade_dnf_current_minimal",
+        "QA:Testcase_upgrade_dnf_current_any",
+        ],
+    "upgrade_desktop_64bit": [
+        "QA:Testcase_upgrade_dnf_current_workstation",
+        "QA:Testcase_upgrade_dnf_current_any",
+        ],
+    "upgrade_minimal_32bit": [
+        "QA:Testcase_upgrade_dnf_current_minimal",
+        "QA:Testcase_upgrade_dnf_current_any",
+        ],
+    "upgrade_desktop_32bit": [
+        "QA:Testcase_upgrade_dnf_current_workstation",
+        "QA:Testcase_upgrade_dnf_current_any",
+        ],
+    "upgrade_2_minimal_64bit": [
+        "QA:Testcase_upgrade_dnf_previous_minimal",
+        "QA:Testcase_upgrade_dnf_previous_any",
+        ],
+    "upgrade_2_desktop_64bit": [
+        "QA:Testcase_upgrade_dnf_previous_workstation",
+        "QA:Testcase_upgrade_dnf_previous_any",
+        ],
+    "upgrade_2_minimal_32bit": [
+        "QA:Testcase_upgrade_dnf_previous_minimal",
+        "QA:Testcase_upgrade_dnf_previous_any",
+        ],
+    "upgrade_2_desktop_32bit": [
+        "QA:Testcase_upgrade_dnf_previous_workstation",
+        "QA:Testcase_upgrade_dnf_previous_any",
+        ],
+    "server_btrfs": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_btrfs",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_lvmthin": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_lvmthin",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_ext3": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_standard_partition_ext3",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_updates_img_local": [
+        "QA:Testcase_Anaconda_updates.img_via_local_media",
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_no_swap": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_no_swap",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_shrink_ext4": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_shrink",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "server_shrink_ntfs": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_shrink",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "european_language_install": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        "QA:Testcase_partitioning_guided_encrypted",
+        "QA:Testcase_Non-English_European_Language_Install",
+        ],
+    "server_xfs": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_standard_partition_xfs",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "package_set_kde": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_KDE_Package_Install",
+        ],
+    "base_selinux": [
+        "QA:Testcase_base_selinux",
+        ],
+    "base_services_start": [
+        "QA:Testcase_Services_start",
+        ],
+    "base_service_manipulation": [
+        "QA:Testcase_base_service_manipulation",
+        ],
+    }
