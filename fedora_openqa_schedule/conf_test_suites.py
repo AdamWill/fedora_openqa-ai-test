@@ -33,12 +33,12 @@ TESTCASES = {
     #   $RUNARCH_OR_UEFI$ - "i386", "x86_64", or "UEFI" for x86_64 UEFI
     #   $RUNARCH$         - "i386", "x86_64"
     #   $BOOTMETHOD$      - "x86 BIOS", "x86 UEFI"
-    #   $PAYLOAD$         - fedfind 'payload': "Server", "KDE"..."generic" is changed to "Server"
-    #   $IMAGETYPE$       - fedfind 'imagetype': "netinst", "live"... "boot" -> "netinst", "dvd" -> "offline"
+    #   $VARIANT$         - pungi 'variant': "Server", "KDE"...
+    #   $IMAGETYPE$       - pungi 'type': "boot", "live"... "boot" -> "netinst", "dvd" -> "offline"
     #   $FS$              - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
 
     "QA:Testcase_Boot_default_install": {
-        "name": "$PAYLOAD$_$IMAGETYPE$",
+        "name": "$VARIANT$_$IMAGETYPE$",
         "section": 'Default boot and install',
         "env": "$RUNARCH_OR_UEFI$",
         "type": "Installation",

@@ -43,25 +43,13 @@ def command_compose(args, wiki_url):
     relval/wikitcms.
     """
     try:
-        (build, jobs) = schedule.jobs_from_compose(
-            args.release, args.milestone, args.compose, arches=args.arch, force=args.force,
-            wait=args.wait)
-
-    except ValueError as err:
-        logger.critical("Could not find compose %s %s %s! Error: %s",
-                        args.release, args.milestone, args.compose, err)
-        sys.exit(1)
-
+        jobs = schedule.jobs_from_compose(args.compose, args.location, force=args.force)
     except schedule.TriggerException as err:
-        logger.warning("No jobs run! Compose may not exist? %s", err)
-        sys.exit(1)
-
-    except schedule.WaitError:
-        logger.critical("Waited too long for compose to appear!")
+        logger.warning("No jobs run! %s", err)
         sys.exit(1)
 
     if jobs:
-        report.wait_and_report(wiki_url, build=build, do_report=args.submit)
+        report.wait_and_report(wiki_url, build=args.compose, do_report=args.submit)
     else:
         msg = "No jobs run!"
         if not args.force:
@@ -70,23 +58,6 @@ def command_compose(args, wiki_url):
         logger.warning(msg)
         sys.exit(1)
 
-    logger.debug("finished")
-    sys.exit()
-
-def command_current(args, wiki_url):
-    """run OpenQA for current release validation event, if we have
-    not already done it.
-    """
-    logger.info("running on current release")
-    try:
-        (build, jobs) = schedule.jobs_from_current(wiki_url)
-    except schedule.TriggerException as e:
-        logger.debug("No jobs run: %s", e)
-        sys.exit(1)
-    # wait for jobs to finish and display results
-    if jobs:
-        logger.info("waiting for jobs")
-        report.wait_and_report(wiki_url, build=build, do_report=args.submit)
     logger.debug("finished")
     sys.exit()
 
@@ -138,31 +109,15 @@ def parse_args():
         "Run OpenQA tests for a release validation test event."))
     subparsers = parser.add_subparsers()
 
-    parser_current = subparsers.add_parser(
-        'current', description="Run for the current event, if needed.")
-    parser_current.set_defaults(func=command_current)
-
     parser_compose = subparsers.add_parser(
         'compose', description="Run for a specific compose (TC/RC or nightly). If a matching "
         "release validation test event can be found and --submit-results is passed, results "
         "will be reported.")
     parser_compose.add_argument(
-        '--release', '-r', type=int, choices=range(12, 100), metavar="12-99",
-        help="Release number of a specific compose to run against. Must be passed for "
-        "validation event discovery to succeed.")
+        'compose', help="The Pungi compose ID", metavar="Fedora-24-20160113.n.1")
     parser_compose.add_argument(
-        '--milestone', '-m', help="The milestone to operate on (Alpha, Beta, Final, Branched, "
-        "Rawhide). Must be specified for a TC/RC; for a nightly, will be guessed if not "
-        "specified", choices=['Alpha', 'Beta', 'Final', 'PostRelease', 'Branched', 'Rawhide'])
-    parser_compose.add_argument(
-        '--compose', '-c', help="The version to run for; either the compose (for a TC/RC), or "
-        "the date (for a nightly build)", metavar="{T,R}C1-19 or YYYYMMDD")
-    parser_compose.add_argument(
-        '--arch', '-a', help="The arch to run for", nargs='+',
-        choices=('x86_64', 'i386'))
-    parser_compose.add_argument(
-        '--wait', '-w', help="Wait NNN minutes for the compose to appear, if it doesn't yet "
-        "exist", type=int, metavar="NNN")
+        'location', help="The top-level URL of the compose",
+        metavar="https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-24-20160113.n.1/compose")
     parser_compose.add_argument(
         '--force', '-f', help="For each ISO/flavor combination, schedule jobs even if there "
         "are existing, non-cancelled jobs for that combination", action='store_true')

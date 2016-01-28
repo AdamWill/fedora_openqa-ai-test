@@ -55,20 +55,14 @@ def _uniqueres_replacements(job, uniqueres):
     arch = job['settings']['ARCH']
     flavor = job['settings']['FLAVOR']
     fs = job['settings']['TEST'].split('_')[-1]
-    # We REALLY should not have used _ as the separator for flavors,
-    # because fedfind and the image naming policy use it as a
-    # within-field word separator. This hack will hold together so
-    # long as we have no imagetypes with _ in them.
     try:
-        (payload, imagetype) = flavor.rsplit('_', 1)
+        (variant, imagetype, _) = flavor.split('-')
     except ValueError:
         # the above fails when the flavor is 'universal'. This is just
         # to avoid crashing, these values should never be used
-        payload = imagetype = 'universal'
+        variant = imagetype = 'universal'
     imagetype = imagetype.replace('boot', 'netinst')
     imagetype = imagetype.replace('dvd', 'offline')
-    if payload.lower() == 'generic':
-        payload = 'Server'
     if 'UEFI' in job['settings']:
         uefi = 'UEFI'
         bootmethod = 'x86 UEFI'
@@ -82,7 +76,7 @@ def _uniqueres_replacements(job, uniqueres):
         value = value.replace('$FS$', fs)
         value = value.replace('$RUNARCH$', arch)
         value = value.replace('$BOOTMETHOD$', bootmethod)
-        value = value.replace('$PAYLOAD$', payload)
+        value = value.replace('$VARIANT$', variant)
         value = value.replace('$IMAGETYPE$', imagetype)
         changed[key] = value
 
@@ -97,7 +91,15 @@ def get_passed_testcases(jobs):
     passed_testcases = set()
     for job in jobs:
         if job['result'] == 'passed':
-            (release, milestone, compose) = job['settings']['BUILD'].split('_')
+            # This is an approximate first cut at parsing Pungi 4
+            # compose ID into Wikitcms versioning, caveats: Wikitcms
+            # does not handle more than one validation event per day,
+            # we do not yet know what an RC compose ID will look like,
+            # this really only handles 'nightlies' for now
+            release = job['settings']['BUILD'].split('-')[1]
+            # placeholder
+            milestone = ''
+            compose = job['settings']['BUILD'].split('-')[-1].split('.')[0]
             testsuite = job['settings']['TEST']
             # There usually ought to be an entry in TESTSUITES for all
             # tests, but just in case someone messed up, let's be safe

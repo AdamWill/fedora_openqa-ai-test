@@ -31,15 +31,12 @@ import re
 
 # External dependencies
 import fedfind.helpers
-import fedfind.release
-import wikitcms.wiki
 from openqa_client.client import OpenQA_Client
-from six.moves import configparser
 from six.moves.urllib.request import urlopen
-
+from six.moves.urllib.error import URLError, HTTPError
 
 # Internal dependencies
-from fedora_openqa_schedule.config import CONFIG
+from fedora_openqa_schedule.config import CONFIG, WANTED
 
 logger = logging.getLogger(__name__)
 
@@ -48,56 +45,48 @@ class TriggerException(Exception):
     pass
 
 
-class WaitError(Exception):
-    """Raised when we waited for something too long."""
-    pass
-
-
-def download_image(image, iso_path=None):
-    """Download a given image with a name that should be unique,
-    optionally specifying destination directory.
-    Returns the filename of the image (not the path).
+def get_images(location, wanted=WANTED):
+    """Given a Pungi compose top-level location, this returns a set of
+    (URL, arch, flavor) tuples for images to be tested.
     """
-    # if no iso_path is specified, parse it from config file
-    if not iso_path:
-        iso_path = CONFIG.get('schedule', 'iso-path')
-    ver = image.version.replace(' ', '_')
-    if image.imagetype == 'boot':
-        isoname = "{0}_{1}_{2}_boot.iso".format(ver, image.payload, image.arch)
-    else:
-        isoname = "{0}_{1}".format(ver, image.filename)
-    filename = os.path.join(iso_path, isoname)
-    if not os.path.isfile(filename):
-        # adapted from the University of StackOverflow:
-        # https://stackoverflow.com/questions/22676
-        resp = urlopen(image.url)
-        meta = resp.info()
-        size = int(meta.getheaders("Content-Length")[0]) // (1024 * 1024)
-        logger.info("downloading %s (%s) to %s, %sMiB", image.url, image.desc, filename, size)
-        fout = open(filename, 'wb')
-        while True:
-            # This is the number of bytes to read between buffer
-            # flushes. Value taken from the SO example.
-            buffer = resp.read(8192)
-            if not buffer:
-                break
-            fout.write(buffer)
-        fout.close()
+    try:
+        resp = urlopen('{0}/metadata/images.json'.format(location))
+        metadata = json.load(resp)
+    except (ValueError, URLError, HTTPError):
+        raise TriggerException("Compose not found")
+    images = set()
+    for variant in wanted.keys():
+        for arch in wanted[variant].keys():
+            try:
+                foundimgs = metadata['payload']['images'][variant][arch]
+            except KeyError:
+                # not found in upstream metadata, move on
+                theirs = []
+            wantimgs = wanted[variant][arch]
+            for wantimg in wantimgs:
+                # we don't want to modify the original dict
+                wantimg = wantimg.copy()
+                # we pop score out because we use it to decide what
+                # image to run universal tests for, not to match the
+                # image; if the image matches we return score, and
+                # it's used by jobs_from_compose()
+                score = wantimg.pop('score', 0)
+                for foundimg in foundimgs:
+                    if all(item in foundimg.items() for item in wantimg.items()):
+                        flavor = '-'.join((variant, foundimg['type'], foundimg['format']))
+                        url = "{0}/{1}".format(location, foundimg['path'])
+                        logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
+                        images.add((url, flavor, arch, score))
+    return images
 
-    else:
-        logger.info("%s already exists", filename)
-    return isoname
 
-
-def run_openqa_jobs(isoname, flavor, arch, build, force=False):
-    """# run OpenQA 'isos' job on selected isoname, with given arch
-    and a version string. **NOTE**: the version passed to OpenQA as
-    BUILD and is parsed back into the 'relval report-auto' arguments
-    by report_job_results.py; it is expected to be in the form of a
-    3-tuple on which join('_') has been run, and the three elements
-    will be passed as release, compose and milestone. Returns list of
-    job IDs. If force is False, jobs will only be scheduled if there
-    are no existing, non-cancelled jobs for the same ISO and flavor.
+def run_openqa_jobs(url, flavor, arch, build, force=False):
+    """# run OpenQA 'isos' job on ISO at 'url', with given arch
+    and a build identifier. **NOTE**: 'build' is passed to openQA as
+    BUILD and is later retrieved and parsed by report.py for wiki
+    report generation. Returns list of job IDs. If force is False,
+    jobs will only be scheduled if there are no existing,
+    non-cancelled jobs for the same ISO and flavor.
     """
     logger.info("sending jobs to openQA")
     # find current and previous releases; these are used to determine
@@ -113,17 +102,28 @@ def run_openqa_jobs(isoname, flavor, arch, build, force=False):
 
     # starts OpenQA jobs
     params = {
-        'ISO': isoname,
+        'ISOURL': url,
         'DISTRI': 'fedora',
-        'VERSION': build.split('_')[0],
+        'VERSION': build.split('-')[1],
         'FLAVOR': flavor,
         'ARCH': arch,
         'BUILD': build,
         'CURRREL': currrel,
         'PREVREL': prevrel,
     }
+    # this is a bit icky, but we really need to know if we're testing
+    # a Rawhide compose. unlike fedfind, pungi does not treat Rawhide
+    # as a 'release', it assigns a release number to Rawhide composes.
+    # But our tests need to find Rawhide repository paths (which have
+    # /rawhide/, not /(fakereleasenumber)/) and pass a release value
+    # to dnf-system-upgrade (which also uses 'rawhide', not the fake
+    # release number). Until pungi gives us a nice way of identifying
+    # Rawhide composes, we're going to hack it.
+    if 'rawhide' in url:
+        params['VERSION'] = 'Rawhide'
     client = OpenQA_Client()
     if not force:
+        isoname = url.split('/')[-1]
         # Check if we have any existing non-cancelled jobs for this
         # ISO and flavor (checking flavor is important otherwise we'd
         # bail on doing the per-ISO jobs for the ISO we use for the
@@ -145,158 +145,47 @@ def run_openqa_jobs(isoname, flavor, arch, build, force=False):
     return output["ids"]
 
 
-def jobs_from_current(wiki_url, force=False, arches=None):
-    """Schedule jobs against the 'current' release validation event
-    (according to wikitcms) if we have not already. Returns the job
-    list. If force is False, for each ISO, jobs will only be scheduled
-    if there are no existing, non-cancelled jobs for the same ISO and
-    flavor. If not set, load list of arches from config file.
-    """
-    # if arches weren't specified as argument, parse them from config file
-    if not arches:
-        arches = re.split(r'\W+', CONFIG.get('schedule', 'arches').strip())
+def jobs_from_compose(compose, location, wanted=WANTED, force=False):
+    """Schedule jobs against a specific compose. Returns the list of
+    job IDs.
 
-    wiki = wikitcms.wiki.Wiki(('https', wiki_url), '/w/')
+    compose is a Pungi compose ID (e.g. 'Fedora-24-20160113.n.1').
+    location is the top level of the compose. Note these two values
+    are provided by fedmsg 'pungi.compose.status.change' messages as
+    'compose_id' and 'location'. As of 2016-01-27 there's nothing in
+    this module or anywhere else which will find the 'location' for
+    a given 'compose' for you, but such a thing may be invented
+    later...
 
-    currev = wiki.current_event
-    logger.info("current event: %s", currev.version)
-
-    jobs = _jobs_from_fedfind(currev.ff_release, arches=arches, force=force)
-    logger.info("jobs_from_current: planned jobs: %s", ' '.join(str(j) for j in jobs))
-
-    build = '_'.join((currev.ff_release.release, currev.ff_release.milestone, currev.ff_release.compose))
-    return (build, jobs)
-
-
-def jobs_from_compose(release='', milestone='', compose='', arches=None, force=False, wait=None):
-    """Schedule jobs against a specific release/compose. Returns the
-    list of job IDs.
-
-    'release', 'milestone' and 'compose' identify a release according
-    to fedfind conventions (e.g. '23', 'Beta', 'TC2' or '24',
-    'Branched', '20160301'). A ValueError may be raised (by fedfind)
-    if there is something wrong with these values.
-
-    arches may be an iterable of arches to run on. If not specified,
-    the default from config file will be used.
+    wanted is a dict defining which images from the compose we should
+    schedule tests for. It is passed direct to get_images(). The
+    default set of tested images is specified in config.py. It can be
+    overridden by a system-wide or per-user file as well as with this
+    argument. The layout is, intentionally, a subset of the pungi
+    images.json metadata file (except for the 'score' item). Check
+    config.py to see the layout and for more information.
 
     If force is False, for each ISO, jobs will only be scheduled if
     there are no existing, non-cancelled jobs for the same ISO and
     flavor.
-
-    'wait' is a number of minutes to wait for the compose to appear
-    before scheduling the jobs; if None, the value will be read from
-    configuration (see config.py for default). Will raise WaitError if
-    the compose cannot be found after the wait period. If wait is 0,
-    _jobs_from_fedfind will raise TriggerException if the compose does
-    not exist.
     """
-    # Get the fedfind release object.
-    logger.debug("jobs_from_compose: querying fedfind for compose: %s %s %s", release,
-                 milestone, compose)
-    ff_release = fedfind.release.get_release(release=release, milestone=milestone,
-                                             compose=compose)
-    logger.info("jobs_from_compose: running on compose: %s", ff_release.version)
-
-    if wait is None:
-        wait = CONFIG.getint('schedule', 'compose-wait')
-    if wait:
-        logger.info("jobs_from_compose: Waiting up to %s mins for compose", str(wait))
-        try:
-            ff_release.wait(waittime=wait)
-        except fedfind.exceptions.WaitError as err:
-            raise WaitError(err)
-
-    jobs = _jobs_from_fedfind(ff_release, arches=arches, force=force)
-    logger.info("jobs_from_compose: planned jobs: %s", ' '.join(str(j) for j in jobs))
-
-    build = '_'.join((ff_release.release, ff_release.milestone, ff_release.compose))
-    return (build, jobs)
-
-
-def _jobs_from_fedfind(ff_release, force=False, arches=None, imagetypes=None, payloads=None):
-    """Given a fedfind.Release object, find the ISOs we want and run
-    jobs on them. arches is an iterable of arches to run on, if not
-    specified, we'll use value from config file. If force is False,
-    for each ISO, jobs will only be scheduled if there are no
-    existing, non-cancelled jobs for the same ISO and flavor.
-    """
-    # if arches, imagetypes or payload weren't specified as argument, parse them from config file
-    if not arches:
-        # split arches by words (works for both space- and comma-separated values)
-        arches = re.split(r'\W+', CONFIG.get('schedule', 'arches').strip())
-    if not imagetypes:
-        # split imagetypes by words (works for both space- and comma-separated values)
-        imagetypes = re.split(r'\W+', CONFIG.get('schedule', 'imagetype').strip())
-    if not payloads:
-        # split payloads by words (works for both space- and comma-separated values)
-        payloads = re.split(r'\W+', CONFIG.get('schedule', 'payload').strip())
-    # Find currently-testable images for our arches.
-    jobs = []
-    queries = (
-        fedfind.release.Query('imagetype', imagetypes),
-        fedfind.release.Query('arch', arches),
-        fedfind.release.Query('payload', payloads))
-    logger.debug("querying fedfind for images")
-    images = ff_release.find_images(queries)
-    # This is kind of icky. The cloud_atomic boot image is the same
-    # thing as the cloud_atomic dvd image, so we obviously don't want
-    # to get both. Note: we can't use 'netinst' instead of 'boot',
-    # because pre-release nightly trees only have 'boot' images, not
-    # 'netinst's. And we can't drop 'dvd' because we want the server
-    # DVD. There's no really easy way to square this circle until
-    # nightly composes look more like real ones.
-    images = [img for img in images if not (img.imagetype == 'boot' and img.payload == 'cloud_atomic')]
-
+    logger.debug("Finding images for compose %s in location %s", compose, location)
+    images = get_images(location, wanted=wanted)
     if len(images) == 0:
-        raise TriggerException("no available images")
+        raise TriggerException("Compose found, but no available images")
+    jobs = []
+    univs = {}
 
-    # Now schedule jobs. First, let's get the BUILD value for openQA.
-    build = '_'.join((ff_release.release, ff_release.milestone, ff_release.compose))
+    # schedule per-image jobs, keeping track of the highest score
+    # per arch along the way
+    for (url, flavor, arch, score) in images:
+        jobs.extend(run_openqa_jobs(url, flavor, arch, build=compose, force=force))
+        if score > univs.get(arch, 0):
+            univs[arch] = url
 
-    # Next let's schedule the 'universal' tests.
-    # We have different images in different composes: nightlies only
-    # have a generic boot.iso, TC/RC builds have Server netinst/boot
-    # and DVD. We always want to run *some* tests -
-    # default_boot_and_install at least - for all images we find, then
-    # we want to run all the tests that are not image-dependent on
-    # just one image. So we have a special 'universal' flavor and
-    # product in openQA; all the image-independent test suites run for
-    # that product. Here, we find the 'best' image we can for the
-    # compose we're running on (a DVD if possible, a boot.iso or
-    # netinst if not), and schedule the 'universal' jobs on that
-    # image.
-    for arch in arches:
-        okimgs = (img for img in images if img.arch == arch and
-                  any(img.imagetype == okt for okt in ('dvd', 'boot', 'netinst')))
-        bestscore = 0
-        bestimg = None
-        for img in okimgs:
-            if img.imagetype == 'dvd':
-                score = 10
-            else:
-                score = 1
-            if img.payload == 'generic':
-                score += 5
-            elif img.payload == 'server':
-                score += 3
-            elif img.payload == 'workstation':
-                score += 1
-            if score > bestscore:
-                bestimg = img
-                bestscore = score
-        if not bestimg:
-            logger.warn("no universal tests image found for %s", arch)
-            continue
-        logger.info("running universal tests for %s with %s", arch, bestimg.desc)
-        isoname = download_image(bestimg)
-        job_ids = run_openqa_jobs(isoname, 'universal', arch, build, force=force)
-        jobs.extend(job_ids)
+    # now schedule universal jobs
+    for arch in univs.keys():
+        logger.info("running universal tests for %s with %s", arch, url)
+        jobs.extend(run_openqa_jobs(univs[arch], 'universal', arch, build=compose, force=force))
 
-    # Now schedule per-image jobs.
-    for image in images:
-        isoname = download_image(image)
-        flavor = '_'.join((image.payload, image.imagetype))
-        job_ids = run_openqa_jobs(isoname, flavor, image.arch, build, force=force)
-        jobs.extend(job_ids)
     return jobs
