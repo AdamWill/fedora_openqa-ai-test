@@ -43,13 +43,13 @@ def command_compose(args, wiki_url):
     relval/wikitcms.
     """
     try:
-        jobs = schedule.jobs_from_compose(args.compose, args.location, force=args.force)
+        (compose, jobs) = schedule.jobs_from_compose(args.location, force=args.force)
     except schedule.TriggerException as err:
         logger.warning("No jobs run! %s", err)
         sys.exit(1)
 
     if jobs:
-        report.wait_and_report(wiki_url, build=args.compose, do_report=args.submit)
+        report.wait_and_report(wiki_url, build=compose, do_report=args.submit)
     else:
         msg = "No jobs run!"
         if not args.force:
@@ -114,8 +114,6 @@ def parse_args():
         "release validation test event can be found and --submit-results is passed, results "
         "will be reported.")
     parser_compose.add_argument(
-        'compose', help="The Pungi compose ID", metavar="Fedora-24-20160113.n.1")
-    parser_compose.add_argument(
         'location', help="The top-level URL of the compose",
         metavar="https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-24-20160113.n.1/compose")
     parser_compose.add_argument(
@@ -127,7 +125,7 @@ def parse_args():
         'report', description="Map openQA job results to Wikitcms test results and optionally "
         "submit them to the wiki.")
     parser_report.add_argument('jobs', nargs='+', help="openQA job IDs or builds (e.g. "
-    "'23_Branched_20151125'). For each build included, the latest jobs will be reported.")
+    "'Fedora-24-20160113.n.1'). For each build included, the latest jobs will be reported.")
     parser_report.set_defaults(func=command_report)
 
     submitgroup = parser.add_mutually_exclusive_group()

@@ -45,7 +45,21 @@ class TriggerException(Exception):
     pass
 
 
-def get_images(location, wanted=WANTED):
+def _get_compose_id(location):
+    """Given a compose location, find the compose ID. Really we'd like
+    taskotron to give us this, as fedmsg provides it, but taskotron is
+    kinda tied to giving us just *one* variable property of the fedmsg
+    message. So we read it from the compose metadata's known location.
+    """
+    try:
+        resp = urlopen('{0}/metadata/composeinfo.json'.format(location))
+        metadata = json.load(resp)
+    except (ValueError, URLError, HTTPError):
+        raise TriggerException("Compose not found, or failed!")
+    return metadata['payload']['compose']['id']
+
+
+def _get_images(location, wanted=WANTED):
     """Given a Pungi compose top-level location, this returns a set of
     (URL, arch, flavor) tuples for images to be tested.
     """
@@ -53,7 +67,7 @@ def get_images(location, wanted=WANTED):
         resp = urlopen('{0}/metadata/images.json'.format(location))
         metadata = json.load(resp)
     except (ValueError, URLError, HTTPError):
-        raise TriggerException("Compose not found")
+        raise TriggerException("Compose not found, or failed!")
     images = set()
     for variant in wanted.keys():
         for arch in wanted[variant].keys():
@@ -145,20 +159,16 @@ def run_openqa_jobs(url, flavor, arch, build, force=False):
     return output["ids"]
 
 
-def jobs_from_compose(compose, location, wanted=WANTED, force=False):
-    """Schedule jobs against a specific compose. Returns the list of
-    job IDs.
+def jobs_from_compose(location, wanted=WANTED, force=False):
+    """Schedule jobs against a specific compose. Returns a 2-tuple
+    of the compose ID and the list of job IDs.
 
-    compose is a Pungi compose ID (e.g. 'Fedora-24-20160113.n.1').
-    location is the top level of the compose. Note these two values
-    are provided by fedmsg 'pungi.compose.status.change' messages as
-    'compose_id' and 'location'. As of 2016-01-27 there's nothing in
-    this module or anywhere else which will find the 'location' for
-    a given 'compose' for you, but such a thing may be invented
-    later...
+    location is the top level of the compose. Note this value is
+    provided by fedmsg 'pungi.compose.status.change' messages as
+    'location'.
 
     wanted is a dict defining which images from the compose we should
-    schedule tests for. It is passed direct to get_images(). The
+    schedule tests for. It is passed direct to _get_images(). The
     default set of tested images is specified in config.py. It can be
     overridden by a system-wide or per-user file as well as with this
     argument. The layout is, intentionally, a subset of the pungi
@@ -169,8 +179,9 @@ def jobs_from_compose(compose, location, wanted=WANTED, force=False):
     there are no existing, non-cancelled jobs for the same ISO and
     flavor.
     """
+    compose = _get_compose_id(location)
     logger.debug("Finding images for compose %s in location %s", compose, location)
-    images = get_images(location, wanted=wanted)
+    images = _get_images(location, wanted=wanted)
     if len(images) == 0:
         raise TriggerException("Compose found, but no available images")
     jobs = []
@@ -188,4 +199,4 @@ def jobs_from_compose(compose, location, wanted=WANTED, force=False):
         logger.info("running universal tests for %s with %s", arch, url)
         jobs.extend(run_openqa_jobs(univs[arch], 'universal', arch, build=compose, force=force))
 
-    return jobs
+    return (compose, jobs)
