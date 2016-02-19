@@ -61,7 +61,7 @@ def _get_compose_id(location):
 
 def _get_images(location, wanted=WANTED):
     """Given a Pungi compose top-level location, this returns a set of
-    (URL, arch, flavor) tuples for images to be tested.
+    (URL, arch, flavor, score) tuples for images to be tested.
     """
     try:
         resp = urlopen('{0}/metadata/images.json'.format(location))
@@ -75,22 +75,43 @@ def _get_images(location, wanted=WANTED):
                 foundimgs = metadata['payload']['images'][variant][arch]
             except KeyError:
                 # not found in upstream metadata, move on
-                theirs = []
+                continue
+
             wantimgs = wanted[variant][arch]
             for wantimg in wantimgs:
-                # we don't want to modify the original dict
-                wantimg = wantimg.copy()
-                # we pop score out because we use it to decide what
-                # image to run universal tests for, not to match the
-                # image; if the image matches we return score, and
-                # it's used by jobs_from_compose()
-                score = wantimg.pop('score', 0)
+                matchdict = wantimg['match'].copy()
+                # this is a messy fedfind-lite because productmd does
+                # not give us any kind of 'payload' field, we have to
+                # sloppily guess it from the filename
+                payload = matchdict.pop('payload', '')
                 for foundimg in foundimgs:
-                    if all(item in foundimg.items() for item in wantimg.items()):
-                        flavor = '-'.join((variant, foundimg['type'], foundimg['format']))
-                        url = "{0}/{1}".format(location, foundimg['path'])
-                        logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
-                        images.add((url, flavor, arch, score))
+                    # here's the nice simple 1-to-1 comparison...
+                    if not all(item in foundimg.items() for item in matchdict.items()):
+                        continue
+                    if payload:
+                        # here we find the filename, lowercase it, and
+                        # split it on '-', and figure the payload will
+                        # be one of the elements
+                        elems = foundimg['path'].split('/')[-1].lower().split('-')
+                        if not payload.lower() in elems:
+                            continue
+
+                    # We get here if all match-y stuff passed
+                    score = wantimg.get('score', 0)
+                    # assign a 'flavor' (another thing productmd ought
+                    # to do for us really). if the match dict includes
+                    # a payload, use it, otherwise assume the variant
+                    # is the payload. add 'type' and 'format', replace
+                    # dashes in the values with underscores, join with
+                    # dashes.
+                    if not payload:
+                        payload = variant
+                    flavor = [item.replace('-', '_')
+                              for item in payload, foundimg['type'], foundimg['format']]
+                    flavor = '-'.join(flavor)
+                    url = "{0}/{1}".format(location, foundimg['path'])
+                    logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
+                    images.add((url, flavor, arch, score))
     return images
 
 

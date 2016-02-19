@@ -39,40 +39,76 @@ CONFIG.read('/etc/fedora-openqa/schedule.conf')
 CONFIG.read('{0}/.config/fedora-openqa/schedule.conf'.format(os.path.expanduser('~')))
 
 # The default set of tested images. The format intentionally follows
-# the format of images.json very closely, and this set can be
-# overridden by an 'images.json' file in /etc/fedora-openqa or
-# ~/.config/fedora-openqa. We parse through the images.json and for
-# each image dict, if all the items in the wanted dict match, we
-# take that image. An important exception is the "score" item, which
-# does not appear in images.json and is not used for matching; rather,
-# we use it to decide which images to run the 'universal' tests with.
-# For each arch that has universal tests, the found image with the
-# highest score is used. If no image with a score > 0 is found, the
-# universal tests are skipped. If score is not specified the image is
-# considered to have a score of 0.
+# the format of images.json closely, and this set can be overridden by
+# an 'images.json' file in /etc/fedora-openqa or
+# ~/.config/fedora-openqa.
+
+# There is one level added to this dict compared to images.json.
+# images.json is a dict of dicts representing "variants". Each variant
+# is a dict of lists representing arches. Each arch list contains
+# dicts which each contain the properties of a single image as simple
+# strings.
+
+# In our dict, things are same until we reach the image level. Again,
+# each item in the list for a given arch within a given variant is a
+# dict for a single image. However, one of the items in the image dict
+# is itself a dict, called 'match'. This dict determines whether the
+# image "matches": if all the items in this "match" dict match the
+# items in the image dict from the upstream metadata, we take that
+# image.
+
+# For most keys we simply perform a Python 'equality' match. There is
+# one exception: the "payload" key is special. It doesn't exist
+# upstream. When the 'match' dict contains a 'payload' key, we derive
+# a payload from the upstream "path" key and compare against that.
+# This is necessary to identify, for instance, "the KDE live image"
+# for a given arch in the Spins variant. There is no key in the
+# upstream metadata which can be used for this without some sort of
+# interpretation like this. The match is performed by extracting the
+# filename from the upstream 'path' and splitting it with '-' as the
+# separator; we then see if any of the resulting elements matches the
+# payload (case-insensitively).
+
+# The other items in the image dict here are not used for matching,
+# but instead influence the behaviour of the scheduler.
+
+# The "score" item is used to decide which images to run the universal
+# tests with. For each arch that has universal tests, the found image
+# with the highest score is used. If no image with a score > 0 is
+# found, the universal tests are skipped. If score is not specified
+# the image is considered to have a score of 0.
+
 WANTED = {
     "Server": {
         "x86_64": [
             {
-                "type": "boot",
-                "format": "iso",
+                "match": {
+                    "type": "boot",
+                    "format": "iso",
+                },
                 "score": 6,
             },
             {
-                "type": "dvd",
-                "format": "iso",
+                "match": {
+                    "type": "dvd",
+                    "format": "iso",
+                },
                 "score": 10,
             },
         ],
         "i386": [
             {
-                "type": "boot",
-                "format": "iso",
+                "match": {
+                    "type": "boot",
+                    "format": "iso",
+                },
                 "score": 6,
             },
             {
-                "type": "dvd",
-                "format": "iso",
+                "match": {
+                    "type": "dvd",
+                    "format": "iso",
+                },
                 "score": 10,
             },
         ],
@@ -80,15 +116,19 @@ WANTED = {
     "Everything": {
         "x86_64": [
             {
-                "type": "boot",
-                "format": "iso",
+                "match": {
+                    "type": "boot",
+                    "format": "iso",
+                },
                 "score": 8,
             },
         ],
         "i386": [
             {
-                "type": "boot",
-                "format": "iso",
+                "match": {
+                    "type": "boot",
+                    "format": "iso",
+                },
                 "score": 8,
             },
         ],
@@ -96,36 +136,48 @@ WANTED = {
     "Workstation": {
         "x86_64": [
             {
-                "type": "live",
-                "format": "iso",
+                "match": {
+                    "type": "live",
+                    "format": "iso",
+                },
             },
         ],
         "i386": [
             {
-                "type": "live",
-                "format": "iso",
+                "match": {
+                    "type": "live",
+                    "format": "iso",
+                },
             },
         ],
     },
-    "KDE": {
+    "Spins": {
         "x86_64": [
             {
-                "type": "live",
-                "format": "iso",
+                "match": {
+                    "payload": "KDE",
+                    "type": "live",
+                    "format": "iso",
+                },
             },
         ],
         "i386": [
             {
-                "type": "live",
-                "format": "iso",
+                "match": {
+                    "payload": "KDE",
+                    "type": "live",
+                    "format": "iso",
+                },
             },
         ],
     },
-    "Cloud-Atomic": {
+    "CloudAtomic": {
         "x86_64": [
             {
-                "type": "boot",
-                "format": "iso",
+                "match": {
+                    "type": "boot",
+                    "format": "iso",
+                },
             },
         ],
     },
