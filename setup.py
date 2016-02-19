@@ -32,7 +32,4 @@ setup(
         "License :: OSI Approved :: GNU General Public License v3 or later "
         "(GPLv3+)",
     ],
-    data_files=[
-        (SYSTEMDUNITPATH, glob.glob('systemd/*.service') + glob.glob('systemd/*.timer')),
-    ],
 )
