@@ -146,16 +146,6 @@ def run_openqa_jobs(url, flavor, arch, build, force=False):
         'CURRREL': currrel,
         'PREVREL': prevrel,
     }
-    # this is a bit icky, but we really need to know if we're testing
-    # a Rawhide compose. unlike fedfind, pungi does not treat Rawhide
-    # as a 'release', it assigns a release number to Rawhide composes.
-    # But our tests need to find Rawhide repository paths (which have
-    # /rawhide/, not /(fakereleasenumber)/) and pass a release value
-    # to dnf-system-upgrade (which also uses 'rawhide', not the fake
-    # release number). Until pungi gives us a nice way of identifying
-    # Rawhide composes, we're going to hack it.
-    if 'rawhide' in url:
-        params['VERSION'] = 'Rawhide'
     client = OpenQA_Client()
     if not force:
         isoname = url.split('/')[-1]
