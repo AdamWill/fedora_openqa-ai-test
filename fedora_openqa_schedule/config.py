@@ -171,7 +171,7 @@ WANTED = {
             },
         ],
     },
-    "Atomic": {
+    "CloudAtomic": {
         "x86_64": [
             {
                 "match": {

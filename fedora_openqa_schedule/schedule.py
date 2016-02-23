@@ -31,7 +31,6 @@ import re
 
 # External dependencies
 import fedfind.helpers
-import fedfind.release
 from openqa_client.client import OpenQA_Client
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import URLError, HTTPError
@@ -46,16 +45,60 @@ class TriggerException(Exception):
     pass
 
 
-def _get_images(ff_release, wanted=WANTED):
-    """Given a Fedfind release (must be Pungi 4 compatible), this
-    returns a set of (URL, arch, flavor, score) tuples for images to
-    be tested.
+def _get_atomic_id(location):
+    """This is an extremely ugly, temporary way to get a compose ID
+    for Two Week Atomic nightly composes. They are not done with Pungi
+    4 at present so do not have an official compose ID. This should
+    die as soon as all composes we want to test are done in Pungi 4
+    style.
     """
+    return location.split('/')[-1]
+
+
+def _get_atomic_installer(location, cid):
+    """This is an extremely ugly, temporary way to get the sole image
+    we know we need from the Two Week Atomic nightly composes. They
+    are not done with Pungi 4 at present so do not have the metadata
+    we want to use. This should die as soon as all composes we want to
+    test are done in Pungi 4 style.
+    """
+    url = '{0}/Cloud_Atomic/x86_64/iso/Fedora-Cloud_Atomic-x86_64-{1}.iso'.format(
+        location, cid)
+    try:
+        resp = urlopen(url)
+        return [(url, 'Cloud_Atomic-boot-iso', 'x86_64', 0)]
+    except (ValueError, URLError, HTTPError):
+        raise TriggerException("Compose not found, or failed!")
+
+
+def _get_compose_id(location):
+    """Given a compose location, find the compose ID. Really we'd like
+    taskotron to give us this, as fedmsg provides it, but taskotron is
+    kinda tied to giving us just *one* variable property of the fedmsg
+    message. So we read it from the compose metadata's known location.
+    """
+    try:
+        resp = urlopen('{0}/metadata/composeinfo.json'.format(location))
+        metadata = json.load(resp)
+    except (ValueError, URLError, HTTPError):
+        raise TriggerException("Compose not found, or failed!")
+    return metadata['payload']['compose']['id']
+
+
+def _get_images(location, wanted=WANTED):
+    """Given a Pungi compose top-level location, this returns a set of
+    (URL, arch, flavor, score) tuples for images to be tested.
+    """
+    try:
+        resp = urlopen('{0}/metadata/images.json'.format(location))
+        metadata = json.load(resp)
+    except (ValueError, URLError, HTTPError):
+        raise TriggerException("Compose not found, or failed!")
     images = set()
     for variant in wanted.keys():
         for arch in wanted[variant].keys():
             try:
-                foundimgs = ff_release.metadata['images']['payload']['images'][variant][arch]
+                foundimgs = metadata['payload']['images'][variant][arch]
             except KeyError:
                 # not found in upstream metadata, move on
                 continue
@@ -92,7 +135,7 @@ def _get_images(ff_release, wanted=WANTED):
                     flavor = [item.replace('-', '_')
                               for item in payload, foundimg['type'], foundimg['format']]
                     flavor = '-'.join(flavor)
-                    url = "{0}/{1}".format(ff_release.location, foundimg['path'])
+                    url = "{0}/{1}".format(location, foundimg['path'])
                     logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
                     images.add((url, flavor, arch, score))
     return images
@@ -173,13 +216,17 @@ def jobs_from_compose(location, wanted=WANTED, force=False):
     there are no existing, non-cancelled jobs for the same ISO and
     flavor.
     """
-    ff_release = fedfind.release.get_release_location(location)
-    # fedfind figures out the compose ID, so don't duplicate that work
-    compose = ff_release.cid
-    if not ff_release.exists:
-        raise TriggerException("No compose found at %s!", location)
-    logger.debug("Finding images for compose %s in location %s", compose, location)
-    images = _get_images(ff_release, wanted=wanted)
+    location = location.strip('/')
+    # trigger ugly special-casing for non-Pungi4-ified Two Week Atomic
+    # nightlies
+    if 'alt/atomic/testing' in location:
+        compose = _get_atomic_id(location)
+        logger.debug("Finding images for Atomic compose %s in location %s", compose, location)
+        images = _get_atomic_installer(location, compose)
+    else:
+        compose = _get_compose_id(location)
+        logger.debug("Finding images for compose %s in location %s", compose, location)
+        images = _get_images(location, wanted=wanted)
     if len(images) == 0:
         raise TriggerException("Compose found, but no available images")
     jobs = []
