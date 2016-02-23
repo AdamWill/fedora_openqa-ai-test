@@ -66,7 +66,7 @@ def _get_atomic_installer(location, cid):
         location, cid)
     try:
         resp = urlopen(url)
-        return [(url, 'Cloud_Atomic-boot-iso', 'x86_64', 0)]
+        return [(url, 'Atomic-boot-iso', 'x86_64', 0)]
     except (ValueError, URLError, HTTPError):
         raise TriggerException("Compose not found, or failed!")
 
