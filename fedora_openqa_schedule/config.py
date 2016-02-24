@@ -20,6 +20,7 @@
 """Config file handling: parses config and provides it as CONFIG."""
 
 # Standard libraries
+import json
 import os.path
 
 # External dependencies
