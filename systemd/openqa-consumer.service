@@ -1,0 +1,6 @@
+[Unit]
+Description=Run openQA tests in response to compose fedmsgs
+
+[Service]
+ExecStart=/usr/bin/fedora-openqa-consumer -l warning %i
+Type=simple
