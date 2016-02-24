@@ -16,7 +16,12 @@ SYSTEMDUNITPATH = os.getenv("SYSTEMDUNITPATH", '/usr/lib/systemd/system')
 setup(
     name = "fedora-openqa",
     version = "1.0",
-    entry_points = {'console_scripts': ['fedora-openqa-schedule = fedora_openqa_schedule.cli:main'],},
+    entry_points = {
+        'console_scripts': [
+            'fedora-openqa-schedule = fedora_openqa_schedule.cli:main',
+            'fedora-openqa-consumer = fedora_openqa_schedule.consumer:main',
+        ],
+    },
     author = "Fedora QA devel team",
     author_email = "qa-devel@lists.fedoraproject.org",
     description = "Fedora openQA scheduler",
@@ -24,7 +29,7 @@ setup(
     keywords = "fedora openqa test qa",
     url = "https://bitbucket.org/rajcze/openqa_fedora_tools",
     packages = ["fedora_openqa_schedule"],
-    install_requires = ['fedfind>=1.5', 'openqa-client', 'setuptools', 'six'],
+    install_requires = ['openqa-client', 'setuptools', 'six'],
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",
