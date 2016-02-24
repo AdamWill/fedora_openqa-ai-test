@@ -49,7 +49,8 @@ def consume(msg):
             logger.warning("No jobs run! %s", err)
             return 1
         if jobs:
-            logger.info("Jobs run on %s: %s", compose, ' '.join(jobs))
+            logger.info("Jobs run on %s: %s", compose,
+                        ' '.join(str(job) for job in jobs))
         else:
             logger.warning("No jobs run!")
             return 1
@@ -71,7 +72,7 @@ def main():
             'compose\.\d+\.cloudimg-staging\.done)$')
         for (name, endpoint, topic, msg) in fedmsg.tail_messages():
             if topicpatt.match(topic):
-                consume(msg)
+                consume(msg['msg'])
     except KeyboardInterrupt:
         sys.stderr.write("Interrupted, exiting...\n")
         sys.exit(1)
