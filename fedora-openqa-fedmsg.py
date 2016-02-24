@@ -20,14 +20,14 @@
 #            Adam Williamson <awilliam@redhat.com>
 
 
-"""fedmsg consumer for fedora-openqa"""
+"""fedmsg consumer to schedule openQA tests."""
 
 
 import logging
-import fedmsg
+import re
 
+import fedmsg
 import fedora_openqa_schedule.schedule as schedule
-import fedora_openqa_schedule.report as report
 
 
 logger = logging.getLogger(__name__)
@@ -35,10 +35,12 @@ logger = logging.getLogger(__name__)
 
 def consume(msg):
     """Consume incoming message"""
-    status = msg['status']
-    location = msg['location']
-    if 'FINISHED' in status:
-        # We have a complete pungi4 compose!
+    # two-week atomic messages don't indicate status, so we'll just
+    # always run for those, by setting default value 'FINISHED'
+    status = msg.get('status', 'FINISHED')
+    location = msg.get('location')
+    if 'FINISHED' in status and location:
+        # We have a complete pungi4 compose or a 2-week atomic compose
         try:
             (compose, jobs) = schedule.jobs_from_compose(location)
         except schedule.TriggerException as err:
@@ -58,9 +60,14 @@ def consume(msg):
 
 def main():
     """Main listener loop"""
-
-    for name, endpoint, topic, msg  in fedmsg.tail_messages():
-        if topic == 'org.fedoraproject.prod.pungi.compose.status.change':
+    # catch Pungi 4 'compose status change' messages and old-style
+    # two-week Atomic compose 'staging.done' messages, which have
+    # the release number in them, so we need a regex
+    topicpatt = re.compile(
+        r'^org\.fedoraproject\.prod\.(pungi\.compose\.status\.change|'
+        'compose\.\d+\.cloudimg-staging\.done)$')
+    for (name, endpoint, topic, msg) in fedmsg.tail_messages():
+        if topicpatt.match(topic):
             consume(msg)
 
 
