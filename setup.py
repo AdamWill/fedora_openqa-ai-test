@@ -15,7 +15,7 @@ SYSTEMDUNITPATH = os.getenv("SYSTEMDUNITPATH", '/usr/lib/systemd/system')
 
 setup(
     name = "fedora-openqa",
-    version = "1.0",
+    version = "2.0",
     entry_points = {
         'console_scripts': [
             'fedora-openqa-schedule = fedora_openqa_schedule.cli:main',
