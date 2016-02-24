@@ -25,6 +25,7 @@
 
 import logging
 import re
+import sys
 
 import fedmsg
 import fedora_openqa_schedule.schedule as schedule
@@ -34,7 +35,7 @@ logger = logging.getLogger(__name__)
 
 
 def consume(msg):
-    """Consume incoming message"""
+    """Consume incoming message."""
     # two-week atomic messages don't indicate status, so we'll just
     # always run for those, by setting default value 'FINISHED'
     status = msg.get('status', 'FINISHED')
@@ -59,16 +60,20 @@ def consume(msg):
 
 
 def main():
-    """Main listener loop"""
-    # catch Pungi 4 'compose status change' messages and old-style
-    # two-week Atomic compose 'staging.done' messages, which have
-    # the release number in them, so we need a regex
-    topicpatt = re.compile(
-        r'^org\.fedoraproject\.prod\.(pungi\.compose\.status\.change|'
-        'compose\.\d+\.cloudimg-staging\.done)$')
-    for (name, endpoint, topic, msg) in fedmsg.tail_messages():
-        if topicpatt.match(topic):
-            consume(msg)
+    """Main listener loop."""
+    try:
+        # catch Pungi 4 'compose status change' messages and old-style
+        # two-week Atomic compose 'staging.done' messages, which have
+        # the release number in them, so we need a regex
+        topicpatt = re.compile(
+            r'^org\.fedoraproject\.prod\.(pungi\.compose\.status\.change|'
+            'compose\.\d+\.cloudimg-staging\.done)$')
+        for (name, endpoint, topic, msg) in fedmsg.tail_messages():
+            if topicpatt.match(topic):
+                consume(msg)
+    except KeyboardInterrupt:
+        sys.stderr.write("Interrupted, exiting...\n")
+        sys.exit(1)
 
 
 if __name__ == '__main__':
