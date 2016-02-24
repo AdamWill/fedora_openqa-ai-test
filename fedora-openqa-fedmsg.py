@@ -1,4 +1,5 @@
-#! /usr/bin/python
+#!/usr/bin/env python
+
 # Copyright (C) 2016 John Dulaney
 #
 # This file is part of fedora-openqa-schedule.
