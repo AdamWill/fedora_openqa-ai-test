@@ -163,7 +163,7 @@ def run_openqa_jobs(url, flavor, arch, build, force=False):
 
     # starts OpenQA jobs
     params = {
-        'ISOURL': url,
+        'ISO_URL': url,
         'DISTRI': 'fedora',
         'VERSION': build.split('-')[1],
         'FLAVOR': flavor,
