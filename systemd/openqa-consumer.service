@@ -4,3 +4,5 @@ Description=Run openQA tests in response to compose fedmsgs
 [Service]
 ExecStart=/usr/bin/fedora-openqa-consumer
 Type=simple
+RestartSec=10
+Restart=always
