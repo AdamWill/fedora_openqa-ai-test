@@ -94,6 +94,8 @@ def run():
                             filename=args.log_file, level=loglevel)
     else:
         logging.basicConfig(level=loglevel)
+    # shut up, requests
+    logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.WARNING)
 
     wiki_url = "fedoraproject.org"
     if args.test:

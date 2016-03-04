@@ -64,6 +64,8 @@ def consume(msg):
 def main():
     """Main listener loop."""
     logging.basicConfig(level=logging.INFO)
+    # shut the hell up about new goddamn connections, requests
+    logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.WARNING)
     try:
         # catch Pungi 4 'compose status change' messages and old-style
         # two-week Atomic compose 'staging.done' messages, which have
