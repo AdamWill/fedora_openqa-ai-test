@@ -6,3 +6,6 @@ ExecStart=/usr/bin/fedora-openqa-consumer
 Type=simple
 RestartSec=10
 Restart=always
+
+[Install]
+WantedBy=multi-user.target
