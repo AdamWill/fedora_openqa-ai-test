@@ -23,7 +23,7 @@
 import re
 import sys
 
-import fedmsg
+import fedmsg.consumers
 import fedora_openqa_schedule.schedule as schedule
 
 
