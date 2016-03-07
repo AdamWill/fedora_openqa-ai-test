@@ -236,12 +236,13 @@ def jobs_from_compose(location, wanted=WANTED, force=False):
     # per arch along the way
     for (url, flavor, arch, score) in images:
         jobs.extend(run_openqa_jobs(url, flavor, arch, build=compose, force=force))
-        if score > univs.get(arch, 0):
-            univs[arch] = url
+        if score > univs.get(arch, ['', 0])[1]:
+            univs[arch] = (url, score)
 
     # now schedule universal jobs
-    for arch in univs.keys():
-        logger.info("running universal tests for %s with %s", arch, url)
-        jobs.extend(run_openqa_jobs(univs[arch], 'universal', arch, build=compose, force=force))
+    if univs:
+        for (arch, (url, _)) in univs.items():
+            logger.info("running universal tests for %s with %s", arch, url)
+            jobs.extend(run_openqa_jobs(url, 'universal', arch, build=compose, force=force))
 
     return (compose, jobs)
