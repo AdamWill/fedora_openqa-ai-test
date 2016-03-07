@@ -1,4 +1,3 @@
-import glob
 import os
 from setuptools import setup, find_packages
 
@@ -10,16 +9,15 @@ from setuptools import setup, find_packages
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), "..", fname)).read()
 
-# Allow modification of systemd install location via env var.
-SYSTEMDUNITPATH = os.getenv("SYSTEMDUNITPATH", '/usr/lib/systemd/system')
-
 setup(
     name = "fedora-openqa",
     version = "2.0",
     entry_points = {
         'console_scripts': [
             'fedora-openqa-schedule = fedora_openqa_schedule.cli:main',
-            'fedora-openqa-consumer = fedora_openqa_schedule.consumer:main',
+        ],
+        'moksha.consumer': [
+            'fedora_openqa_schedule.consumer = fedora_openqa_schedule.consumer:OpenQAConsumer',
         ],
     },
     author = "Fedora QA devel team",
@@ -36,8 +34,5 @@ setup(
         "Topic :: Utilities",
         "License :: OSI Approved :: GNU General Public License v3 or later "
         "(GPLv3+)",
-    ],
-    data_files=[
-        (SYSTEMDUNITPATH, glob.glob('systemd/*.service')),
     ],
 )

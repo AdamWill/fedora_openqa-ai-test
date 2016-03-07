@@ -1,6 +1,4 @@
-#!/usr/bin/env python
-
-# Copyright (C) 2016 John Dulaney
+# Copyright (C) 2016 John Dulaney, Adam Williamson
 #
 # This file is part of fedora-openqa-schedule.
 #
@@ -20,11 +18,8 @@
 # Author(s): John Dulaney <jdulaney@fedoraproject.org>
 #            Adam Williamson <awilliam@redhat.com>
 
+"""fedmsg consumer to schedule openQA jobs."""
 
-"""fedmsg consumer to schedule openQA tests."""
-
-
-import logging
 import re
 import sys
 
@@ -32,55 +27,51 @@ import fedmsg
 import fedora_openqa_schedule.schedule as schedule
 
 
-logger = logging.getLogger(__name__)
+class OpenQAConsumer(fedmsg.consumers.FedmsgConsumer):
+    """A fedmsg consumer that schedules openQA jobs when a new compose
+    appears.
+    """
+    topic = ["org.fedoraproject.prod.pungi.compose.status.change",
+             "org.fedoraproject.prod.compose.*"]
+    config_key = "fedora_openqa_schedule.consumer.enabled"
 
+    def _log(self, level, message):
+        """Convenience function for sticking the class name on the
+        front of the log message as an identifier.
+        """
+        logfnc = getattr(self.log, level)
+        logfnc("%s: %s", self.__class__.__name__, message)
 
-def consume(msg):
-    """Consume incoming message."""
-    # two-week atomic messages don't indicate status, so we'll just
-    # always run for those, by setting default value 'FINISHED'
-    status = msg.get('status', 'FINISHED')
-    location = msg.get('location')
-    if 'FINISHED' in status and location:
-        # We have a complete pungi4 compose or a 2-week atomic compose
-        try:
-            (compose, jobs) = schedule.jobs_from_compose(location)
-        except schedule.TriggerException as err:
-            logger.warning("No jobs run! %s", err)
-            return 1
-        if jobs:
-            logger.info("Jobs run on %s: %s", compose,
-                        ' '.join(str(job) for job in jobs))
-        else:
-            logger.warning("No jobs run!")
-            return 1
+    def consume(message):
+        """Consume incoming message."""
+        # as two-week atomic message topics are a bit awkward, we have
+        # to do a bit more filtering here
+        if not message['topic'] == "org.fedoraproject.prod.pungi.compose.status.change":
+            if not message['topic'].endswith(".cloudimg-staging.done"):
+                return
 
-        logger.debug("finished")
-        return 0
+        # two-week atomic messages don't indicate status, so we'll just
+        # always run for those, by setting default value 'FINISHED'
+        status = message['body']['msg'].get('status', 'FINISHED')
+        location = message['body']['msg'].get('location')
+        compstr = message['body']['msg'].get('compose_id', location)
 
-    return 1
+        if 'FINISHED' in status and location:
+            # We have a complete pungi4 compose or a 2-week atomic compose
+            self._log('info', "Scheduling openQA jobs for {0}".format(compstr))
+            try:
+                (compose, jobs) = schedule.jobs_from_compose(location)
+            except schedule.TriggerException as err:
+                self._log('warning', "No openQA jobs run! {0}".format(err))
+                return
+            if jobs:
+                self._log('warning', "openQA jobs run on %{0}: "
+                          "{1}".format(compose, ' '.join(str(job) for job in jobs)))
+            else:
+                self._log('warning', "No openQA jobs run!")
+                return
 
+            self._log('debug', "Finished")
+            return
 
-def main():
-    """Main listener loop."""
-    logging.basicConfig(level=logging.INFO)
-    # shut the hell up about new goddamn connections, requests
-    logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.WARNING)
-    try:
-        # catch Pungi 4 'compose status change' messages and old-style
-        # two-week Atomic compose 'staging.done' messages, which have
-        # the release number in them, so we need a regex
-        topicpatt = re.compile(
-            r'^org\.fedoraproject\.prod\.(pungi\.compose\.status\.change|'
-            'compose\.\d+\.cloudimg-staging\.done)$')
-        for (name, endpoint, topic, msg) in fedmsg.tail_messages():
-            if topicpatt.match(topic):
-                consume(msg['msg'])
-    except KeyboardInterrupt:
-        sys.stderr.write("Interrupted, exiting...\n")
-        sys.exit(1)
-
-
-if __name__ == '__main__':
-    main()
-
+        return
