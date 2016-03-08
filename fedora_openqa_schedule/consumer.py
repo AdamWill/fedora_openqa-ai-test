@@ -42,7 +42,7 @@ class OpenQAConsumer(fedmsg.consumers.FedmsgConsumer):
         logfnc = getattr(self.log, level)
         logfnc("%s: %s", self.__class__.__name__, message)
 
-    def consume(message):
+    def consume(self, message):
         """Consume incoming message."""
         # as two-week atomic message topics are a bit awkward, we have
         # to do a bit more filtering here
