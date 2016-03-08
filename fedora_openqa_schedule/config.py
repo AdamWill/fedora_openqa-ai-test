@@ -94,7 +94,7 @@ WANTED = {
                     "type": "dvd",
                     "format": "iso",
                 },
-                "score": 10,
+                "score": 4,
             },
         ],
         "i386": [
@@ -110,7 +110,7 @@ WANTED = {
                     "type": "dvd",
                     "format": "iso",
                 },
-                "score": 10,
+                "score": 4,
             },
         ],
     },
