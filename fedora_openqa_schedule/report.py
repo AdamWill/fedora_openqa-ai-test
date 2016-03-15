@@ -62,7 +62,6 @@ def _uniqueres_replacements(job, uniqueres):
         # to avoid crashing, these values should never be used
         variant = imagetype = 'universal'
     imagetype = imagetype.replace('boot', 'netinst')
-    imagetype = imagetype.replace('dvd', 'offline')
     if 'UEFI' in job['settings']:
         uefi = 'UEFI'
         bootmethod = 'x86 UEFI'
@@ -91,15 +90,9 @@ def get_passed_testcases(jobs):
     passed_testcases = set()
     for job in jobs:
         if job['result'] == 'passed':
-            # This is an approximate first cut at parsing Pungi 4
-            # compose ID into Wikitcms versioning, caveats: Wikitcms
-            # does not handle more than one validation event per day,
-            # we do not yet know what an RC compose ID will look like,
-            # this really only handles 'nightlies' for now
-            release = job['settings']['BUILD'].split('-')[1]
-            # placeholder
-            milestone = ''
-            compose = job['settings']['BUILD'].split('-')[-1].split('.')[0]
+            # it's wikitcms' job to take a compose ID and figure out
+            # what the validation event for it is.
+            composeid = job['settings']['BUILD']
             testsuite = job['settings']['TEST']
             # There usually ought to be an entry in TESTSUITES for all
             # tests, but just in case someone messed up, let's be safe
@@ -118,10 +111,9 @@ def get_passed_testcases(jobs):
                 # replace $FOO$ values in uniqueres
                 uniqueres = _uniqueres_replacements(job, conf_test_suites.TESTCASES[testcase])
                 result = ResTuple(
-                    testtype=uniqueres['type'], release=release, milestone=milestone,
-                    compose=compose, testcase=testcase, section=uniqueres.get('section'),
-                    testname=uniqueres.get('name', ''), env=uniqueres.get('env', ''),
-                    status='pass', bot=True)
+                    testtype=uniqueres['type'], testcase=testcase,
+                    section=uniqueres.get('section'), testname=uniqueres.get('name', ''),
+                    env=uniqueres.get('env', ''), status='pass', bot=True, cid=composeid)
                 passed_testcases.add(result)
 
     return sorted(list(passed_testcases), key=attrgetter('testcase'))
