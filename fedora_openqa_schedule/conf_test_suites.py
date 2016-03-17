@@ -224,15 +224,15 @@ TESTCASES = {
         "type": "Installation",
     },
     "QA:Testcase_base_selinux": {
-        "env": "$PAYLOAD$",
+        "env": "$VARIANT$",
         "type": "Base",
     },
     "QA:Testcase_Services_start": {
-        "env": "$PAYLOAD$",
+        "env": "$VARIANT$",
         "type": "Base",
     },
     "QA:Testcase_base_service_manipulation": {
-        "env": "$PAYLOAD$",
+        "env": "$VARIANT$",
         "type": "Base",
     },
     #        "": {
