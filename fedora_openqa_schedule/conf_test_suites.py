@@ -33,12 +33,12 @@ TESTCASES = {
     #   $RUNARCH_OR_UEFI$ - "i386", "x86_64", or "UEFI" for x86_64 UEFI
     #   $RUNARCH$         - "i386", "x86_64"
     #   $BOOTMETHOD$      - "x86 BIOS", "x86 UEFI"
-    #   $VARIANT$         - pungi 'variant': "Server", "KDE"...
-    #   $IMAGETYPE$       - pungi 'type': "boot", "live"... "boot" -> "netinst", "dvd" -> "offline"
+    #   $SUBVARIANT$      - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
+    #   $IMAGETYPE$       - pungi 'type': "boot", "live"... "boot" -> "netinst"
     #   $FS$              - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
 
     "QA:Testcase_Boot_default_install": {
-        "name": "$VARIANT$_$IMAGETYPE$",
+        "name": "$SUBVARIANT$_$IMAGETYPE$",
         "section": 'Default boot and install',
         "env": "$RUNARCH_OR_UEFI$",
         "type": "Installation",
@@ -224,15 +224,15 @@ TESTCASES = {
         "type": "Installation",
     },
     "QA:Testcase_base_selinux": {
-        "env": "$VARIANT$",
+        "env": "$SUBVARIANT$",
         "type": "Base",
     },
     "QA:Testcase_Services_start": {
-        "env": "$VARIANT$",
+        "env": "$SUBVARIANT$",
         "type": "Base",
     },
     "QA:Testcase_base_service_manipulation": {
-        "env": "$VARIANT$",
+        "env": "$SUBVARIANT$",
         "type": "Base",
     },
     #        "": {

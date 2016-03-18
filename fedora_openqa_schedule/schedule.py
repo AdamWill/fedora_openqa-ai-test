@@ -106,34 +106,17 @@ def _get_images(location, wanted=WANTED):
             wantimgs = wanted[variant][arch]
             for wantimg in wantimgs:
                 matchdict = wantimg['match'].copy()
-                # this is a messy fedfind-lite because productmd does
-                # not give us any kind of 'payload' field, we have to
-                # sloppily guess it from the filename
-                payload = matchdict.pop('payload', '')
                 for foundimg in foundimgs:
-                    # here's the nice simple 1-to-1 comparison...
+                    # see if the foundimg matches the wantimg
                     if not all(item in foundimg.items() for item in matchdict.items()):
                         continue
-                    if payload:
-                        # here we find the filename, lowercase it, and
-                        # split it on '-', and figure the payload will
-                        # be one of the elements
-                        elems = foundimg['path'].split('/')[-1].lower().split('-')
-                        if not payload.lower() in elems:
-                            continue
-
-                    # We get here if all match-y stuff passed
                     score = wantimg.get('score', 0)
-                    # assign a 'flavor' (another thing productmd ought
-                    # to do for us really). if the match dict includes
-                    # a payload, use it, otherwise assume the variant
-                    # is the payload. add 'type' and 'format', replace
-                    # dashes in the values with underscores, join with
-                    # dashes.
-                    if not payload:
-                        payload = variant
+                    # assign a 'flavor' by combining a few productmd
+                    # values, with dashes replaced by underscores so
+                    # we can split this back up again later for report
                     flavor = [item.replace('-', '_')
-                              for item in payload, foundimg['type'], foundimg['format']]
+                              for item in foundimg['subvariant'], foundimg['type'],
+                              foundimg['format']]
                     flavor = '-'.join(flavor)
                     url = "{0}/{1}".format(location, foundimg['path'])
                     logger.debug("Found image %s for arch %s at %s", flavor, arch, url)

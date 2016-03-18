@@ -58,18 +58,6 @@ CONFIG.read('{0}/.config/fedora-openqa/schedule.conf'.format(os.path.expanduser(
 # items in the image dict from the upstream metadata, we take that
 # image.
 
-# For most keys we simply perform a Python 'equality' match. There is
-# one exception: the "payload" key is special. It doesn't exist
-# upstream. When the 'match' dict contains a 'payload' key, we derive
-# a payload from the upstream "path" key and compare against that.
-# This is necessary to identify, for instance, "the KDE live image"
-# for a given arch in the Spins variant. There is no key in the
-# upstream metadata which can be used for this without some sort of
-# interpretation like this. The match is performed by extracting the
-# filename from the upstream 'path' and splitting it with '-' as the
-# separator; we then see if any of the resulting elements matches the
-# payload (case-insensitively).
-
 # The other items in the image dict here are not used for matching,
 # but instead influence the behaviour of the scheduler.
 
@@ -156,7 +144,7 @@ WANTED = {
         "x86_64": [
             {
                 "match": {
-                    "payload": "KDE",
+                    "subvariant": "KDE",
                     "type": "live",
                     "format": "iso",
                 },
@@ -165,7 +153,7 @@ WANTED = {
         "i386": [
             {
                 "match": {
-                    "payload": "KDE",
+                    "subvariant": "KDE",
                     "type": "live",
                     "format": "iso",
                 },

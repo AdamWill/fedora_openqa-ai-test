@@ -56,12 +56,13 @@ def _uniqueres_replacements(job, uniqueres):
     flavor = job['settings']['FLAVOR']
     fs = job['settings']['TEST'].split('_')[-1]
     try:
-        (variant, imagetype, _) = flavor.split('-')
+        (subvariant, imagetype, _) = flavor.split('-')
     except ValueError:
         # the above fails when the flavor is 'universal'. This is just
         # to avoid crashing, these values should never be used
-        variant = imagetype = 'universal'
+        subvariant = imagetype = 'universal'
     imagetype = imagetype.replace('boot', 'netinst')
+    subvariant = subvariant.replace('_Base', '')
     if 'UEFI' in job['settings']:
         uefi = 'UEFI'
         bootmethod = 'x86 UEFI'
@@ -75,7 +76,7 @@ def _uniqueres_replacements(job, uniqueres):
         value = value.replace('$FS$', fs)
         value = value.replace('$RUNARCH$', arch)
         value = value.replace('$BOOTMETHOD$', bootmethod)
-        value = value.replace('$VARIANT$', variant)
+        value = value.replace('$SUBVARIANT$', subvariant)
         value = value.replace('$IMAGETYPE$', imagetype)
         changed[key] = value
 
