@@ -18,6 +18,9 @@ setup(
         ],
         'moksha.consumer': [
             'fedora_openqa_schedule.consumer = fedora_openqa_schedule.consumer:OpenQAConsumer',
+            'fedora_openqa_schedule.wiki.consumer.prod = fedora_openqa_schedule.consumer:OpenQAProductionWikiConsumer',
+            'fedora_openqa_schedule.wiki.consumer.stg = fedora_openqa_schedule.consumer:OpenQAStagingWikiConsumer',
+            'fedora_openqa_schedule.wiki.consumer.test = fedora_openqa_schedule.consumer:OpenQATestWikiConsumer',
         ],
     },
     author = "Fedora QA devel team",

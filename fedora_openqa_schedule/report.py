@@ -135,6 +135,7 @@ def wait_and_report(wiki_url, job_ids=None, build=None, do_report=None, waittime
     if not job_ids and not build:
         raise ValueError("wait_and_report requires either job_ids or build.")
 
+    ret = []
     if waittime is None:
         waittime = CONFIG.getint('report', 'jobs-wait')
     # Use the openQA client lib to wait for jobs to be done. Will
@@ -142,7 +143,8 @@ def wait_and_report(wiki_url, job_ids=None, build=None, do_report=None, waittime
     client = OpenQA_Client()
     # iterate_jobs can work on jobs or build; whichever is set will be used
     for joblist in client.iterate_jobs(jobs=job_ids, build=build, waittime=waittime):
-        report_results(joblist, wiki_url, do_report=do_report)
+        ret.extend(report_results(joblist, wiki_url, do_report=do_report))
+    return ret
 
 
 def report_results(jobs, wiki_url, do_report=None):
@@ -174,6 +176,8 @@ def report_results(jobs, wiki_url, do_report=None):
         for insuff in insuffs:
             tmpl = "insufficient data for test %s, env %s! Will not report."
             logger.info(tmpl, insuff.testcase, insuff.env)
+        return []
 
     else:
         logger.warning("no reporting is done")
+        return passed_testcases
