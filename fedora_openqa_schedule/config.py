@@ -130,11 +130,23 @@ WANTED = {
                     "format": "iso",
                 },
             },
+            {
+                "match": {
+                    "type": "boot",
+                    "format": "iso",
+                },
+            },
         ],
         "i386": [
             {
                 "match": {
                     "type": "live",
+                    "format": "iso",
+                },
+            },
+            {
+                "match": {
+                    "type": "boot",
                     "format": "iso",
                 },
             },
