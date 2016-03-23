@@ -235,6 +235,14 @@ TESTCASES = {
         "env": "$SUBVARIANT$",
         "type": "Base",
     },
+    "QA:Testcase_kickstart_firewall_disabled": {
+        "env": "x86",
+        "type": "Server",
+    },
+    "QA:Testcase_kickstart_firewall_configured": {
+        "env": "x86",
+        "type": "Server",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -471,5 +479,11 @@ TESTSUITES = {
         ],
     "base_service_manipulation": [
         "QA:Testcase_base_service_manipulation",
+        ],
+    "install_kickstart_firewall_disabled": [
+        "QA:Testcase_kickstart_firewall_disabled",
+        ],
+    "install_kickstart_firewall_configured": [
+        "QA:Testcase_kickstart_firewall_configured",
         ],
     }
