@@ -245,34 +245,34 @@ TESTCASES = {
 
 
 TESTSUITES = {
-    "default_install": [
+    "install_default": [
         "QA:Testcase_Boot_default_install",
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         ],
-    "package_set_minimal": [
+    "install_package_set_minimal": [
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_delete_pata": [
+    "install_delete_pata": [
         "QA:Testcase_install_to_PATA",
         "QA:Testcase_partitioning_guided_delete_all",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_multi": [
+    "install_multi": [
         "QA:Testcase_partitioning_guided_multi_select",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_scsi_updates_img": [
+    "install_scsi_updates_img": [
         "QA:Testcase_install_to_SCSI",
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_updates.img_via_URL",
@@ -280,13 +280,13 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_kickstart_user_creation": [
+    "install_kickstart_user_creation": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_kickstart_user_creation",
         "QA:Testcase_Kickstart_Http_Server_Ks_Cfg",
         ],
-    "server_mirrorlist_graphical": [
+    "install_mirrorlist_graphical": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
@@ -294,7 +294,7 @@ TESTSUITES = {
         "QA:Testcase_install_repository_Mirrorlist_graphical",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_repository_http_graphical": [
+    "install_repository_http_graphical": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
@@ -302,7 +302,7 @@ TESTSUITES = {
         "QA:Testcase_install_repository_HTTP/FTP_graphical",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_repository_http_variation": [
+    "install_repository_http_variation": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
@@ -310,7 +310,7 @@ TESTSUITES = {
         "QA:Testcase_install_repository_HTTP/FTP_variation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_mirrorlist_http_variation": [
+    "install_mirrorlist_http_variation": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
@@ -318,7 +318,7 @@ TESTSUITES = {
         "QA:Testcase_install_repository_HTTP/FTP_variation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_simple_encrypted": [
+    "install_simple_encrypted": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
@@ -326,35 +326,35 @@ TESTSUITES = {
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         "QA:Testcase_partitioning_guided_encrypted",
         ],
-    "server_delete_partial": [
+    "install_delete_partial": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_delete_partial",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_simple_free_space": [
+    "install_simple_free_space": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_free_space",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_multi_empty": [
+    "install_multi_empty": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_multi_empty_all",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_software_raid": [
+    "install_software_raid": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_software_RAID",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_kickstart_hdd": [
+    "install_kickstart_hdd": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_kickstart_user_creation",
@@ -392,56 +392,56 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_previous_workstation",
         "QA:Testcase_upgrade_dnf_previous_any",
         ],
-    "server_btrfs": [
+    "install_btrfs": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_btrfs",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_lvmthin": [
+    "install_lvmthin": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_lvmthin",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_ext3": [
+    "install_ext3": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_standard_partition_ext3",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_updates_img_local": [
+    "install_updates_img_local": [
         "QA:Testcase_Anaconda_updates.img_via_local_media",
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_no_swap": [
+    "install_no_swap": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_no_swap",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_shrink_ext4": [
+    "install_shrink_ext4": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_shrink",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "server_shrink_ntfs": [
+    "install_shrink_ntfs": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_shrink",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "european_language_install": [
+    "install_european_language": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
@@ -450,14 +450,14 @@ TESTSUITES = {
         "QA:Testcase_partitioning_guided_encrypted",
         "QA:Testcase_Non-English_European_Language_Install",
         ],
-    "server_xfs": [
+    "install_xfs": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_standard_partition_xfs",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
-    "package_set_kde": [
+    "install_package_set_kde": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
