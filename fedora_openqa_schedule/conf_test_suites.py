@@ -260,6 +260,13 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         ],
+    "install_default_upload": [
+        "QA:Testcase_Boot_default_install",
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        ],
     "install_package_set_minimal": [
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_install_to_VirtIO",
