@@ -94,6 +94,12 @@ def get_passed_testcases(jobs):
             # it's wikitcms' job to take a compose ID and figure out
             # what the validation event for it is.
             composeid = job['settings']['BUILD']
+            if composeid.endswith('EXTRA'):
+                # this is a 'dirty' test run with extra parameters
+                # (usually a test with an updates.img), we never want
+                # to report results for these
+                logger.debug("Job was run with extra params! Will not report")
+                continue
             testsuite = job['settings']['TEST']
             # There usually ought to be an entry in TESTSUITES for all
             # tests, but just in case someone messed up, let's be safe

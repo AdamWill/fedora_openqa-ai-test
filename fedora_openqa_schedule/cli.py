@@ -42,8 +42,12 @@ def command_compose(args, wiki_url):
     results if a matching wikitcms ValidationEvent is found by
     relval/wikitcms.
     """
+    extraparams = None
+    if args.updates:
+        extraparams = {'GRUBADD': "inst.updates={0}".format(args.updates)}
     try:
-        (compose, jobs) = schedule.jobs_from_compose(args.location, force=args.force)
+        (compose, jobs) = schedule.jobs_from_compose(
+            args.location, force=args.force, extraparams=extraparams)
     except schedule.TriggerException as err:
         logger.warning("No jobs run! %s", err)
         sys.exit(1)
@@ -121,6 +125,9 @@ def parse_args():
     parser_compose.add_argument(
         '--force', '-f', help="For each ISO/flavor combination, schedule jobs even if there "
         "are existing, non-cancelled jobs for that combination", action='store_true')
+    parser_compose.add_argument(
+        '--updates', '-u', help="URL to an updates image to load for all tests. The tests that "
+        "test updates image loading will fail when you use this")
     parser_compose.set_defaults(func=command_compose)
 
     parser_report = subparsers.add_parser(

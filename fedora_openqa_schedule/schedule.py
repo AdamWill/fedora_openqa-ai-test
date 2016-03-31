@@ -124,13 +124,18 @@ def _get_images(location, wanted=WANTED):
     return images
 
 
-def run_openqa_jobs(url, flavor, arch, build, force=False):
+def run_openqa_jobs(url, flavor, arch, build, force=False, extraparams=None):
     """# run OpenQA 'isos' job on ISO at 'url', with given arch
     and a build identifier. **NOTE**: 'build' is passed to openQA as
     BUILD and is later retrieved and parsed by report.py for wiki
     report generation. Returns list of job IDs. If force is False,
     jobs will only be scheduled if there are no existing,
-    non-cancelled jobs for the same ISO and flavor.
+    non-cancelled jobs for the same ISO and flavor. If extraparams
+    is specified, it must be a dict or something else that can be
+    combined with a dict using `update`; it adds additional parameters
+    (usually openQA variables) to the POST request. When extraparams
+    is used, the BUILD value has '-EXTRA' appended to signify that
+    this should not be considered a clean test run for the build.
     """
     logger.info("sending jobs to openQA")
     # find current and previous releases; these are used to determine
@@ -155,6 +160,10 @@ def run_openqa_jobs(url, flavor, arch, build, force=False):
         'CURRREL': currrel,
         'PREVREL': prevrel,
     }
+    if extraparams:
+        params.update(extraparams)
+        # mung the BUILD so this is not considered a 'real' test run
+        params['BUILD'] = "{0}-EXTRA".format(params['BUILD'])
     client = OpenQA_Client()
     if not force:
         isoname = url.split('/')[-1]
@@ -179,7 +188,7 @@ def run_openqa_jobs(url, flavor, arch, build, force=False):
     return output["ids"]
 
 
-def jobs_from_compose(location, wanted=WANTED, force=False):
+def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None):
     """Schedule jobs against a specific compose. Returns a 2-tuple
     of the compose ID and the list of job IDs.
 
@@ -198,6 +207,11 @@ def jobs_from_compose(location, wanted=WANTED, force=False):
     If force is False, for each ISO, jobs will only be scheduled if
     there are no existing, non-cancelled jobs for the same ISO and
     flavor.
+
+    extraparams is passed through to `run_openqa_jobs()`. It can be
+    a dict (or anything else that can be passed to `dict.update()`)
+    containing arbitrary extra parameters to be included in the ISO
+    post request (usually this will be to specify extra openQA vars).
     """
     location = location.strip('/')
     # trigger ugly special-casing for non-Pungi4-ified Two Week Atomic
@@ -218,7 +232,8 @@ def jobs_from_compose(location, wanted=WANTED, force=False):
     # schedule per-image jobs, keeping track of the highest score
     # per arch along the way
     for (url, flavor, arch, score) in images:
-        jobs.extend(run_openqa_jobs(url, flavor, arch, build=compose, force=force))
+        jobs.extend(run_openqa_jobs(url, flavor, arch, build=compose, force=force,
+                                    extraparams=extraparams))
         if score > univs.get(arch, ['', 0])[1]:
             univs[arch] = (url, score)
 
@@ -226,6 +241,7 @@ def jobs_from_compose(location, wanted=WANTED, force=False):
     if univs:
         for (arch, (url, _)) in univs.items():
             logger.info("running universal tests for %s with %s", arch, url)
-            jobs.extend(run_openqa_jobs(url, 'universal', arch, build=compose, force=force))
+            jobs.extend(run_openqa_jobs(url, 'universal', arch, build=compose, force=force,
+                                        extraparams=extraparams))
 
     return (compose, jobs)
