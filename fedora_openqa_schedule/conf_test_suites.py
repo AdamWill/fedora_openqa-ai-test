@@ -32,7 +32,7 @@ TESTCASES = {
     #
     #   $RUNARCH_OR_UEFI$ - "i386", "x86_64", or "UEFI" for x86_64 UEFI
     #   $RUNARCH$         - "i386", "x86_64"
-    #   $BOOTMETHOD$      - "x86 BIOS", "x86 UEFI"
+    #   $BOOTMETHOD$      - "x86_64 BIOS", "x86_64 UEFI"
     #   $SUBVARIANT$      - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
     #   $IMAGETYPE$       - pungi 'type': "boot", "live"... "boot" -> "netinst"
     #   $FS$              - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
@@ -45,7 +45,7 @@ TESTCASES = {
     },
     "QA:Testcase_install_to_VirtIO": {
         "section": "Storage devices",
-        "env": "x86",
+        "env": "x86_64",
         "type": "Installation",
     },
     "QA:Testcase_partitioning_guided_empty": {
@@ -60,12 +60,12 @@ TESTCASES = {
     },
     "QA:Testcase_Anaconda_user_creation": {
         "section": "Miscellaneous",
-        "env": "x86",
+        "env": "x86_64",
         "type": "Installation",
     },
     "QA:Testcase_install_to_PATA": {
         "section": "Storage devices",
-        "env": "x86",
+        "env": "x86_64",
         "type": "Installation",
     },
     "QA:Testcase_partitioning_guided_delete_all": {
@@ -80,7 +80,7 @@ TESTCASES = {
     },
     "QA:Testcase_install_to_SCSI": {
         "section": "Storage devices",
-        "env": "x86",
+        "env": "x86_64",
         "type": "Installation",
     },
     "QA:Testcase_Anaconda_updates.img_via_URL": {
@@ -175,12 +175,12 @@ TESTCASES = {
     },
     "QA:Testcase_upgrade_dnf_current_minimal": {
         "section": "Upgrade",
-        "env": "x86",
+        "env": "x86_64",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_current_workstation": {
         "section": "Upgrade",
-        "env": "x86",
+        "env": "x86_64",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_current_any": {
@@ -190,12 +190,12 @@ TESTCASES = {
     },
     "QA:Testcase_upgrade_dnf_previous_minimal": {
         "section": "Upgrade",
-        "env": "x86",
+        "env": "x86_64",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_workstation": {
         "section": "Upgrade",
-        "env": "x86",
+        "env": "x86_64",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_any": {

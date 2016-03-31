@@ -65,10 +65,10 @@ def _uniqueres_replacements(job, uniqueres):
     subvariant = subvariant.replace('_Base', '')
     if 'UEFI' in job['settings']:
         uefi = 'UEFI'
-        bootmethod = 'x86 UEFI'
+        bootmethod = 'x86_64 UEFI'
     else:
         uefi = arch
-        bootmethod = 'x86 BIOS'
+        bootmethod = 'x86_64 BIOS'
 
     changed = {}
     for key, value in uniqueres.iteritems():
