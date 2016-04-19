@@ -14,6 +14,3 @@ log-level: info
 [report]
 # Whether to submit results to the Wiki (if false, just log them)
 submit: true
-
-# Minutes to wait for openQA jobs to be complete (0 means 'do not wait')
-jobs-wait: 360

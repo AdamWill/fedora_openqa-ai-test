@@ -53,7 +53,8 @@ def command_compose(args, wiki_url):
         sys.exit(1)
 
     if jobs:
-        report.wait_and_report(wiki_url, build=compose, do_report=args.submit)
+        print("Scheduled jobs: {0}".format(jobs))
+        sys.exit()
     else:
         msg = "No jobs run!"
         if not args.force:
@@ -74,11 +75,11 @@ def command_report(args, wiki_url):
     builds = [build for build in args.jobs if not build.isdigit()]
     try:
         if jobs:
-            report.wait_and_report(
-                wiki_url, job_ids=jobs, do_report=args.submit)
+            report.report_results(
+                wiki_url, jobs=jobs, do_report=args.submit)
         if builds:
             for build in builds:
-                report.wait_and_report(
+                report.report_results(
                     wiki_url, build=build, do_report=args.submit)
     except report.LoginError:
         # Module logs for us, no need to dupe it.

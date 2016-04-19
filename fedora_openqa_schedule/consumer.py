@@ -93,8 +93,7 @@ class OpenQAWikiConsumer(fedmsg.consumers.FedmsgConsumer):
         """Consume incoming message."""
         job = message['body']['msg']['id']
         self.log.info("%s: reporting results for %s", self.__class__.__name__, job)
-        results = report.wait_and_report(
-            self.url, job_ids=[job], do_report=self.report, waittime=0)
+        results = report.report_results(self.url, jobs=[job], do_report=self.report)
         if not self.report:
             for res in results:
                 self.log.info("%s: would report %s", self.__class__.__name__, res)

@@ -126,40 +126,17 @@ def get_passed_testcases(jobs):
     return sorted(list(passed_testcases), key=attrgetter('testcase'))
 
 
-def wait_and_report(wiki_url, job_ids=None, build=None, do_report=None, waittime=None):
-    """Find some openQA jobs and report the results to Wikitcms (via
-    report_results). Either job_ids (an iterable of IDs) or build (an
-    openQA BUILD string) is required. wiki_url and do_report are passed to
-    report_results and documented there. waittime (int) is how long to
-    wait for jobs to complete before giving up; if 'build' is used,
-    will also wait for jobs to appear. If jobs are not present and
-    complete when waittime expires,
-    openqa_client.exceptions.WaitException will be raised. If waittime
-    is 0, no waiting is done, and if jobs are not complete, the
-    exception will raise immediately.
+def report_results(wiki_url, jobs=None, build=None, do_report=None):
+    """Report results from openQA jobs to Wikitcms. Either jobs (an
+    iterable of job IDs) or build (an openQA BUILD string, usually a
+    Fedora compose ID) is required (if neither is specified, the
+    openQA client will raise TypeError). If do_report is False, will
+    just print out the python-wikitcms ResTups for inspection. If
+    do_report is None, will read the setting from the config file; if
+    no config file is present, default is True.
     """
-    if not job_ids and not build:
-        raise ValueError("wait_and_report requires either job_ids or build.")
-
-    ret = []
-    if waittime is None:
-        waittime = CONFIG.getint('report', 'jobs-wait')
-    # Use the openQA client lib to wait for jobs to be done. Will
-    # raise an openQA client error on wait expiry.
     client = OpenQA_Client()
-    # iterate_jobs can work on jobs or build; whichever is set will be used
-    for joblist in client.iterate_jobs(jobs=job_ids, build=build, waittime=waittime):
-        ret.extend(report_results(joblist, wiki_url, do_report=do_report))
-    return ret
-
-
-def report_results(jobs, wiki_url, do_report=None):
-    """Report results from openQA jobs to Wikitcms. jobs is an
-    iterable of openQA job dicts. If do_report is False, will just print
-    out the python-wikitcms ResTups for inspection. If do_report is None,
-    will read the setting from the config file; if no config file is
-    present, default is True.
-    """
+    jobs = client.get_jobs(jobs=jobs, build=build)
     passed_testcases = get_passed_testcases(jobs)
     logger.info("passed testcases: %s", passed_testcases)
     if do_report is None:
