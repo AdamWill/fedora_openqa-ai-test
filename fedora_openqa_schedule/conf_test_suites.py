@@ -183,6 +183,16 @@ TESTCASES = {
         "env": "x86_64",
         "type": "Installation",
     },
+    "QA:Testcase_upgrade_dnf_current_server": {
+        "section": "Upgrade",
+        "env": "x86_64",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_current_kde": {
+        "section": "Upgrade",
+        "env": "x86_64",
+        "type": "Installation",
+    },
     "QA:Testcase_upgrade_dnf_current_any": {
         "section": "Upgrade",
         "env": "$BOOTMETHOD$",
@@ -194,6 +204,16 @@ TESTCASES = {
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_workstation": {
+        "section": "Upgrade",
+        "env": "x86_64",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_previous_server": {
+        "section": "Upgrade",
+        "env": "x86_64",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_previous_kde": {
         "section": "Upgrade",
         "env": "x86_64",
         "type": "Installation",
@@ -383,6 +403,14 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_current_workstation",
         "QA:Testcase_upgrade_dnf_current_any",
         ],
+    "upgrade_server_64bit": [
+        "QA:Testcase_upgrade_dnf_current_server",
+        "QA:Testcase_upgrade_dnf_current_any",
+        ],
+    "upgrade_kde_64bit": [
+        "QA:Testcase_upgrade_dnf_current_kde",
+        "QA:Testcase_upgrade_dnf_current_any",
+        ],
     "upgrade_minimal_32bit": [
         "QA:Testcase_upgrade_dnf_current_minimal",
         "QA:Testcase_upgrade_dnf_current_any",
@@ -397,6 +425,14 @@ TESTSUITES = {
         ],
     "upgrade_2_desktop_64bit": [
         "QA:Testcase_upgrade_dnf_previous_workstation",
+        "QA:Testcase_upgrade_dnf_previous_any",
+        ],
+    "upgrade_2_server_64bit": [
+        "QA:Testcase_upgrade_dnf_previous_server",
+        "QA:Testcase_upgrade_dnf_previous_any",
+        ],
+    "upgrade_2_kde_64bit": [
+        "QA:Testcase_upgrade_dnf_previous_kde",
         "QA:Testcase_upgrade_dnf_previous_any",
         ],
     "upgrade_2_minimal_32bit": [
