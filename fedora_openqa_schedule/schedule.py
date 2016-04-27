@@ -40,6 +40,11 @@ from fedora_openqa_schedule.config import CONFIG, WANTED
 
 logger = logging.getLogger(__name__)
 
+FORMAT_TO_PARAM = {
+    "iso": "ISO_URL",
+    "raw.xz": "HDD_1_DECOMPRESS_URL"
+}
+
 
 class TriggerException(Exception):
     pass
@@ -85,16 +90,24 @@ def _get_compose_id(location):
     return metadata['payload']['compose']['id']
 
 
+def _get_dkboot_urls(location, arch='armhfp'):
+    """Given a compose location (and arch if provided), return URLs for kernel and initrd
+    files.
+    """
+    pxeboot_url = '{0}/Everything/{1}/os/images/pxeboot/{2}'
+    return pxeboot_url.format(location, arch, 'vmlinuz'), pxeboot_url.format(location, arch, 'initrd.img')
+
+
 def _get_images(location, wanted=WANTED):
-    """Given a Pungi compose top-level location, this returns a set of
-    (URL, arch, flavor, score) tuples for images to be tested.
+    """Given a Pungi compose top-level location, this returns a list
+    of (flavor, arch, score, {param: url}) tuples for images to be tested.
     """
     try:
         resp = urlopen('{0}/metadata/images.json'.format(location))
         metadata = json.load(resp)
     except (ValueError, URLError, HTTPError):
         raise TriggerException("Compose not found, or failed!")
-    images = set()
+    images = []
     for variant in wanted.keys():
         for arch in wanted[variant].keys():
             try:
@@ -120,12 +133,52 @@ def _get_images(location, wanted=WANTED):
                     flavor = '-'.join(flavor)
                     url = "{0}/{1}".format(location, foundimg['path'])
                     logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
-                    images.add((url, flavor, arch, score))
+
+                    # some tests need more than one file, so let's collect them now
+                    param_urls = {
+                        FORMAT_TO_PARAM[foundimg['format']]: url
+                    }
+                    # TODO: WARNING! - workaround for ARM disk images that need kernel for direct kernel boot
+                    if arch == "armhfp" and foundimg['format'] == "raw.xz":
+                        kernel_url, initrd_url = _get_dkboot_urls(location, arch)
+                        param_urls["KERNEL_URL"] = kernel_url
+                        param_urls["INITRD_URL"] = initrd_url
+
+                    images.append((flavor, arch, score, param_urls))
     return images
 
 
-def run_openqa_jobs(url, flavor, arch, build, force=False, extraparams=None):
-    """# run OpenQA 'isos' job on ISO at 'url', with given arch
+def _find_duplicate_jobs(client, param_urls, flavor):
+    """Check if we have any existing non-cancelled jobs for this
+    ISO/HDD and flavor (checking flavor is important otherwise we'd
+    bail on doing the per-ISO jobs for the ISO we use for the
+    'universal' tests). ISO/HDD are taken from param_urls dict.
+    """
+    if any([param in param_urls for param in ('ISO_URL', 'HDD_1_DECOMPRESS_URL', 'HDD_1')]):
+        if 'ISO_URL' in param_urls:
+            assetname = param_urls['ISO_URL'].split('/')[-1]
+            jobs = client.openqa_request('GET', 'jobs', params={'iso': assetname})['jobs']
+        elif 'HDD_1_DECOMPRESS_URL' in param_urls:
+            # HDDs
+            hddname = param_urls['HDD_1_DECOMPRESS_URL'].split('/')[-1]
+            assetname = os.path.splitext(hddname)[0]
+            jobs = client.openqa_request('GET', 'jobs', params={'hdd_1': assetname})['jobs']
+        else:
+            assetname = param_urls['HDD_1'].split('/')[-1]
+            jobs = client.openqa_request('GET', 'jobs', params={'hdd_1': assetname})['jobs']
+
+        jobs = [job for job in jobs if job['settings']['FLAVOR'] == flavor]
+        jobs = [job for job in jobs if
+                job.get('state') != 'cancelled' and job.get('result') != 'user_cancelled']
+        if jobs:
+            logger.info("run_openqa_jobs: Existing jobs found for asset %s flavor %s, and force "
+                        "not set! No jobs scheduled.", assetname, flavor)
+        return jobs
+    return []
+
+
+def run_openqa_jobs(param_urls, flavor, arch, build, force=False, extraparams=None):
+    """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with given arch
     and a build identifier. **NOTE**: 'build' is passed to openQA as
     BUILD and is later retrieved and parsed by report.py for wiki
     report generation. Returns list of job IDs. If force is False,
@@ -151,7 +204,6 @@ def run_openqa_jobs(url, flavor, arch, build, force=False, extraparams=None):
 
     # starts OpenQA jobs
     params = {
-        'ISO_URL': url,
         'DISTRI': 'fedora',
         'VERSION': build.split('-')[1],
         'FLAVOR': flavor,
@@ -164,21 +216,30 @@ def run_openqa_jobs(url, flavor, arch, build, force=False, extraparams=None):
         params.update(extraparams)
         # mung the BUILD so this is not considered a 'real' test run
         params['BUILD'] = "{0}-EXTRA".format(params['BUILD'])
+
+    if arch == 'armhfp':
+        params.update({
+            'ARCH': 'arm',
+            'FAMILY': 'arm',
+            # ARM kernel arguments since we are using direct kernel boot
+            'APPEND': 'rw root=LABEL=_/ rootwait console=ttyAMA0 console=tty0',
+        })
+    else:
+        params['FAMILY'] = 'x86'
+    params.update(param_urls)
+
+    # add KERNEL and INITRD arguments when needed
+    if 'KERNEL_URL' in params:
+        params['KERNEL'] = "vmlinuz.{0}".format(build)
+    if 'INITRD_URL' in params:
+        params['INITRD'] = "initrd.img.{0}".format(build)
+
     client = OpenQA_Client()
+
     if not force:
-        isoname = url.split('/')[-1]
-        # Check if we have any existing non-cancelled jobs for this
-        # ISO and flavor (checking flavor is important otherwise we'd
-        # bail on doing the per-ISO jobs for the ISO we use for the
-        # 'universal' tests).
-        jobs = client.openqa_request('GET', 'jobs', params={'iso': isoname})['jobs']
-        jobs = [job for job in jobs if job['settings']['FLAVOR'] == flavor]
-        jobs = [job for job in jobs if
-                job.get('state') != 'cancelled' and job.get('result') != 'user_cancelled']
-        if jobs:
-            logger.info("run_openqa_jobs: Existing jobs found for ISO %s flavor %s, and force "
-                        "not set! No jobs scheduled.", isoname, flavor)
-            logger.debug("Existing jobs found: %s", ' '.join(str(job['id']) for job in jobs))
+        duplicates = _find_duplicate_jobs(client, param_urls, flavor)
+        if duplicates:
+            logger.debug("Existing jobs found: %s", ' '.join(str(dupe['id']) for dupe in duplicates))
             return []
 
     output = client.openqa_request('POST', 'isos', params)
@@ -231,17 +292,20 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None):
 
     # schedule per-image jobs, keeping track of the highest score
     # per arch along the way
-    for (url, flavor, arch, score) in images:
-        jobs.extend(run_openqa_jobs(url, flavor, arch, build=compose, force=force,
+    for (flavor, arch, score, param_urls) in images:
+        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, build=compose, force=force,
                                     extraparams=extraparams))
-        if score > univs.get(arch, ['', 0])[1]:
-            univs[arch] = (url, score)
+        if score > univs.get(arch, ['', '', 0])[2]:
+            univs[arch] = (param_urls, flavor, score)
 
     # now schedule universal jobs
     if univs:
-        for (arch, (url, _)) in univs.items():
-            logger.info("running universal tests for %s with %s", arch, url)
-            jobs.extend(run_openqa_jobs(url, 'universal', arch, build=compose, force=force,
+        for (arch, (param_urls, _, _)) in univs.items():
+            # We are assuming that ISO_URL is present in param_urls. This could create problem when
+            # unversal tests are run on product that doesn't have ISO. OTOH, only product without ISO
+            # is ARM and there would be whole lot of other problems if universal tests are run on ARM.
+            logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
+            jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, build=compose, force=force,
                                         extraparams=extraparams))
 
     return (compose, jobs)

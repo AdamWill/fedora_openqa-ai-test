@@ -171,6 +171,15 @@ WANTED = {
                 },
             },
         ],
+        "armhfp": [
+            {
+                "match": {
+                    "subvariant": "Minimal",
+                    "type": "raw-xz",
+                    "format": "raw.xz",
+                },
+            },
+        ],
     },
     "Atomic": {
         "x86_64": [
