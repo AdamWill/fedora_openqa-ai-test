@@ -263,6 +263,27 @@ TESTCASES = {
         "env": "x86",
         "type": "Server",
     },
+    "QA:Testcase_Server_role_deploy": {
+        "env": "x86",
+        "type": "Server",
+        # for now we're only testing this role, but we could easily
+        # test Database server too and we'd need to tweak this somehow
+        "name": "Domain controller",
+    },
+    "QA:Testcase_realmd_join_kickstart": {
+        "section": "Domain joining tests: FreeIPA",
+        "env": "Result",
+        "type": "Server",
+    },
+    "QA:Testcase_domain_client_authenticate": {
+        "env": "Result",
+        "type": "Server",
+        "name": "(FreeIPA)",
+    },
+    "QA:Testcase_FreeIPA_realmd_login": {
+        "env": "Result",
+        "type": "Server",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -528,5 +549,13 @@ TESTSUITES = {
         ],
     "install_kickstart_firewall_configured": [
         "QA:Testcase_kickstart_firewall_configured",
+        ],
+    "server_role_deploy_domain_controller": [
+        "QA:Testcase_Server_role_deploy",
+        ],
+    "server_realmd_join_kickstart": [
+        "QA:Testcase_realmd_join_kickstart",
+        "QA:Testcase_FreeIPA_realmd_login",
+        "QA:Testcase_domain_client_authenticate",
         ],
     }
