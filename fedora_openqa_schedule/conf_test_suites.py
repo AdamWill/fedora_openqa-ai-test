@@ -36,6 +36,7 @@ TESTCASES = {
     #   $SUBVARIANT$      - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
     #   $IMAGETYPE$       - pungi 'type': "boot", "live"... "boot" -> "netinst"
     #   $FS$              - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
+    #   $DESKTOP$         - desktop: just the DESKTOP openQA setting
 
     "QA:Testcase_Boot_default_install": {
         "name": "$SUBVARIANT$_$IMAGETYPE$",
@@ -285,6 +286,10 @@ TESTCASES = {
     "QA:Testcase_FreeIPA_realmd_login": {
         "env": "Result",
         "type": "Server",
+    },
+    "QA:Testcase_desktop_terminal": {
+        "env": "$DESKTOP$",
+        "type": "Desktop",
     },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
@@ -559,5 +564,8 @@ TESTSUITES = {
         "QA:Testcase_realmd_join_kickstart",
         "QA:Testcase_FreeIPA_realmd_login",
         "QA:Testcase_domain_client_authenticate",
+        ],
+    "desktop_terminal": [
+        "QA:Testcase_desktop_terminal",
         ],
     }
