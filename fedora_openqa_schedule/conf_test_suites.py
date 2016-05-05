@@ -271,7 +271,9 @@ TESTCASES = {
         "name": "Domain controller",
     },
     "QA:Testcase_realmd_join_kickstart": {
-        "section": "Domain joining tests: FreeIPA",
+        # the section name here is pretty funky and I might change it,
+        # so we'll intentionally use an inexact match
+        "section": "FreeIPA",
         "env": "Result",
         "type": "Server",
     },
