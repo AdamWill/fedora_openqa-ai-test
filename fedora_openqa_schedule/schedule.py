@@ -229,10 +229,11 @@ def run_openqa_jobs(param_urls, flavor, arch, build, force=False, extraparams=No
     params.update(param_urls)
 
     # add KERNEL and INITRD arguments when needed
-    if 'KERNEL_URL' in params:
-        params['KERNEL'] = "vmlinuz.{0}".format(build)
-    if 'INITRD_URL' in params:
-        params['INITRD'] = "initrd.img.{0}".format(build)
+    # TODO: this will not work until https://github.com/os-autoinst/openQA/pull/673 gets merged
+    # if 'KERNEL_URL' in params:
+    #     params['KERNEL'] = "vmlinuz.{0}".format(build)
+    # if 'INITRD_URL' in params:
+    #     params['INITRD'] = "initrd.img.{0}".format(build)
 
     client = OpenQA_Client()
 

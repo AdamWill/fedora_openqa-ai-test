@@ -44,6 +44,12 @@ TESTCASES = {
         "env": "$RUNARCH_OR_UEFI$",
         "type": "Installation",
     },
+    "QA:Testcase_arm_image_deployment": {
+        "name": "$SUBVARIANT$",
+        "section": "ARM disk images",
+        "env": "Ext boot",
+        "type": "Installation"
+    },
     "QA:Testcase_install_to_VirtIO": {
         "section": "Storage devices",
         "env": "x86_64",
@@ -314,6 +320,9 @@ TESTSUITES = {
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
+        ],
+    "install_arm_image_deployment_upload": [
+        "QA:Testcase_arm_image_deployment",
         ],
     "install_package_set_minimal": [
         "QA:Testcase_partitioning_guided_empty",
