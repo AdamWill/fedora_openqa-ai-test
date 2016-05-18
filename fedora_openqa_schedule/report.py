@@ -55,7 +55,7 @@ def _uniqueres_replacements(job, uniqueres):
     arch = job['settings']['ARCH']
     flavor = job['settings']['FLAVOR']
     fs = job['settings']['TEST'].split('_')[-1]
-    desktop = job['settings']['DESKTOP']
+    desktop = job['settings'].get('DESKTOP', '')
     try:
         (subvariant, imagetype, _) = flavor.split('-')
     except ValueError:
@@ -79,7 +79,7 @@ def _uniqueres_replacements(job, uniqueres):
         value = value.replace('$BOOTMETHOD$', bootmethod)
         value = value.replace('$SUBVARIANT$', subvariant)
         value = value.replace('$IMAGETYPE$', imagetype)
-        valie = value.replace('$DESKTOP$', desktop)
+        value = value.replace('$DESKTOP$', desktop)
         changed[key] = value
 
     return changed
