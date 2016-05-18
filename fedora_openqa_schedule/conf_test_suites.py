@@ -294,7 +294,7 @@ TESTCASES = {
         "type": "Server",
     },
     "QA:Testcase_desktop_terminal": {
-        "env": "$DESKTOP$",
+        "env": "$SUBVARIANT$",
         "type": "Desktop",
     },
     #        "": {
