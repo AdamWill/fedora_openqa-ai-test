@@ -296,7 +296,7 @@ TESTCASES = {
     "QA:Testcase_desktop_terminal": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops",
+        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
     },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
