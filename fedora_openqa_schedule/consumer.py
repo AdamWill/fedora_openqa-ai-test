@@ -66,7 +66,7 @@ class OpenQAConsumer(fedmsg.consumers.FedmsgConsumer):
                 self._log('warning', "No openQA jobs run! {0}".format(err))
                 return
             if jobs:
-                self._log('warning', "openQA jobs run on %{0}: "
+                self._log('info', "openQA jobs run on {0}: "
                           "{1}".format(compose, ' '.join(str(job) for job in jobs)))
             else:
                 self._log('warning', "No openQA jobs run!")
