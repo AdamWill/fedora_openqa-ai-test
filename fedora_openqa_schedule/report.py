@@ -64,6 +64,7 @@ def _uniqueres_replacements(job, uniqueres):
         subvariant = imagetype = 'universal'
     imagetype = imagetype.replace('boot', 'netinst')
     subvariant = subvariant.replace('_Base', '')
+    subvariant_or_arm = "ARM" if arch == "arm" else subvariant
     if 'UEFI' in job['settings']:
         uefi = 'UEFI'
         bootmethod = 'x86_64 UEFI'
@@ -80,6 +81,7 @@ def _uniqueres_replacements(job, uniqueres):
         value = value.replace('$SUBVARIANT$', subvariant)
         value = value.replace('$IMAGETYPE$', imagetype)
         value = value.replace('$DESKTOP$', desktop)
+        value = value.replace('$SUBVARIANT_OR_ARM$', subvariant_or_arm)
         changed[key] = value
 
     return changed

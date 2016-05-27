@@ -42,7 +42,8 @@ logger = logging.getLogger(__name__)
 
 FORMAT_TO_PARAM = {
     "iso": "ISO_URL",
-    "raw.xz": "HDD_1_DECOMPRESS_URL"
+    # let's connect it as second HDD - we can then use NUMDISKS=1 when we don't need it connected
+    "raw.xz": "HDD_2_DECOMPRESS_URL"
 }
 
 
