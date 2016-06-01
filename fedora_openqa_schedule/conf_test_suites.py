@@ -299,6 +299,10 @@ TESTCASES = {
         "type": "Desktop",
         "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
     },
+    "QA:Testcase_Server_firewall_default": {
+        "env": "x86",
+        "type": "Server",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -581,5 +585,8 @@ TESTSUITES = {
         ],
     "desktop_terminal": [
         "QA:Testcase_desktop_terminal",
+        ],
+    "server_firewall_default": [
+        "QA:Testcase_Server_firewall_default",
         ],
     }
