@@ -303,6 +303,14 @@ TESTCASES = {
         "env": "x86",
         "type": "Server",
     },
+    "QA:Testcase_Server_cockpit_default": {
+        "env": "x86",
+        "type": "Server",
+    },
+    "QA:Testcase_Server_cockpit_basic": {
+        "env": "x86",
+        "type": "Server",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -588,5 +596,11 @@ TESTSUITES = {
         ],
     "server_firewall_default": [
         "QA:Testcase_Server_firewall_default",
+        ],
+    "server_cockpit_default": [
+        "QA:Testcase_Server_cockpit_default",
+        ],
+    "server_cockpit_basic": [
+        "QA:Testcase_Server_cockpit_basic",
         ],
     }
