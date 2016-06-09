@@ -251,6 +251,11 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Installation",
     },
+    "QA:Testcase_install_to_iSCSI_no_authentication": {
+        "section": "Storage devices",
+        "env": "$RUNARCH$",
+        "type": "Installation",
+    },
     "QA:Testcase_base_selinux": {
         "env": "$SUBVARIANT$",
         "type": "Base",
@@ -281,6 +286,11 @@ TESTCASES = {
     "QA:Testcase_realmd_join_kickstart": {
         # the section name here is pretty funky and I might change it,
         # so we'll intentionally use an inexact match
+        "section": "FreeIPA",
+        "env": "Result",
+        "type": "Server",
+    },
+    "QA:Testcase_realmd_join_cockpit": {
         "section": "FreeIPA",
         "env": "Result",
         "type": "Server",
@@ -602,5 +612,16 @@ TESTSUITES = {
         ],
     "server_cockpit_basic": [
         "QA:Testcase_Server_cockpit_basic",
+        ],
+    "realmd_join_cockpit": [
+        "QA:Testcase_realmd_join_cockpit",
+        "QA:Testcase_FreeIPA_realmd_login",
+        "QA:Testcase_domain_client_authenticate",
+        ],
+    "install_iscsi": [
+        "QA:Testcase_install_to_iSCSI_no_authentication",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
     }
