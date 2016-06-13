@@ -121,6 +121,16 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
+    "QA:Testcase_install_repository_NFS_graphical": {
+        "section": "Installation repositories",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_install_repository_NFS_variation": {
+        "section": "Installation repositories",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_Package_Sets_Minimal_Package_Install": {
         "section": "Package sets",
         "env": "$RUNARCH$",
@@ -177,6 +187,11 @@ TESTCASES = {
         "type": "Installation",
     },
     "QA:Testcase_Kickstart_Hd_Device_Path_Ks_Cfg": {
+        "section": "Kickstart",
+        "env": "Result",
+        "type": "Installation",
+    },
+    "QA:Testcase_Kickstart_Nfs_Server_Path_Ks_Cfg": {
         "section": "Kickstart",
         "env": "Result",
         "type": "Installation",
@@ -414,6 +429,22 @@ TESTSUITES = {
         "QA:Testcase_install_repository_HTTP/FTP_variation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         ],
+    "install_repository_nfs_graphical": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_install_repository_NFS_graphical",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
+    "install_repository_nfs_variation": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_install_repository_NFS_variation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        ],
     "install_simple_encrypted": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
@@ -455,6 +486,12 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_kickstart_user_creation",
         "QA:Testcase_Kickstart_Hd_Device_Path_Ks_Cfg",
+        ],
+    "install_kickstart_nfs": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_kickstart_user_creation",
+        "QA:Testcase_Kickstart_Nfs_Server_Path_Ks_Cfg",
         ],
     "upgrade_minimal_64bit": [
         "QA:Testcase_upgrade_dnf_current_minimal",
