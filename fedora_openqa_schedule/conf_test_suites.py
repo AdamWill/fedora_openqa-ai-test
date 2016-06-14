@@ -271,6 +271,11 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Installation",
     },
+    "QA:Testcase_Cyrillic_Language_Install": {
+        "section": "Internationalization and Localization",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_base_selinux": {
         "env": "$SUBVARIANT$",
         "type": "Base",
@@ -598,6 +603,15 @@ TESTSUITES = {
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
         "QA:Testcase_partitioning_guided_encrypted",
         "QA:Testcase_Non-English_European_Language_Install",
+    ],
+    "install_cyrillic_language": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        "QA:Testcase_partitioning_guided_encrypted",
+        "QA:Testcase_Cyrillic_Language_Install",
     ],
     "install_xfs": [
         "QA:Testcase_install_to_VirtIO",
