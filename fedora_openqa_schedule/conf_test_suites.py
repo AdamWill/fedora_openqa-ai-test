@@ -315,6 +315,11 @@ TESTCASES = {
         "env": "Result",
         "type": "Server",
     },
+    "QA:Testcase_realmd_join_sssd": {
+        "section": "FreeIPA",
+        "env": "Result",
+        "type": "Server",
+    },
     "QA:Testcase_domain_client_authenticate": {
         "env": "Result",
         "type": "Server",
@@ -666,6 +671,11 @@ TESTSUITES = {
     ],
     "realmd_join_cockpit": [
         "QA:Testcase_realmd_join_cockpit",
+        "QA:Testcase_FreeIPA_realmd_login",
+        "QA:Testcase_domain_client_authenticate",
+    ],
+    "realmd_join_sssd": [
+        "QA:Testcase_realmd_join_sssd",
         "QA:Testcase_FreeIPA_realmd_login",
         "QA:Testcase_domain_client_authenticate",
     ],
