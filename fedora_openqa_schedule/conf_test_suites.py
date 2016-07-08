@@ -206,6 +206,11 @@ TESTCASES = {
         "env": "x86_64",
         "type": "Installation",
     },
+    "QA:Testcase_upgrade_dnf_current_workstation_encrypted": {
+        "section": "Upgrade",
+        "env": "x86_64",
+        "type": "Installation",
+    },
     "QA:Testcase_upgrade_dnf_current_server": {
         "section": "Upgrade",
         "env": "x86_64",
@@ -227,6 +232,11 @@ TESTCASES = {
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_workstation": {
+        "section": "Upgrade",
+        "env": "x86_64",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_dnf_previous_workstation_encrypted": {
         "section": "Upgrade",
         "env": "x86_64",
         "type": "Installation",
@@ -511,6 +521,10 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_current_workstation",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
+    "upgrade_desktop_encrypted_64bit": [
+        "QA:Testcase_upgrade_dnf_current_workstation_encrypted",
+        "QA:Testcase_upgrade_dnf_current_any",
+    ],
     "upgrade_server_64bit": [
         "QA:Testcase_upgrade_dnf_current_server",
         "QA:Testcase_upgrade_dnf_current_any",
@@ -533,6 +547,10 @@ TESTSUITES = {
     ],
     "upgrade_2_desktop_64bit": [
         "QA:Testcase_upgrade_dnf_previous_workstation",
+        "QA:Testcase_upgrade_dnf_previous_any",
+    ],
+    "upgrade_2_desktop_encrypted_64bit": [
+        "QA:Testcase_upgrade_dnf_previous_workstation_encrypted",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
     "upgrade_2_server_64bit": [
