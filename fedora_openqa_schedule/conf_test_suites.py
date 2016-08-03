@@ -286,6 +286,11 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
+    "QA:Testcase_Anaconda_updates.img_via_installation_source": {
+        "section": "Miscellaneous",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_base_selinux": {
         "env": "$SUBVARIANT$",
         "type": "Base",
@@ -648,6 +653,14 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_KDE_Package_Install",
+    ],
+    "install_updates_nfs": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Anaconda_updates.img_via_installation_source",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
     "base_selinux": [
         "QA:Testcase_base_selinux",
