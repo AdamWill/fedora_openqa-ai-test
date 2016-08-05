@@ -446,14 +446,6 @@ TESTSUITES = {
         "QA:Testcase_install_repository_HTTP/FTP_variation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
-    "install_mirrorlist_http_variation": [
-        "QA:Testcase_install_to_VirtIO",
-        "QA:Testcase_partitioning_guided_empty",
-        "QA:Testcase_Anaconda_User_Interface_Graphical",
-        "QA:Testcase_Anaconda_user_creation",
-        "QA:Testcase_install_repository_HTTP/FTP_variation",
-        "QA:Testcase_Package_Sets_Minimal_Package_Install",
-    ],
     "install_repository_nfs_graphical": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
