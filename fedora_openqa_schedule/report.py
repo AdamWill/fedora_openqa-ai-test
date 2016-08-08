@@ -106,13 +106,40 @@ def get_passed_testcases(jobs):
                 # to report results for these
                 logger.debug("Job was run with extra params! Will not report")
                 continue
-            testsuite = job['settings']['TEST']
+            tsname = job['settings']['TEST']
             # There usually ought to be an entry in TESTSUITES for all
             # tests, but just in case someone messed up, let's be safe
-            if testsuite not in conf_test_suites.TESTSUITES:
-                logger.warning("No TESTSUITES entry found for test {0}!".format(testsuite))
+            if tsname not in conf_test_suites.TESTSUITES:
+                logger.warning("No TESTSUITES entry found for test {0}!".format(tsname))
                 continue
-            for testcase in conf_test_suites.TESTSUITES[testsuite]:
+            passed = []
+            testsuite = conf_test_suites.TESTSUITES[tsname]
+            # testsuite can be simply a list of test case names - in which case all those test
+            # cases are considered 'passed' if the openQA job overall 'passed' - or a dict of
+            # lists of test case names. In the dict form, there is one special key, 'PASS'; the
+            # 'PASS' list works just like the simple list form, all test cases in that list
+            # 'passed' if the openQA job overall passed. Any other keys are the names of
+            # individual openQA test modules, which should be included in the job as non-fatal
+            # modules; if that module passed within the job, the test cases in the list 'passed'.
+            try:
+                # this is the dict case. first take all test cases from the 'PASS' list...
+                passed.extend(testsuite.pop('PASS', []))
+                # now check each individual test module status
+                for (modname, cases) in testsuite.items():
+                    try:
+                        # find the matching test module in the job's list (note this
+                        # assumes we don't run the same module multiple times, which
+                        # is something upstream has recently started allowing...)
+                        module = [module for module in job['modules'] if module['name'] == modname][0]
+                    except IndexError:
+                        logger.warning("Did not find expected module %s in job data!", modname)
+                        continue
+                    if module.get('result', '') == 'passed':
+                        passed.extend(cases)
+            except TypeError:
+                # this is the simple list case.
+                passed = testsuite
+            for testcase in passed:
                 # each 'testsuite' is a list using testcase names to indicate which Wikitcms tests
                 # have passed if this job passes. Each testcase name is the name of a dict in the
                 # TESTCASES dict-of-dicts which more precisely identifies the 'test instance' (when

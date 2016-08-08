@@ -361,6 +361,14 @@ TESTCASES = {
         "env": "x86",
         "type": "Server",
     },
+    "QA:Testcase_FreeIPA_web_ui": {
+        "env": "Result",
+        "type": "Server",
+    },
+    "QA:Testcase_FreeIPA_password_change": {
+        "env": "Result",
+        "type": "Server",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -377,6 +385,19 @@ TESTCASES_RESULTSDB_EXTRADATA = {
 }
 
 TESTSUITES = {
+    # each entry in this dict is named for an openQA test suite, and
+    # represents the Wikitcms test cases that passed if that openQA
+    # test suite passed. The entries can be simple lists of test case
+    # names, or they can be dicts. In the dict form, the special dict
+    # entry named 'PASS' is a list of test cases that passed if the
+    # overall openQA job passed, as in the simple list form. The other
+    # dict entries are named for individual openQA test modules, and
+    # are lists of test cases that passed if the overall openQA job
+    # passed *and* that specific test module passed. This handles
+    # test suites like realmd_join_cockpit, which has an optional
+    # module that covers QA:Testcase_FreeIPA_web_ui ; if that module
+    # passes we want to report a pass for that test case, if the job
+    # passes but that module fails we do *not* want to report a pass.
     "install_default": [
         "QA:Testcase_Boot_default_install",
         "QA:Testcase_install_to_VirtIO",
@@ -690,11 +711,19 @@ TESTSUITES = {
     "server_cockpit_basic": [
         "QA:Testcase_Server_cockpit_basic",
     ],
-    "realmd_join_cockpit": [
-        "QA:Testcase_realmd_join_cockpit",
-        "QA:Testcase_FreeIPA_realmd_login",
-        "QA:Testcase_domain_client_authenticate",
-    ],
+    "realmd_join_cockpit": {
+        "PASS": [
+            "QA:Testcase_realmd_join_cockpit",
+            "QA:Testcase_FreeIPA_realmd_login",
+            "QA:Testcase_domain_client_authenticate",
+        ],
+        "freeipa_webui_postinstall": [
+            "QA:Testcase_FreeIPA_web_ui",
+        ],
+        "freeipa_password_change_postinstall": [
+            "QA:Testcase_FreeIPA_password_change",
+        ],
+    },
     "realmd_join_sssd": [
         "QA:Testcase_realmd_join_sssd",
         "QA:Testcase_FreeIPA_realmd_login",
