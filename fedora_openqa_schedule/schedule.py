@@ -34,6 +34,7 @@ import fedfind.helpers
 from openqa_client.client import OpenQA_Client
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import URLError, HTTPError
+from resultsdb_api import ResultsDBapi, ResultsDBapiException
 
 # Internal dependencies
 from fedora_openqa_schedule.config import CONFIG, WANTED
@@ -72,7 +73,7 @@ def _get_atomic_installer(location, cid):
         location, cid)
     try:
         resp = urlopen(url)
-        return [('Atomic-boot-iso', 'x86_64', 0, {'ISO_URL': url})]
+        return [('Atomic-boot-iso', 'x86_64', 0, {'ISO_URL': url}, 'Atomic', 'boot')]
     except (ValueError, URLError, HTTPError):
         raise TriggerException("Compose not found, or failed!")
 
@@ -101,7 +102,7 @@ def _get_dkboot_urls(location, arch='armhfp'):
 
 def _get_images(location, wanted=WANTED):
     """Given a Pungi compose top-level location, this returns a list
-    of (flavor, arch, score, {param: url}) tuples for images to be tested.
+    of (flavor, arch, score, {param: url}, subvariant, imagetype) tuples for images to be tested.
     """
     try:
         resp = urlopen('{0}/metadata/images.json'.format(location))
@@ -128,9 +129,10 @@ def _get_images(location, wanted=WANTED):
                     # assign a 'flavor' by combining a few productmd
                     # values, with dashes replaced by underscores so
                     # we can split this back up again later for report
-                    flavor = [item.replace('-', '_')
-                              for item in foundimg['subvariant'], foundimg['type'],
-                              foundimg['format']]
+                    subvariant = foundimg['subvariant']
+                    imagetype = foundimg['type']
+                    imageformat = foundimg['format']
+                    flavor = [item.replace('-', '_') for item in (subvariant, imagetype, imageformat)]
                     flavor = '-'.join(flavor)
                     url = "{0}/{1}".format(location, foundimg['path'])
                     logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
@@ -145,7 +147,7 @@ def _get_images(location, wanted=WANTED):
                         param_urls["KERNEL_URL"] = kernel_url
                         param_urls["INITRD_URL"] = initrd_url
 
-                    images.append((flavor, arch, score, param_urls))
+                    images.append((flavor, arch, score, param_urls, subvariant, imagetype))
     return images
 
 
@@ -178,7 +180,7 @@ def _find_duplicate_jobs(client, param_urls, flavor):
     return []
 
 
-def run_openqa_jobs(param_urls, flavor, arch, build, force=False, extraparams=None):
+def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, force=False, extraparams=None, resultsdb_job_id=None):
     """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with given arch
     and a build identifier. **NOTE**: 'build' is passed to openQA as
     BUILD and is later retrieved and parsed by report.py for wiki
@@ -212,11 +214,15 @@ def run_openqa_jobs(param_urls, flavor, arch, build, force=False, extraparams=No
         'BUILD': build,
         'CURRREL': currrel,
         'PREVREL': prevrel,
+        'SUBVARIANT': subvariant,
+        'IMAGETYPE': imagetype
     }
     if extraparams:
         params.update(extraparams)
         # mung the BUILD so this is not considered a 'real' test run
         params['BUILD'] = "{0}-EXTRA".format(params['BUILD'])
+    if resultsdb_job_id:
+        params['RESULTSDB_JOB_ID'] = resultsdb_job_id
 
     if arch == 'armhfp':
         params.update({
@@ -251,7 +257,7 @@ def run_openqa_jobs(param_urls, flavor, arch, build, force=False, extraparams=No
     return output["ids"]
 
 
-def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None):
+def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, create_resultsdb_job=None):
     """Schedule jobs against a specific compose. Returns a 2-tuple
     of the compose ID and the list of job IDs.
 
@@ -275,6 +281,9 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None):
     a dict (or anything else that can be passed to `dict.update()`)
     containing arbitrary extra parameters to be included in the ISO
     post request (usually this will be to specify extra openQA vars).
+
+    create_resultsdb_job controls whether to create job in ResultsDB for
+    this compose.
     """
     location = location.strip('/')
     # trigger ugly special-casing for non-Pungi4-ified Two Week Atomic
@@ -292,22 +301,39 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None):
     jobs = []
     univs = {}
 
+    # create jobs instance in resultsdb if necessary
+    rdb_job_id = None
+
+    if create_resultsdb_job is None:
+        create_resultsdb_job = CONFIG.get('report', 'submit_resultsdb')
+
+    if create_resultsdb_job:
+        try:
+            rdb_instance = ResultsDBapi(CONFIG.get('report', 'resultsdb_url'))
+            # add link to page with overall results
+            ref_url = "%s/tests/overview?distri=fedora&version=%s&build=%s" % (CONFIG.get('report', 'openqa_url'),
+                                                                               compose.split('-')[-2], compose)
+            job = rdb_instance.create_job(ref_url=ref_url, name=compose)
+            rdb_job_id = job["id"]
+        except ResultsDBapiException as e:
+            logger.error(e)
+
     # schedule per-image jobs, keeping track of the highest score
     # per arch along the way
-    for (flavor, arch, score, param_urls) in images:
-        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, build=compose, force=force,
-                                    extraparams=extraparams))
-        if score > univs.get(arch, ['', '', 0])[2]:
-            univs[arch] = (param_urls, flavor, score)
+    for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
+        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, compose, force=force,
+                                    extraparams=extraparams, resultsdb_job_id=rdb_job_id))
+        if score > univs.get(arch, [None, 0])[1]:
+            univs[arch] = (param_urls, score, subvariant, imagetype)
 
     # now schedule universal jobs
     if univs:
-        for (arch, (param_urls, _, _)) in univs.items():
+        for (arch, (param_urls, _, subvariant, imagetype)) in univs.items():
             # We are assuming that ISO_URL is present in param_urls. This could create problem when
             # unversal tests are run on product that doesn't have ISO. OTOH, only product without ISO
             # is ARM and there would be whole lot of other problems if universal tests are run on ARM.
             logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
-            jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, build=compose, force=force,
-                                        extraparams=extraparams))
+            jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype, compose,
+                                        force=force, extraparams=extraparams, resultsdb_job_id=rdb_job_id))
 
     return (compose, jobs)

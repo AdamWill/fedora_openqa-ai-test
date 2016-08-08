@@ -24,6 +24,7 @@ result reporting go here.
 """
 
 # standard libraries
+import re
 import copy
 import time
 import logging
@@ -32,6 +33,7 @@ from operator import attrgetter
 # External dependencies
 from openqa_client.client import OpenQA_Client
 from wikitcms.wiki import Wiki, ResTuple
+from resultsdb_api import ResultsDBapi, ResultsDBapiException
 
 # Internal dependencies
 import fedora_openqa_schedule.conf_test_suites as conf_test_suites
@@ -130,7 +132,7 @@ def get_passed_testcases(jobs):
     return sorted(list(passed_testcases), key=attrgetter('testcase'))
 
 
-def report_results(wiki_url, jobs=None, build=None, do_report=None):
+def wiki_report(wiki_url, jobs=None, build=None, do_report=None):
     """Report results from openQA jobs to Wikitcms. Either jobs (an
     iterable of job IDs) or build (an openQA BUILD string, usually a
     Fedora compose ID) is required (if neither is specified, the
@@ -144,7 +146,7 @@ def report_results(wiki_url, jobs=None, build=None, do_report=None):
     passed_testcases = get_passed_testcases(jobs)
     logger.info("passed testcases: %s", passed_testcases)
     if do_report is None:
-        do_report = CONFIG.getboolean('report', 'submit')
+        do_report = CONFIG.getboolean('report', 'submit_wiki')
 
     if do_report:
         logger.info("reporting test passes")
@@ -168,3 +170,73 @@ def report_results(wiki_url, jobs=None, build=None, do_report=None):
     else:
         logger.warning("no reporting is done")
         return passed_testcases
+
+
+def resultsdb_report(resultsdb_url, jobs=None, build=None, resultsdb_job_id=None, do_report=None):
+    """Report results from openQA jobs to ResultsDB. Either jobs (an
+    iterable of job IDs) or build (an openQA BUILD string, usually a
+    Fedora compose ID) is required (if neither is specified, the
+    openQA client will raise TypeError). If set, report jobs to ResultsDB
+    job, specified by resultsdb_job_id. If not set, try to obtain ID from
+    openQA job settings. If do_report is False, will
+    just print out list of jobs to report for inspection. If
+    do_report is None, will read the setting from the config file; if
+    no config file is present, default is True.
+    """
+    if do_report is None:
+        do_report = CONFIG.getboolean('report', 'submit_resultsdb')
+
+    if do_report:
+        try:
+            rdb_instance = ResultsDBapi(resultsdb_url)
+        except ResultsDBapiException as e:
+            logger.error(e)
+            return
+
+    client = OpenQA_Client()
+    jobs = client.get_jobs(jobs=jobs, build=build)
+
+    tcname_safeify = re.compile(r"\W+")  # allow only words to be used in testcase name
+
+    for job in jobs:
+        # ResultsDB's job_id must be set in argument or during test scheduling so we know what job to report to
+        rdb_job_id = resultsdb_job_id if resultsdb_job_id else job['settings'].get('RESULTSDB_JOB_ID', None)
+        if not rdb_job_id:
+            logger.warning("Job %s doesn't have ResultsDB job ID in settings nor was it set by CLI argument", job['id'])
+            continue
+        testsuite = job['settings']['TEST']
+        if testsuite not in conf_test_suites.TESTSUITES:
+            logger.warning("No TESTSUITES entry found for test {0}!".format(testsuite))
+            continue
+        # map openQA's result to ResultsDB's result
+        rdb_result = {'passed': "PASSED", 'failed': "FAILED"}.get(job['result'], 'NEEDS_INSPECTION')
+        for testcase in conf_test_suites.TESTSUITES[testsuite]:
+            # create dot-separated and safe name from testcase name from wiki
+            tc_name = tcname_safeify.sub("_", testcase).lower()
+            tc_name = tc_name[len("qa_testcase_"):] if tc_name.startswith("qa_testcase_") else tc_name
+            tc_name = "openqa.%s.%s" % (conf_test_suites.TESTCASES[testcase]['type'].lower(), tc_name)
+
+            # append all extra data that could be useful
+            extradata = {}
+            extradata['arch'] = job['settings'].get('ARCH', None)
+            extradata['firmware'] = 'uefi' if 'UEFI' in job['settings'] else 'bios'
+            extradata['item'] = job['settings'].get('BUILD', None)
+            extradata['type'] = "compose"
+            extradata['subvariant'] = job['settings'].get('SUBVARIANT', None)
+            extradata['imagetype'] = job['settings'].get('IMAGETYPE', None)
+            # append all additional data
+            if testcase in conf_test_suites.TESTCASES_RESULTSDB_EXTRADATA:
+                extradata.update(_uniqueres_replacements(job, conf_test_suites.TESTCASES_RESULTSDB_EXTRADATA[testcase]))
+
+            # create link back to openQA testrun
+            job_url = "%s/tests/%s" % (CONFIG.get('report', 'openqa_url'), job['id'])
+            # create link to testcase page on Fedora wiki
+            testcase_url = "%s/%s" % (CONFIG.get('report', 'wiki_url'), testcase)
+
+            logger.info("ResultsDB: %s, %s, %s, %s", rdb_job_id, tc_name, rdb_result, extradata)
+            if do_report:
+                rdb_instance.create_result(rdb_job_id, tc_name, rdb_result, log_url=job_url, **extradata)
+                # this updates testcase link in ResultsDB with every POST. otherwise we would check whether
+                # this testcase exists in ResultsDB and update link if needed, but it would actually take more
+                # requests than this solution
+                rdb_instance.update_testcase(tc_name, testcase_url)

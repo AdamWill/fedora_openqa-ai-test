@@ -28,6 +28,9 @@ import argparse
 import logging
 import sys
 
+# External dependencies
+from resultsdb_api import ResultsDBapiException
+
 # Internal dependencies
 import fedora_openqa_schedule.schedule as schedule
 import fedora_openqa_schedule.report as report
@@ -35,9 +38,10 @@ from fedora_openqa_schedule.config import CONFIG
 
 logger = logging.getLogger(__name__)
 
+
 ### SUB-COMMAND METHODS
 
-def command_compose(args, wiki_url):
+def command_compose(args, *_, **__):
     """run OpenQA on a specified compose, optionally reporting
     results if a matching wikitcms ValidationEvent is found by
     relval/wikitcms.
@@ -47,7 +51,7 @@ def command_compose(args, wiki_url):
         extraparams = {'GRUBADD': "inst.updates={0}".format(args.updates)}
     try:
         (compose, jobs) = schedule.jobs_from_compose(
-            args.location, force=args.force, extraparams=extraparams)
+            args.location, force=args.force, extraparams=extraparams, create_resultsdb_job=args.create_resultsdb_job)
     except schedule.TriggerException as err:
         logger.warning("No jobs run! %s", err)
         sys.exit(1)
@@ -66,24 +70,42 @@ def command_compose(args, wiki_url):
     logger.debug("finished")
     sys.exit()
 
+
 def command_report(args, wiki_url):
     """Map a list of openQA job IDs and/or builds to Wikitcms test
     results, and either display the ResTups for inspection or report
-    the results to the wiki.
+    the results to the wiki and/or ResultsDB.
     """
     jobs = [int(job) for job in args.jobs if job.isdigit()]
     builds = [build for build in args.jobs if not build.isdigit()]
-    try:
-        if jobs:
-            report.report_results(
-                wiki_url, jobs=jobs, do_report=args.submit)
-        if builds:
-            for build in builds:
-                report.report_results(
-                    wiki_url, build=build, do_report=args.submit)
-    except report.LoginError:
-        # Module logs for us, no need to dupe it.
-        sys.exit(1)
+    resultsdb_url = CONFIG.get('report', 'resultsdb_url')
+
+    if jobs:
+        try:
+            if args.wiki:
+                report.wiki_report(wiki_url, jobs=jobs, do_report=True)
+            if args.resultsdb:
+                report.resultsdb_report(
+                    resultsdb_url, jobs=jobs, resultsdb_job_id=args.resultsdb_job_id, do_report=True)
+            if not args.wiki and not args.resultsdb:
+                # use wiki_report to only print results
+                report.wiki_report(wiki_url, jobs=jobs, do_report=False)
+        except (report.LoginError, ResultsDBapiException) as e:
+            logger.error("Reporting failed: %s", e)
+    if builds:
+        for build in builds:
+            try:
+                if args.wiki:
+                    report.wiki_report(wiki_url, build=build, do_report=True)
+                if args.resultsdb:
+                    report.resultsdb_report(
+                        resultsdb_url, build=build, resultsdb_job_id=args.resultsdb_job_id, do_report=True)
+                if not args.wiki and not args.resultsdb:
+                    # use wiki_report to only print results
+                    report.wiki_report(wiki_url, build=build, do_report=False)
+            except (report.LoginError, ResultsDBapiException) as e:
+                logger.error("Reporting failed: %s", e)
+
 
 ### ARGUMENT PARSING AND SUB-COMMAND INIT
 
@@ -109,6 +131,7 @@ def run():
 
     args.func(args, wiki_url)
 
+
 def parse_args():
     """Parse arguments with argparse."""
     test_help = "Operate on the staging wiki (for testing)"
@@ -129,24 +152,26 @@ def parse_args():
     parser_compose.add_argument(
         '--updates', '-u', help="URL to an updates image to load for all tests. The tests that "
         "test updates image loading will fail when you use this")
+    parser_compose.add_argument(
+        '--create_resultsdb_job', '-r', help="Create job for this run in ResultsDB and add its ID "
+        "to openQA job settings. This is needed if you want to submit results of scheduled tests into ResultsDB",
+        action="store_true", default=False)
     parser_compose.set_defaults(func=command_compose)
 
     parser_report = subparsers.add_parser(
-        'report', description="Map openQA job results to Wikitcms test results and optionally "
-        "submit them to the wiki.")
-    parser_report.add_argument('jobs', nargs='+', help="openQA job IDs or builds (e.g. "
-    "'Fedora-24-20160113.n.1'). For each build included, the latest jobs will be reported.")
+        'report', description="Map openQA job results to Wikitcms test results and either log them to output or "
+        "submit them to the wiki and/or ResultsDB.")
+    parser_report.add_argument(
+        'jobs', nargs='+', help="openQA job IDs or builds (e.g. "
+        "'Fedora-24-20160113.n.1'). For each build included, the latest jobs will be reported.")
     parser_report.set_defaults(func=command_report)
-
-    submitgroup = parser.add_mutually_exclusive_group()
-    submitgroup.add_argument('--submit', '-s', '--submit-results', action='store_true',
-    dest="submit", help="Where appropriate, submit results to the wiki")
-    submitgroup.add_argument('--no-submit', '-ns', '--no-submit-results', action='store_false',
-    dest="submit", help="Do not submit results to the wiki")
-    # This will result in getting the 'submit' value from config file
-    # if not explicitly specified, overriding the implied defaults of
-    # store_true and store_false
-    parser.set_defaults(submit=None)
+    parser_report.add_argument(
+        "--wiki", action="store_true", default=False, help="Submit results to wiki")
+    parser_report.add_argument(
+        "--resultsdb", action="store_true", default=False, help="Submit results to ResultsDB")
+    parser_report.add_argument(
+        "--resultsdb_job_id", "-r", help="ResultsDB job ID (if it wasn't set automatically by scheduling with "
+                                         "--create_resultsdb_job argument)")
 
     parser.add_argument(
         '--test', '-t', help=test_help, action='store_true')
@@ -159,6 +184,7 @@ def parse_args():
         default=CONFIG.get('cli', 'log-level'))
 
     return parser.parse_args()
+
 
 def main():
     """Main loop."""

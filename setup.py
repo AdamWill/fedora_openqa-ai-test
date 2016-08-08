@@ -30,7 +30,7 @@ setup(
     keywords = "fedora openqa test qa",
     url = "https://bitbucket.org/rajcze/openqa_fedora_tools",
     packages = ["fedora_openqa_schedule"],
-    install_requires = ['fedfind>=1.5', 'fedmsg', 'openqa-client>=1.1', 'setuptools', 'six'],
+    install_requires = ['fedfind>=1.5', 'fedmsg', 'openqa-client>=1.1', 'setuptools', 'six', 'resultsdb_api'],
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 3 - Alpha",

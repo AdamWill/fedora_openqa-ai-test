@@ -369,6 +369,12 @@ TESTCASES = {
     #            },
 }
 
+# This is used to update TESTCASES dict for ResultsDB reporting
+TESTCASES_RESULTSDB_EXTRADATA = {
+    "QA:Testcase_partitioning_guided_shrink": {
+        "filesystem": "$FS$",  # needed to convert test_fs to only one testcase
+    },
+}
 
 TESTSUITES = {
     "install_default": [

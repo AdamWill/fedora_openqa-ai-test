@@ -12,5 +12,13 @@ log-file:
 log-level: info
 
 [report]
-# Whether to submit results to the Wiki (if false, just log them)
-submit: true
+# Whether to submit results to the Wiki from fedmsg consumer (if false, just log them)
+submit_wiki: true
+# Whether to submit results to the ResultsDB from fedmsg consumer
+submit_resultsdb: true
+# URL of openQA instance for creating links in ResultsDB
+openqa_url: http://localhost
+# URL of ResultsDB instance
+resultsdb_url: http://localhost/resultsdb_api/api/v1.0/
+# URL of Fedora wiki for creating links in ResultsDB
+wiki_url: https://fedoraproject.org/wiki
