@@ -349,6 +349,11 @@ TESTCASES = {
         "type": "Desktop",
         "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
     },
+    "QA:Testcase_desktop_browser": {
+        "env": "$SUBVARIANT$",
+        "type": "Desktop",
+        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+    },
     "QA:Testcase_Server_firewall_default": {
         "env": "x86",
         "type": "Server",
@@ -701,6 +706,9 @@ TESTSUITES = {
     ],
     "desktop_terminal": [
         "QA:Testcase_desktop_terminal",
+    ],
+    "desktop_browser": [
+        "QA:Testcase_desktop_browser",
     ],
     "server_firewall_default": [
         "QA:Testcase_Server_firewall_default",
