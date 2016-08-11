@@ -305,7 +305,7 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     rdb_job_id = None
 
     if create_resultsdb_job is None:
-        create_resultsdb_job = CONFIG.get('report', 'submit_resultsdb')
+        create_resultsdb_job = CONFIG.getboolean('report', 'submit_resultsdb')
 
     if create_resultsdb_job:
         try:
