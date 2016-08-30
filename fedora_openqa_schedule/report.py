@@ -96,7 +96,7 @@ def get_passed_testcases(jobs):
     """
     passed_testcases = set()
     for job in jobs:
-        if job['result'] == 'passed':
+        if job['result'] in ('passed', 'softfailed'):
             # it's wikitcms' job to take a compose ID and figure out
             # what the validation event for it is.
             composeid = job['settings']['BUILD']
@@ -134,7 +134,7 @@ def get_passed_testcases(jobs):
                     except IndexError:
                         logger.warning("Did not find expected module %s in job data!", modname)
                         continue
-                    if module.get('result', '') == 'passed':
+                    if module.get('result', '') in ('passed', 'softfailed'):
                         passed.extend(cases)
             except TypeError:
                 # this is the simple list case.
