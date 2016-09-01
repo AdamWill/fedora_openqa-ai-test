@@ -180,7 +180,8 @@ def _find_duplicate_jobs(client, param_urls, flavor):
     return []
 
 
-def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, force=False, extraparams=None, resultsdb_job_id=None):
+def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build,
+                    location, force=False, extraparams=None, resultsdb_job_id=None):
     """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with given arch
     and a build identifier. **NOTE**: 'build' is passed to openQA as
     BUILD and is later retrieved and parsed by report.py for wiki
@@ -212,6 +213,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, forc
         'FLAVOR': flavor,
         'ARCH': arch,
         'BUILD': build,
+        'LOCATION': location,
         'CURRREL': currrel,
         'PREVREL': prevrel,
         'SUBVARIANT': subvariant,
@@ -321,8 +323,9 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     # schedule per-image jobs, keeping track of the highest score
     # per arch along the way
     for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
-        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, compose, force=force,
-                                    extraparams=extraparams, resultsdb_job_id=rdb_job_id))
+        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, compose,
+                                    location, force=force, extraparams=extraparams,
+                                    resultsdb_job_id=rdb_job_id))
         if score > univs.get(arch, [None, 0])[1]:
             univs[arch] = (param_urls, score, subvariant, imagetype)
 
@@ -333,7 +336,8 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
             # unversal tests are run on product that doesn't have ISO. OTOH, only product without ISO
             # is ARM and there would be whole lot of other problems if universal tests are run on ARM.
             logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
-            jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype, compose,
-                                        force=force, extraparams=extraparams, resultsdb_job_id=rdb_job_id))
+            jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype,
+                                        compose, location, force=force, extraparams=extraparams,
+                                        resultsdb_job_id=rdb_job_id))
 
     return (compose, jobs)
