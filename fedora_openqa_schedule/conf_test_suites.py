@@ -133,7 +133,7 @@ TESTCASES = {
     },
     "QA:Testcase_Package_Sets_Minimal_Package_Install": {
         "section": "Package sets",
-        "env": "$RUNARCH$",
+        "env": "Result",
         "type": "Installation",
     },
     "QA:Testcase_partitioning_guided_encrypted": {
