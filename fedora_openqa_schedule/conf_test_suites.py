@@ -66,6 +66,11 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
+    "QA:Testcase_Anaconda_User_Interface_Text": {
+        "section": "User interface",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_Anaconda_user_creation": {
         "section": "Miscellaneous",
         "env": "x86_64",
@@ -677,6 +682,11 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Anaconda_updates.img_via_installation_source",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_anaconda_text": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_Anaconda_User_Interface_Text",
+        "QA:Testcase_Anaconda_user_creation",
     ],
     "base_selinux": [
         "QA:Testcase_base_selinux",
