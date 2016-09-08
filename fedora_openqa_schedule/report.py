@@ -73,6 +73,9 @@ def _uniqueres_replacements(job, uniqueres):
     else:
         uefi = arch
         bootmethod = 'x86_64 BIOS'
+    role = ''
+    if 'role_deploy_' in job['test']:
+        role = job['test'].split('role_deploy_')[1]
 
     changed = {}
     for key, value in uniqueres.iteritems():
@@ -84,6 +87,7 @@ def _uniqueres_replacements(job, uniqueres):
         value = value.replace('$IMAGETYPE$', imagetype)
         value = value.replace('$DESKTOP$', desktop)
         value = value.replace('$SUBVARIANT_OR_ARM$', subvariant_or_arm)
+        value = value.replace('$ROLE$', role)
         changed[key] = value
 
     return changed

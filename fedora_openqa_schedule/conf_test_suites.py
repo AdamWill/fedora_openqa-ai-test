@@ -38,6 +38,7 @@ TESTCASES = {
     #   $IMAGETYPE$         - pungi 'type': "boot", "live"... "boot" -> "netinst"
     #   $FS$                - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
     #   $DESKTOP$           - desktop: just the DESKTOP openQA setting
+    #   $ROLE$              - server role, for role_deploy_ tests: "domain_controller", "database_server"
 
     "QA:Testcase_Boot_default_install": {
         "name": "$SUBVARIANT$_$IMAGETYPE$",
@@ -319,9 +320,7 @@ TESTCASES = {
     "QA:Testcase_Server_role_deploy": {
         "env": "x86",
         "type": "Server",
-        # for now we're only testing this role, but we could easily
-        # test Database server too and we'd need to tweak this somehow
-        "name": "Domain controller",
+        "name": "$ROLE$",
     },
     "QA:Testcase_realmd_join_kickstart": {
         # the section name here is pretty funky and I might change it,
@@ -346,6 +345,10 @@ TESTCASES = {
         "name": "(FreeIPA)",
     },
     "QA:Testcase_FreeIPA_realmd_login": {
+        "env": "Result",
+        "type": "Server",
+    },
+    "QA:Testcase_database_server_remote_client": {
         "env": "Result",
         "type": "Server",
     },
@@ -728,6 +731,12 @@ TESTSUITES = {
     ],
     "server_cockpit_basic": [
         "QA:Testcase_Server_cockpit_basic",
+    ],
+    "server_role_deploy_database_server": [
+        "QA:Testcase_Server_role_deploy",
+    ],
+    "server_database_client": [
+        "QA:Testcase_database_server_remote_client",
     ],
     "realmd_join_cockpit": {
         "PASS": [
