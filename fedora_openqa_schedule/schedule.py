@@ -231,7 +231,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build,
             'ARCH': 'arm',
             'FAMILY': 'arm',
             # ARM kernel arguments since we are using direct kernel boot
-            'APPEND': 'rw root=LABEL=_/ rootwait console=ttyAMA0 console=tty0',
+            'APPEND': 'rw root=LABEL=_/ rootwait console=ttyAMA0 console=tty0 consoleblank=0',
         })
     else:
         params['FAMILY'] = 'x86'
