@@ -297,6 +297,11 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
+    "QA:Testcase_Anaconda_rescue_mode": {
+        "section": "Miscellaneous",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
     "QA:Testcase_base_selinux": {
         "env": "$SUBVARIANT$",
         "type": "Base",
@@ -690,6 +695,9 @@ TESTSUITES = {
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_Anaconda_User_Interface_Text",
         "QA:Testcase_Anaconda_user_creation",
+    ],
+    "install_rescue_encrypted": [
+        "QA:Testcase_Anaconda_rescue_mode",
     ],
     "base_selinux": [
         "QA:Testcase_base_selinux",
