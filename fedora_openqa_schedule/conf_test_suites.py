@@ -314,6 +314,10 @@ TESTCASES = {
         "env": "$SUBVARIANT$",
         "type": "Base",
     },
+    "QA:Testcase_base_update_cli": {
+        "env": "$SUBVARIANT$",
+        "type": "Base",
+    },
     "QA:Testcase_kickstart_firewall_disabled": {
         "env": "x86",
         "type": "Server",
@@ -710,6 +714,9 @@ TESTSUITES = {
     ],
     "base_service_manipulation": [
         "QA:Testcase_base_service_manipulation",
+    ],
+    "base_update_cli": [
+        "QA:Testcase_base_update_cli",
     ],
     "install_kickstart_firewall_disabled": [
         "QA:Testcase_kickstart_firewall_disabled",
