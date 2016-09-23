@@ -279,7 +279,7 @@ TESTCASES = {
     },
     "QA:Testcase_Package_Sets_KDE_Package_Install": {
         "section": "Package sets",
-        "env": "$RUNARCH$",
+        "env": "Result",
         "type": "Installation",
     },
     "QA:Testcase_install_to_iSCSI_no_authentication": {

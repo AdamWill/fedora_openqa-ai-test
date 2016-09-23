@@ -144,6 +144,10 @@ def get_passed_testcases(jobs):
                 # this is the simple list case.
                 passed = testsuite
             for testcase in passed:
+                # skip with warning if testcase is not in TESTCASES
+                if not testcase in conf_test_suites.TESTCASES:
+                    logger.warning("No TESTCASES entry found for {0}!".format(testcase))
+                    continue
                 # each 'testsuite' is a list using testcase names to indicate which Wikitcms tests
                 # have passed if this job passes. Each testcase name is the name of a dict in the
                 # TESTCASES dict-of-dicts which more precisely identifies the 'test instance' (when

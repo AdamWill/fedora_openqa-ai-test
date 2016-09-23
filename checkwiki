@@ -1,0 +1,194 @@
+#!/usr/bin/env python
+
+# Copyright (C) 2016 Red Hat
+#
+# This script is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+#
+# Author: Adam Williamson <awilliam@redhat.com>
+
+"""Script to sanity check the openQA -> wiki results mapping in
+conf_test_suites.py.
+"""
+
+from __future__ import unicode_literals
+from __future__ import print_function
+
+import json
+import subprocess32 as subprocess
+import sys
+
+from wikitcms import wiki
+from wikitcms.exceptions import NotFoundError, TooManyError
+
+from fedora_openqa_schedule.conf_test_suites import (TESTCASES, TESTSUITES)
+import fedora_openqa_schedule.report as report
+
+# wikitcms site object
+SITE = wiki.Wiki()
+
+# cache of ValidationPage objects
+PAGES = {}
+
+def get_page(testtype):
+    """Get the page if we didn't yet, cache it, and return from cache."""
+    if not testtype in PAGES:
+        PAGES[testtype] = SITE.get_validation_page(testtype=testtype)
+    return PAGES[testtype]
+
+def cases_from_suite(suite):
+    """Get test case names from a TESTSUITE."""
+    tscases = TESTSUITES[suite]
+    casenames = []
+    try:
+        # complex (dict) case
+        casenames.extend(tscases.pop('PASS', []))
+        for (_, cases) in tscases.items():
+            casenames.extend(cases)
+    except TypeError:
+        # simple list case
+        casenames = tscases
+    return casenames
+
+def main():
+    """Main function. Could be split into the individual tests if I
+    get a minute.
+    """
+    if not len(sys.argv) == 2:
+        sys.exit("Usage: {0} templatefile".format(sys.argv[0]))
+    tempfile = sys.argv[1]
+
+    # read in the openQA templates. hold onto your hats, folks, this be ugly
+    perl = "use JSON; my $data = do '{0}'; print encode_json($data);".format(tempfile)
+    cmd = ['perl', '-e', perl]
+    tempjson = subprocess.check_output(cmd, universal_newlines=True)
+    templates = json.loads(tempjson)
+
+    # get the test case names from TESTCASES and test suite names from TESTSUITES
+    tcnames = list(TESTCASES.keys())
+    tsnames = list(TESTSUITES.keys())
+
+    failed = 0
+
+    # Check all case names referred in TESTSUITES are actually in TESTCASES
+    # also store all case names in TESTSUITES for reverse check
+    alltscases = set()
+    for tsname in TESTSUITES:
+        casenames = cases_from_suite(tsname)
+        alltscases.update(casenames)
+        for casename in casenames:
+            if casename not in tcnames:
+                print("Test case {0} listed in test suite {1} is not in TESTCASES!".format(
+                    casename, tsname))
+                failed = 1
+
+    # check all case names in TESTCASES are used in TESTSUITES
+    for casename in tcnames:
+        if casename not in alltscases:
+            print("Test case {0} from TESTCASES is never used in TESTSUITES!".format(casename))
+
+    # check all test suites from templates are in TESTSUITES, and vice versa
+    # except for ones we know are OK (e.g. support_server)
+    tempwhite = set(('support_server',))
+    tempsuites = [suite['name'] for suite in templates['TestSuites']]
+    onlytemp = set(tempsuites) - set(tsnames) - tempwhite
+    for suite in onlytemp:
+        failed = 1
+        print("Test suite {0} is in templates, but not in TESTSUITES!".format(suite))
+
+    onlysuites = set(tsnames) - set(tempsuites)
+    for suite in onlysuites:
+        failed = 1
+        print("Test suite {0} is in TESTSUITES, but not in templates!".format(suite))
+
+    # Now try and check that all our wiki mappings are actually correct. This
+    # is kinda involved. First we're going to create a fake job for each
+    # JobTemplate from templates, as if we had a pass for every single one.
+    # To handle the complex TESTSUITE case where we map individual passed test
+    # modules to passed test cases, we need to extract all the relevant module
+    # names from TESTSUITES...
+    modules = set()
+    for cases in TESTSUITES.values():
+        try:
+            modules.update(cases.keys())
+        except AttributeError:
+            pass
+
+    fakejobs = []
+    for jobtemp in templates['JobTemplates']:
+        job = {
+            'settings': {
+                'ARCH': jobtemp['product']['arch'],
+                'FLAVOR': jobtemp['product']['flavor'],
+                'TEST': jobtemp['test_suite']['name'],
+                # we don't need the BUILD value; we're just going to use
+                # the current validation pages
+                'BUILD': 'FAKE',
+            },
+            'result': 'passed',
+            # we use both settings['TEST'] and test, we probably shouldn't...
+            'test': jobtemp['test_suite']['name'],
+            # we just pretend every single job had all the modules that
+            # are used for individual module->result mapping; this is
+            # harmless for the cases where it's a lie, as get_passed_testcases
+            # will entirely ignore it except for the TESTSUITES that specify
+            # the modules
+            'modules': [{'name': module, 'result': 'passed'} for module in modules]
+        }
+        # find the desktop by finding the relevant Product and getting it
+        # from its settings
+        for setting in [prod for prod in templates['Products'] if
+                        prod['flavor'] == jobtemp['product']['flavor']][0]['settings']:
+            if setting['key'] == 'DESKTOP':
+                job['settings']['DESKTOP'] = setting['value']
+        fakejobs.append(job)
+
+    # Now we have a bunch of fake 'passed jobs', we can ask report.py to
+    # give us ResTups for them
+    restups = report.get_passed_testcases(fakejobs)
+    for restup in restups:
+        # this will get us the current validation page for the testtype
+        page = get_page(restup.testtype)
+        # now we use find_resultrow - which is what report_validation_results
+        # uses - with the appropriate values from the ResTup
+        try:
+            row = page.find_resultrow(restup.testcase, restup.section, restup.testname, restup.env)
+            # if we got a ResultRow, check the environment from the ResTup
+            # is actually in the ResultRow's result columns. We just copy
+            # the code for the match right out of page.add_results()...
+            cands = [cand for cand in row.results.keys() if restup.env.lower() in cand.lower()]
+            # we should have *exactly one* cand
+            if len(cands) == 0:
+                print("Env {0} not found in ResultRow: case {1}, name {2}, section {3}, "
+                      "page {4}!".format(restup.env, row.testcase, row.name,
+                                         row.section, restup.testtype))
+                failed = 1
+            if len(cands) > 1:
+                print("Too many matches found for env {0} in ResultRow {1}!".format(
+                    restup.env, row.testcase))
+                failed = 1
+        except NotFoundError:
+            print("No ResultRow found for {0}".format(restup))
+            failed = 1
+        except TooManyError:
+            print("Too many ResultRows found for {0}".format(restup))
+            failed = 1
+
+    sys.exit(failed)
+
+if __name__ == '__main__':
+    try:
+        main()
+    except KeyboardInterrupt:
+        sys.stderr.write("Interrupted, exiting...\n")
+        sys.exit(1)
