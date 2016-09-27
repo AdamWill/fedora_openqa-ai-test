@@ -302,6 +302,10 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
+    "QA:Testcase_base_initial_setup": {
+        "env": "$SUBVARIANT_OR_ARM$",
+        "type": "Base",
+    },
     "QA:Testcase_base_selinux": {
         "env": "$SUBVARIANT$",
         "type": "Base",
@@ -441,6 +445,7 @@ TESTSUITES = {
     ],
     "install_arm_image_deployment_upload": [
         "QA:Testcase_arm_image_deployment",
+        "QA:Testcase_base_initial_setup",
     ],
     "install_package_set_minimal": [
         "QA:Testcase_partitioning_guided_empty",
