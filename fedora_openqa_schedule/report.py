@@ -31,9 +31,10 @@ import logging
 from operator import attrgetter
 
 # External dependencies
+import mwclient.errors
 from openqa_client.client import OpenQA_Client
-from wikitcms.wiki import Wiki, ResTuple
 from resultsdb_api import ResultsDBapi, ResultsDBapiException
+from wikitcms.wiki import Wiki, ResTuple
 
 # Internal dependencies
 import fedora_openqa_schedule.conf_test_suites as conf_test_suites
@@ -187,7 +188,11 @@ def wiki_report(wiki_url, jobs=None, build=None, do_report=None):
         logger.info("reporting test passes")
         wiki = Wiki(('https', wiki_url), '/w/')
         if not wiki.logged_in:
-            wiki.login()
+            # This seems to occasionally throw bogus WrongPass errors
+            try:
+                wiki.login()
+            except mwclient.errors.LoginError:
+                wiki.login()
         if not wiki.logged_in:
             logger.error("could not log in to wiki")
             raise LoginError
