@@ -772,10 +772,10 @@ TESTSUITES = {
             "QA:Testcase_FreeIPA_realmd_login",
             "QA:Testcase_domain_client_authenticate",
         ],
-        "freeipa_webui_postinstall": [
+        "freeipa_webui": [
             "QA:Testcase_FreeIPA_web_ui",
         ],
-        "freeipa_password_change_postinstall": [
+        "freeipa_password_change": [
             "QA:Testcase_FreeIPA_password_change",
         ],
     },
