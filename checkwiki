@@ -24,7 +24,9 @@ conf_test_suites.py.
 from __future__ import unicode_literals
 from __future__ import print_function
 
+import glob
 import json
+import os
 import subprocess32 as subprocess
 import sys
 
@@ -40,6 +42,47 @@ SITE = wiki.Wiki()
 # cache of ValidationPage objects
 PAGES = {}
 
+## UTILITY CLASSES AND FUNCTIONS
+
+class FakeClient(object):
+    """A fake OpenQA_Client which just returns our fake job dicts. We
+    need this to handle the 'testsuites' condition in TESTSUITES
+    entries, which allows a test case to be considered passed only if
+    the parent test suite *and* a list of other test suites passed;
+    get_passed_testcases handles that by querying openQA for other
+    jobs for the same build and checking their result, but obviously
+    for our fake jobs, we need a fake openQA 'server'..."""
+    def __init__(self, jobs):
+        self.jobs = jobs
+
+    def openqa_request(self, method, endpoint, params=None):
+        """This is nowhere near a full implementation, it's highly
+        tuned to what get_passed_testcases needs.
+        """
+        gotjobs = self.jobs
+        if 'machine' in params:
+            gotjobs = [job for job in gotjobs if job['settings']['MACHINE'] == params['machine']]
+        if 'flavor' in params:
+            gotjobs = [job for job in gotjobs if job['settings']['FLAVOR'] == params['flavor']]
+        return {'jobs': gotjobs}
+
+
+def read_templates(distripath):
+    """Read in the openQA templates from distripath."""
+    # Locate template file, check it exists
+    tempfile = os.path.join(distripath, 'templates')
+    if not os.path.isfile(tempfile):
+        sys.exit("Could not find templates file at {0}".format(tempfile))
+
+    # Use a perl one-liner to convert the templates to JSON. hold onto
+    # your hats, folks, this be ugly. also note this executes the
+    # template file as perl, so make sure you trust it
+    perl = "use JSON; my $data = do '{0}'; print encode_json($data);".format(tempfile)
+    cmd = ['perl', '-e', perl]
+    tempjson = subprocess.check_output(cmd, universal_newlines=True)
+    # Read the JSON and return it
+    return json.loads(tempjson)
+
 def get_page(testtype):
     """Get the page if we didn't yet, cache it, and return from cache."""
     if not testtype in PAGES:
@@ -52,78 +95,16 @@ def cases_from_suite(suite):
     casenames = []
     try:
         # complex (dict) case
-        casenames.extend(tscases.pop('PASS', []))
-        for (_, cases) in tscases.items():
-            casenames.extend(cases)
-    except TypeError:
+        casenames.extend(tscases.keys())
+    except AttributeError:
         # simple list case
         casenames = tscases
     return casenames
 
-def main():
-    """Main function. Could be split into the individual tests if I
-    get a minute.
+def fake_jobs(templates, modules):
+    """Create a set of fake passed openQA jobs from JobTemplates and
+    the module names in TestSuites (as found by conds_modules_match).
     """
-    if not len(sys.argv) == 2:
-        sys.exit("Usage: {0} templatefile".format(sys.argv[0]))
-    tempfile = sys.argv[1]
-
-    # read in the openQA templates. hold onto your hats, folks, this be ugly
-    perl = "use JSON; my $data = do '{0}'; print encode_json($data);".format(tempfile)
-    cmd = ['perl', '-e', perl]
-    tempjson = subprocess.check_output(cmd, universal_newlines=True)
-    templates = json.loads(tempjson)
-
-    # get the test case names from TESTCASES and test suite names from TESTSUITES
-    tcnames = list(TESTCASES.keys())
-    tsnames = list(TESTSUITES.keys())
-
-    failed = 0
-
-    # Check all case names referred in TESTSUITES are actually in TESTCASES
-    # also store all case names in TESTSUITES for reverse check
-    alltscases = set()
-    for tsname in TESTSUITES:
-        casenames = cases_from_suite(tsname)
-        alltscases.update(casenames)
-        for casename in casenames:
-            if casename not in tcnames:
-                print("Test case {0} listed in test suite {1} is not in TESTCASES!".format(
-                    casename, tsname))
-                failed = 1
-
-    # check all case names in TESTCASES are used in TESTSUITES
-    for casename in tcnames:
-        if casename not in alltscases:
-            print("Test case {0} from TESTCASES is never used in TESTSUITES!".format(casename))
-
-    # check all test suites from templates are in TESTSUITES, and vice versa
-    # except for ones we know are OK (e.g. support_server)
-    tempwhite = set(('support_server',))
-    tempsuites = [suite['name'] for suite in templates['TestSuites']]
-    onlytemp = set(tempsuites) - set(tsnames) - tempwhite
-    for suite in onlytemp:
-        failed = 1
-        print("Test suite {0} is in templates, but not in TESTSUITES!".format(suite))
-
-    onlysuites = set(tsnames) - set(tempsuites)
-    for suite in onlysuites:
-        failed = 1
-        print("Test suite {0} is in TESTSUITES, but not in templates!".format(suite))
-
-    # Now try and check that all our wiki mappings are actually correct. This
-    # is kinda involved. First we're going to create a fake job for each
-    # JobTemplate from templates, as if we had a pass for every single one.
-    # To handle the complex TESTSUITE case where we map individual passed test
-    # modules to passed test cases, we need to extract all the relevant module
-    # names from TESTSUITES...
-    modules = set()
-    for cases in TESTSUITES.values():
-        try:
-            modules.update(cases.keys())
-        except AttributeError:
-            pass
-
     fakejobs = []
     for jobtemp in templates['JobTemplates']:
         job = {
@@ -131,6 +112,7 @@ def main():
                 'ARCH': jobtemp['product']['arch'],
                 'FLAVOR': jobtemp['product']['flavor'],
                 'TEST': jobtemp['test_suite']['name'],
+                'MACHINE': jobtemp['machine']['name'],
                 # we don't need the BUILD value; we're just going to use
                 # the current validation pages
                 'BUILD': 'FAKE',
@@ -152,10 +134,123 @@ def main():
             if setting['key'] == 'DESKTOP':
                 job['settings']['DESKTOP'] = setting['value']
         fakejobs.append(job)
+    return fakejobs
 
+## CHECK FUNCTIONS
+
+def cases_suites_match():
+    """Check all case names referred in TESTSUITES are actually in
+    TESTCASES and vice versa.
+    """
+    failed = 0
+    # Check all case names referred in TESTSUITES are in TESTCASES
+    # also store all case names in TESTSUITES for reverse check
+    alltscases = set()
+    for tsname in TESTSUITES.keys():
+        casenames = cases_from_suite(tsname)
+        alltscases.update(casenames)
+        for casename in casenames:
+            if casename not in TESTCASES.keys():
+                print("Test case {0} listed in test suite {1} is not in TESTCASES!".format(
+                    casename, tsname))
+                failed = 1
+
+    # check all case names in TESTCASES are used in TESTSUITES
+    for casename in TESTCASES.keys():
+        if casename not in alltscases:
+            print("Test case {0} from TESTCASES is never used in TESTSUITES!".format(casename))
+            failed = 1
+
+    return failed
+
+def templates_suites_match(templates):
+    """Check all test suites from templates are in TESTSUITES, and
+    vice versa, except for ones we know are OK (e.g. support_server).
+    """
+    failed = 0
+    tempwhite = set(('support_server',))
+    tempsuites = [suite['name'] for suite in templates['TestSuites']]
+    onlytemp = set(tempsuites) - set(TESTSUITES.keys()) - tempwhite
+    for suite in onlytemp:
+        failed = 1
+        print("Test suite {0} is in templates, but not in TESTSUITES!".format(suite))
+
+    onlysuites = set(TESTSUITES.keys()) - set(tempsuites)
+    for suite in onlysuites:
+        failed = 1
+        print("Test suite {0} is in TESTSUITES, but not in templates!".format(suite))
+
+    return failed
+
+def conds_testsuites_match():
+    """For TESTSUITES entries which use the 'testsuites' condition,
+    check all listed suite names are in TESTSUITES, and warn if there
+    is no equivalent reverse mapping (as usually we'd expect one).
+    """
+    failed = 0
+    for (tsname, cases) in TESTSUITES.items():
+        try:
+            for (tcname, conds) in cases.items():
+                for othertsname in conds.get('testsuites', []):
+                    othersuite = TESTSUITES.get(othertsname)
+                    if not othersuite:
+                        print("Test suite {0} listed as a cond in case {1} in suite {2} "
+                              "not found in TESTSUITES!".format(othertsname, tcname, tsname))
+                        failed = 1
+                    othercase = othersuite.get(tcname, {})
+                    if tsname not in othercase.get('testsuites', []):
+                        print("Warning: suite {0} case {1} has suite {2} as cond, but suite {2} "
+                              "case {1} does not have suite {0} as cond".format(
+                                  tsname, tcname, othertsname))
+        except AttributeError:
+            pass
+    return failed
+
+def conds_modules_match(distripath):
+    """Check all modules listed in TESTSUITES entries which use the
+    'modules' condition actually exist in the distri, and return the
+    module names for the wiki check to use.
+    """
+    failed = 0
+    distrimods = glob.glob(os.path.join(distripath, 'tests', '*.pm'))
+    distrimods = [os.path.basename(mod) for mod in distrimods]
+    distrimods = [mod.split('.pm')[0] for mod in distrimods]
+    modules = set()
+    for (suite, cases) in TESTSUITES.items():
+        try:
+            for (case, conds) in cases.items():
+                for module in conds.get('modules', []):
+                    modules.add(module)
+                    if module not in distrimods:
+                        print("Module {0} listed in case {1} in suite {2} not found in "
+                              "distri!".format(module, case, suite))
+                        failed = 1
+                modules.update(conds.get('modules', []))
+        except AttributeError:
+            pass
+    return (failed, modules)
+
+def check_wiki_mapping(templates, modules):
+    """Produce wikitcms ResTups for a set of fake passed jobs produced
+    by fake_jobs, then check we got a ResTup for every test case in
+    TESTCASES, and we can find a ResultRow and env for every generated
+    ResTup in the current validation event wiki pages.
+    """
+    failed = 0
+    fakejobs = fake_jobs(templates, modules)
     # Now we have a bunch of fake 'passed jobs', we can ask report.py to
     # give us ResTups for them
-    restups = report.get_passed_testcases(fakejobs)
+    # Create an instance of our fake 'openQA client' with the fake jobs
+    fakeclient = FakeClient(fakejobs)
+    # Call get_passed_testcases with the fake jobs and client
+    restups = report.get_passed_testcases(fakejobs, fakeclient)
+
+    # Catch if there are any test cases we don't produce a single
+    # result for, even with a full set of 'passed jobs'
+    restupcases = set([restup.testcase for restup in restups])
+    for case in set(TESTCASES.keys()) - restupcases:
+        print("No wiki result generated for test case {0}!".format(case))
+
     for restup in restups:
         # this will get us the current validation page for the testtype
         page = get_page(restup.testtype)
@@ -184,6 +279,31 @@ def main():
             print("Too many ResultRows found for {0}".format(restup))
             failed = 1
 
+    return failed
+
+## MAIN FUNCTIONS
+
+def main():
+    """Main function. Just reads the templates and runs each test."""
+    if not len(sys.argv) == 2:
+        sys.exit("Usage: {0} distripath".format(sys.argv[0]))
+    distripath = sys.argv[1]
+    templates = read_templates(distripath)
+    # Ongoing 'did we fail yet?' indicator
+    failed = 0
+    # Run the checks
+    if cases_suites_match():
+        failed = 1
+    if templates_suites_match(templates):
+        failed = 1
+    if conds_testsuites_match():
+        failed = 1
+    (ret, modules) = conds_modules_match(distripath)
+    if ret:
+        failed = 1
+    if check_wiki_mapping(templates, modules):
+        failed = 1
+    # Exit appropriately
     sys.exit(failed)
 
 if __name__ == '__main__':

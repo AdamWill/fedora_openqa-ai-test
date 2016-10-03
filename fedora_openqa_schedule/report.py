@@ -48,12 +48,11 @@ class LoginError(Exception):
     pass
 
 
-def _uniqueres_replacements(job, uniqueres):
-    """Replace some magic values in the 'uniqueres' dict with test job
+def _uniqueres_replacements(job, tcdict):
+    """Replace some magic values in the 'tcdict' dict with test job
     properties; this is to distinguish between environments for a test
     case, or tests with the same test case but different test names,
-    and so on. Returns nothing because it modifies the uniqueres dict
-    in place.
+    and so on. Returns a new dict with the modifications.
     """
     arch = job['settings']['ARCH']
     flavor = job['settings']['FLAVOR']
@@ -78,8 +77,12 @@ def _uniqueres_replacements(job, uniqueres):
     if 'role_deploy_' in job['test']:
         role = job['test'].split('role_deploy_')[1]
 
+    # We effectively deep copy the `tcdict` dict here; if we just modified it directly
+    # we'd actually be changing it in TESTCASES, so the results for later jobs in this run
+    # with the same testcase (but a different environment, section or testname) would read
+    # the modified values and be messed up
     changed = {}
-    for key, value in uniqueres.iteritems():
+    for key, value in tcdict.iteritems():
         value = value.replace('$RUNARCH_OR_UEFI$', uefi)
         value = value.replace('$FS$', fs)
         value = value.replace('$RUNARCH$', arch)
@@ -94,10 +97,107 @@ def _uniqueres_replacements(job, uniqueres):
     return changed
 
 
-def get_passed_testcases(jobs):
+def _get_passed_tcnames(job, composeid, client=None):
+    """Given a job dict, find the corresponding entry from TESTSUITES
+    and return the test case names that are considered to have passed.
+    This is splitting out a chunk of logic from the middle of
+    get_passed_testcases to make it shorter and more readable.
+    composeid is the compose ID, passed in from get_passed_testcases.
+    client can be an OpenQA_Client instance (to save us instantiating
+    a new one, and also so checkwiki can use a fake one); it's used
+    for entries that use the 'testsuites' condition, we have to go get
+    the appropriate results from openQA and check them, we can't
+    assume they're already in the jobs list that get_passed_testcases
+    got.
+    """
+    tsname = job['settings']['TEST']
+    # There usually ought to be an entry in TESTSUITES for all
+    # tests, but just in case someone messed up, let's be safe
+    if tsname not in conf_test_suites.TESTSUITES:
+        logger.warning("No TESTSUITES entry found for test {0}!".format(tsname))
+        return []
+
+    passed = []
+    testsuite = conf_test_suites.TESTSUITES[tsname]
+    # testsuite can be simply a list of test case names - in which case all those test
+    # cases are considered 'passed' if the openQA job overall 'passed' - or a dict whose
+    # keys are test case names and whose values are dicts of conditions indicating when
+    # that test case should be considered as 'passed'. Here, we handle the conditions for
+    # this case. See conf_test_suites for more details.
+    isdict = None
+    try:
+        # check if this is dict case
+        testsuite.items()
+        isdict = True
+    except AttributeError:
+        isdict = False
+    if isdict:
+        # dict case.
+        for (testcase, conds) in testsuite.items():
+            if not conds:
+                # life is easy!
+                passed.append(testcase)
+                continue
+
+            # otherwise, handle the conditions...
+            # modules: the test case is only 'passed' if all listed openQA job modules
+            # are present in the job and passed
+            if 'modules' in conds:
+                tcpass = True
+                for modname in conds['modules']:
+                    try:
+                        # find the matching test module in the job's list (note this
+                        # assumes we don't run the same module multiple times, which
+                        # is something upstream has recently started allowing...)
+                        module = [module for module in job['modules'] if
+                                  module['name'] == modname][0]
+                        if module.get('result', '') not in ('passed', 'softfailed'):
+                            tcpass = False
+                            break
+                    except IndexError:
+                        tcpass = False
+                        logger.warning("Did not find module %s in job data!", modname)
+                        break
+                if not tcpass:
+                    # skip to next testsuite item
+                    continue
+
+            # test suites: the test case is only 'passed' if there are jobs for all listed
+            # test suites for the same build, machine and flavor, and they all passed
+            if 'testsuites' in conds:
+                if not client:
+                    client = OpenQA_Client()
+                # Ideally we could query on multiple test names - I'll send a PR for that.
+                # As we can't, let's not do multiple single queries, let's just get all
+                # results for the same build, machine and flavor and filter ourselves...
+                params = {
+                    'build': composeid,
+                    'machine': job['settings']['MACHINE'],
+                    'flavor': job['settings']['FLAVOR'],
+                    'latest': 'true',
+                }
+                candjobs = client.openqa_request('GET', 'jobs', params=params)['jobs']
+                _jobs = [_job for _job in candjobs if _job['test'] in conds['testsuites']]
+                if len(_jobs) != len(conds['testsuites']):
+                    continue
+                if any(_job['result'] not in ('passed', 'softfailed') for _job in _jobs):
+                    continue
+
+            # we only get here if all the conditions are satisfied
+            passed.append(testcase)
+
+    else: # isdict - this is the simple list case.
+        passed = testsuite
+
+    return passed
+
+def get_passed_testcases(jobs, client=None):
     """Given an iterable of job dicts - any waiting, filtering and so
     on is assumed to have already happened - returns a list of
-    wikitcms ResTuples derived from any passed tests.
+    wikitcms ResTuples derived from any passed tests. client can be an
+    OpenQA_Client instance (to save us instantiating a new one, and
+    also so checkwiki can use a fake one); it's passed through to
+    _get_passed_tcnames, which actually uses it.
     """
     passed_testcases = set()
     for job in jobs:
@@ -111,53 +211,20 @@ def get_passed_testcases(jobs):
                 # to report results for these
                 logger.debug("Job was run with extra params! Will not report")
                 continue
-            tsname = job['settings']['TEST']
-            # There usually ought to be an entry in TESTSUITES for all
-            # tests, but just in case someone messed up, let's be safe
-            if tsname not in conf_test_suites.TESTSUITES:
-                logger.warning("No TESTSUITES entry found for test {0}!".format(tsname))
-                continue
-            passed = []
-            testsuite = conf_test_suites.TESTSUITES[tsname]
-            # testsuite can be simply a list of test case names - in which case all those test
-            # cases are considered 'passed' if the openQA job overall 'passed' - or a dict of
-            # lists of test case names. In the dict form, there is one special key, 'PASS'; the
-            # 'PASS' list works just like the simple list form, all test cases in that list
-            # 'passed' if the openQA job overall passed. Any other keys are the names of
-            # individual openQA test modules, which should be included in the job as non-fatal
-            # modules; if that module passed within the job, the test cases in the list 'passed'.
-            try:
-                # this is the dict case. first take all test cases from the 'PASS' list...
-                passed.extend(testsuite.pop('PASS', []))
-                # now check each individual test module status
-                for (modname, cases) in testsuite.items():
-                    try:
-                        # find the matching test module in the job's list (note this
-                        # assumes we don't run the same module multiple times, which
-                        # is something upstream has recently started allowing...)
-                        module = [module for module in job['modules'] if module['name'] == modname][0]
-                    except IndexError:
-                        logger.warning("Did not find expected module %s in job data!", modname)
-                        continue
-                    if module.get('result', '') in ('passed', 'softfailed'):
-                        passed.extend(cases)
-            except TypeError:
-                # this is the simple list case.
-                passed = testsuite
+            # find the TESTSUITES entry for the job and parse it to
+            # get a list of passed test case names (TESTCASES keys)
+            passed = _get_passed_tcnames(job, composeid, client)
             for testcase in passed:
                 # skip with warning if testcase is not in TESTCASES
                 if not testcase in conf_test_suites.TESTCASES:
                     logger.warning("No TESTCASES entry found for {0}!".format(testcase))
                     continue
-                # each 'testsuite' is a list using testcase names to indicate which Wikitcms tests
-                # have passed if this job passes. Each testcase name is the name of a dict in the
+                # Each testcase name now in the `passed` list is the name of a dict in the
                 # TESTCASES dict-of-dicts which more precisely identifies the 'test instance' (when
                 # there is more than one for a testcase) and environment for which the result
-                # should be filed. We do a deepcopy here because otherwise the dict in TESTCASES
-                # itself is modified in-place and other jobs for the same testcase (but a different
-                # environment, section or testname) will read the modified values and be messed up.
+                # should be filed.
 
-                # replace $FOO$ values in uniqueres
+                # create new dict based on the testcase dict with $FOO$ values replaced
                 uniqueres = _uniqueres_replacements(job, conf_test_suites.TESTCASES[testcase])
                 result = ResTuple(
                     testtype=uniqueres['type'], testcase=testcase,
@@ -179,7 +246,7 @@ def wiki_report(wiki_url, jobs=None, build=None, do_report=None):
     """
     client = OpenQA_Client()
     jobs = client.get_jobs(jobs=jobs, build=build)
-    passed_testcases = get_passed_testcases(jobs)
+    passed_testcases = get_passed_testcases(jobs, client)
     logger.info("passed testcases: %s", passed_testcases)
     if do_report is None:
         do_report = CONFIG.getboolean('report', 'submit_wiki')

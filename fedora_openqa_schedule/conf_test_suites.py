@@ -380,6 +380,16 @@ TESTCASES = {
         "type": "Desktop",
         "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
     },
+    "QA:Testcase_desktop_update_notification": {
+        "env": "$SUBVARIANT$",
+        "type": "Desktop",
+        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+    },
+    "QA:Testcase_desktop_error_checks": {
+        "env": "$SUBVARIANT$",
+        "type": "Desktop",
+        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+    },
     "QA:Testcase_Server_firewall_default": {
         "env": "x86",
         "type": "Server",
@@ -418,17 +428,62 @@ TESTCASES_RESULTSDB_EXTRADATA = {
 TESTSUITES = {
     # each entry in this dict is named for an openQA test suite, and
     # represents the Wikitcms test cases that passed if that openQA
-    # test suite passed. The entries can be simple lists of test case
-    # names, or they can be dicts. In the dict form, the special dict
-    # entry named 'PASS' is a list of test cases that passed if the
-    # overall openQA job passed, as in the simple list form. The other
-    # dict entries are named for individual openQA test modules, and
-    # are lists of test cases that passed if the overall openQA job
-    # passed *and* that specific test module passed. This handles
-    # test suites like realmd_join_cockpit, which has an optional
-    # module that covers QA:Testcase_FreeIPA_web_ui ; if that module
-    # passes we want to report a pass for that test case, if the job
-    # passes but that module fails we do *not* want to report a pass.
+    # test suite passed or soft failed (from here on, read 'passed' to
+    # mean 'passed or soft failed'). The value can either be a simple
+    # list of test case names (each must be an entry in the TESTCASES
+    # dict), or a dict.
+    #
+    # In the dict form, the dict's keys are the test case names, and
+    # and the values must all be dicts. These dicts indicate extra
+    # conditions that must be met before the test case will be counted
+    # as 'passed'. An empty dict works just like the simple list case:
+    # that test case will be considered 'passed' as long as the test
+    # suite passed.
+    #
+    # The dict may contain a 'testsuites' key, whose value must be an
+    # iterable. If so, the test case will only be considered 'passed'
+    # if both the test suite being considered passed *and* all the
+    # other test suites named in the iterable passed, for the same
+    # build, machine and flavor. e.g.:
+    #
+    # "testsuite_a": {
+    #     "testcase_a": {},
+    #     "testcase_b": {"testsuites": ["testsuite_b"],},
+    # },
+    #
+    # In this case, if testsuite_a passed, testcase_a would be counted
+    # as passed, but testcase_b would only be counted as passed if
+    # testsuite_b had also already passed. This covers cases like
+    # desktop notifications, where there are two wiki test cases that
+    # can be considered passed only if both desktop_notifications_live
+    # and desktop_notifications_postinstall passed.
+    #
+    # NOTE: unless we can be sure one test suite will always run after
+    # the other, we must include entries for *both* test suites,
+    # because we will process the entry for whichever test suite
+    # passes first and generate no 'pass' because the other one is not
+    # done yet, then when the other one passes we will process its
+    # entry and generate a pass so long as the first one also passed;
+    # if we don't have entries for both test suites and the 'wrong
+    # one' passes first, we will miss the result.
+    #
+    # The dict may contain a 'modules' key, whose value must be an
+    # iterable. If so, the test case will only be considered 'passed'
+    # if the overall openQA job passed *and* each of the individual
+    # openQA test modules named in the iterable were present in the
+    # openQA job and passed. e.g.:
+    #
+    # "testsuite_c": {
+    #     "testcase_c": {"modules": ["module_1"],},
+    # },
+    #
+    # In this case, testcase_c would only be considered 'passed' if
+    # both testsuite_c passed *and* it contained a test module named
+    # module_1 and that module passed. This handles test suites like
+    # realmd_join_cockpit, which has an optional module that covers
+    # QA:Testcase_FreeIPA_web_ui ; if that module passes we want to
+    # report a pass for that test case, if the job passes but that
+    # module fails we do *not* want to report a pass.
     "install_default": [
         "QA:Testcase_Boot_default_install",
         "QA:Testcase_install_to_VirtIO",
@@ -751,6 +806,22 @@ TESTSUITES = {
     "desktop_update_graphical": [
         "QA:Testcase_desktop_update_graphical",
     ],
+    "desktop_notifications_live": {
+        "QA:Testcase_desktop_update_notification": {
+            "testsuites": ["desktop_notifications_postinstall"],
+        },
+        "QA:Testcase_desktop_error_checks": {
+            "testsuites": ["desktop_notifications_postinstall"],
+        },
+    },
+    "desktop_notifications_postinstall": {
+        "QA:Testcase_desktop_update_notification": {
+            "testsuites": ["desktop_notifications_live"],
+        },
+        "QA:Testcase_desktop_error_checks": {
+            "testsuites": ["desktop_notifications_live"],
+        },
+    },
     "server_firewall_default": [
         "QA:Testcase_Server_firewall_default",
     ],
@@ -767,17 +838,15 @@ TESTSUITES = {
         "QA:Testcase_database_server_remote_client",
     ],
     "realmd_join_cockpit": {
-        "PASS": [
-            "QA:Testcase_realmd_join_cockpit",
-            "QA:Testcase_FreeIPA_realmd_login",
-            "QA:Testcase_domain_client_authenticate",
-        ],
-        "freeipa_webui": [
-            "QA:Testcase_FreeIPA_web_ui",
-        ],
-        "freeipa_password_change": [
-            "QA:Testcase_FreeIPA_password_change",
-        ],
+        "QA:Testcase_realmd_join_cockpit": {},
+        "QA:Testcase_FreeIPA_realmd_login": {},
+        "QA:Testcase_domain_client_authenticate": {},
+        "QA:Testcase_FreeIPA_web_ui": {
+            "modules": ["freeipa_webui"],
+        },
+        "QA:Testcase_FreeIPA_password_change": {
+            "modules": ["freeipa_password_change"],
+        },
     },
     "realmd_join_sssd": [
         "QA:Testcase_realmd_join_sssd",
