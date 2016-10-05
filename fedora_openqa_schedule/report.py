@@ -65,6 +65,9 @@ def _uniqueres_replacements(job, tcdict):
         # to avoid crashing, these values should never be used
         subvariant = imagetype = 'universal'
     imagetype = imagetype.replace('boot', 'netinst')
+    # reverse the - to _ sub we do when constructing the flavor (we
+    # know no type values really have _ in them, so this is safe)
+    imagetype = imagetype.replace('_', '-')
     subvariant = subvariant.replace('_Base', '')
     subvariant_or_arm = "ARM" if arch == "arm" else subvariant
     if 'UEFI' in job['settings']:

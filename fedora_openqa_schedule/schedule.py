@@ -122,18 +122,18 @@ def _get_images(location, wanted=WANTED):
             for wantimg in wantimgs:
                 matchdict = wantimg['match'].copy()
                 for foundimg in foundimgs:
+                    # let fedfind 'correct' the foundimg dict (fixes
+                    # problems with upstream metadata values)
+                    foundimg = fedfind.helpers.correct_image(foundimg)
                     # see if the foundimg matches the wantimg
                     if not all(item in foundimg.items() for item in matchdict.items()):
                         continue
                     score = wantimg.get('score', 0)
-                    # assign a 'flavor' by combining a few productmd
-                    # values, with dashes replaced by underscores so
-                    # we can split this back up again later for report
+                    # assign a 'flavor' using fedfind's 'image identifier'
+                    flavor = fedfind.helpers.identify_image(foundimg, undersub=True, out='string')
+                    # get a couple of values we use for other reasons
                     subvariant = foundimg['subvariant']
                     imagetype = foundimg['type']
-                    imageformat = foundimg['format']
-                    flavor = [item.replace('-', '_') for item in (subvariant, imagetype, imageformat)]
-                    flavor = '-'.join(flavor)
                     url = "{0}/{1}".format(location, foundimg['path'])
                     logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
 

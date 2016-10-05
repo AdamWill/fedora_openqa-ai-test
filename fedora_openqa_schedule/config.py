@@ -189,7 +189,7 @@ WANTED = {
         "x86_64": [
             {
                 "match": {
-                    "type": "boot",
+                    "type": "dvd-ostree",
                     "format": "iso",
                 },
             },
