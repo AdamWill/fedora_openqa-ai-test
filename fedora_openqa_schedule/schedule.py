@@ -52,32 +52,6 @@ class TriggerException(Exception):
     pass
 
 
-def _get_atomic_id(location):
-    """This is an extremely ugly, temporary way to get a compose ID
-    for Two Week Atomic nightly composes. They are not done with Pungi
-    4 at present so do not have an official compose ID. This should
-    die as soon as all composes we want to test are done in Pungi 4
-    style.
-    """
-    return location.split('/')[-1]
-
-
-def _get_atomic_installer(location, cid):
-    """This is an extremely ugly, temporary way to get the sole image
-    we know we need from the Two Week Atomic nightly composes. They
-    are not done with Pungi 4 at present so do not have the metadata
-    we want to use. This should die as soon as all composes we want to
-    test are done in Pungi 4 style.
-    """
-    url = '{0}/Cloud_Atomic/x86_64/iso/Fedora-Cloud_Atomic-x86_64-{1}.iso'.format(
-        location, cid)
-    try:
-        resp = urlopen(url)
-        return [('Atomic-boot-iso', 'x86_64', 0, {'ISO_URL': url}, 'Atomic', 'boot')]
-    except (ValueError, URLError, HTTPError):
-        raise TriggerException("Compose not found, or failed!")
-
-
 def _get_compose_id(location):
     """Given a compose location, find the compose ID. Really we'd like
     taskotron to give us this, as fedmsg provides it, but taskotron is
@@ -288,16 +262,9 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     this compose.
     """
     location = location.strip('/')
-    # trigger ugly special-casing for non-Pungi4-ified Two Week Atomic
-    # nightlies
-    if 'alt/atomic/testing' in location:
-        compose = _get_atomic_id(location)
-        logger.debug("Finding images for Atomic compose %s in location %s", compose, location)
-        images = _get_atomic_installer(location, compose)
-    else:
-        compose = _get_compose_id(location)
-        logger.debug("Finding images for compose %s in location %s", compose, location)
-        images = _get_images(location, wanted=wanted)
+    compose = _get_compose_id(location)
+    logger.debug("Finding images for compose %s in location %s", compose, location)
+    images = _get_images(location, wanted=wanted)
     if len(images) == 0:
         raise TriggerException("Compose found, but no available images")
     jobs = []

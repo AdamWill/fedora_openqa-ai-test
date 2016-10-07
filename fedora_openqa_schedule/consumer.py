@@ -32,8 +32,7 @@ class OpenQAConsumer(fedmsg.consumers.FedmsgConsumer):
     """A fedmsg consumer that schedules openQA jobs when a new compose
     appears.
     """
-    topic = ["org.fedoraproject.prod.pungi.compose.status.change",
-             "org.fedoraproject.prod.compose.*"]
+    topic = ["org.fedoraproject.prod.pungi.compose.status.change"]
     config_key = "fedora_openqa_schedule.consumer.enabled"
 
     def _log(self, level, message):
@@ -45,20 +44,12 @@ class OpenQAConsumer(fedmsg.consumers.FedmsgConsumer):
 
     def consume(self, message):
         """Consume incoming message."""
-        # as two-week atomic message topics are a bit awkward, we have
-        # to do a bit more filtering here
-        if not message['topic'] == "org.fedoraproject.prod.pungi.compose.status.change":
-            if not message['topic'].endswith(".cloudimg-staging.done"):
-                return
-
-        # two-week atomic messages don't indicate status, so we'll just
-        # always run for those, by setting default value 'FINISHED'
-        status = message['body']['msg'].get('status', 'FINISHED')
+        status = message['body']['msg'].get('status')
         location = message['body']['msg'].get('location')
         compstr = message['body']['msg'].get('compose_id', location)
 
         if 'FINISHED' in status and location:
-            # We have a complete pungi4 compose or a 2-week atomic compose
+            # We have a complete pungi4 compose
             self._log('info', "Scheduling openQA jobs for {0}".format(compstr))
             try:
                 (compose, jobs) = schedule.jobs_from_compose(location)
