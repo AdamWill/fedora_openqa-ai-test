@@ -71,6 +71,11 @@ CONFIG.read('{0}/.config/fedora-openqa/schedule.conf'.format(os.path.expanduser(
 # found, the universal tests are skipped. If score is not specified
 # the image is considered to have a score of 0.
 
+# If "dkboot" is set to True, scheduler also downloads kernel and initrd
+# files for specified architecture and then schedules job to run in Direct
+# Kernel Boot mode. Default value (used when dkboot item is not specified)
+# is False.
+
 WANTED = {
     "Server": {
         "x86_64": [
@@ -182,6 +187,7 @@ WANTED = {
                     "type": "raw-xz",
                     "format": "raw.xz",
                 },
+                "dkboot": True,
             },
         ],
     },

@@ -74,8 +74,8 @@ def _get_dkboot_urls(location, arch='armhfp'):
     return pxeboot_url.format(location, arch, 'vmlinuz'), pxeboot_url.format(location, arch, 'initrd.img')
 
 
-def _get_images(location, wanted=WANTED):
-    """Given a Pungi compose top-level location, this returns a list
+def _get_images(location, compose, wanted=WANTED):
+    """Given a Pungi compose top-level location and string containing compose ID, this returns a list
     of (flavor, arch, score, {param: url}, subvariant, imagetype) tuples for images to be tested.
     """
     try:
@@ -115,11 +115,13 @@ def _get_images(location, wanted=WANTED):
                     param_urls = {
                         FORMAT_TO_PARAM[foundimg['format']]: url
                     }
-                    # TODO: WARNING! - workaround for ARM disk images that need kernel for direct kernel boot
-                    if arch == "armhfp" and foundimg['format'] == "raw.xz":
+                    # if direct kernel boot is specified, we need to download kernel and initrd
+                    if wantimg.get('dkboot', False):
                         kernel_url, initrd_url = _get_dkboot_urls(location, arch)
                         param_urls["KERNEL_URL"] = kernel_url
+                        param_urls["KERNEL"] = "{0}.{1}.vmlinuz".format(compose, arch)
                         param_urls["INITRD_URL"] = initrd_url
+                        param_urls["INITRD"] = "{0}.{1}.initrd.img".format(compose, arch)
 
                     images.append((flavor, arch, score, param_urls, subvariant, imagetype))
     return images
@@ -185,7 +187,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build,
         'DISTRI': 'fedora',
         'VERSION': build.split('-')[1],
         'FLAVOR': flavor,
-        'ARCH': arch,
+        'ARCH': arch if arch != 'armhfp' else 'arm',  # openQA does something special when `ARCH = arm`
         'BUILD': build,
         'LOCATION': location,
         'CURRREL': currrel,
@@ -200,23 +202,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build,
     if resultsdb_job_id:
         params['RESULTSDB_JOB_ID'] = resultsdb_job_id
 
-    if arch == 'armhfp':
-        params.update({
-            'ARCH': 'arm',
-            'FAMILY': 'arm',
-            # ARM kernel arguments since we are using direct kernel boot
-            'APPEND': 'rw root=LABEL=_/ rootwait console=ttyAMA0 console=tty0 consoleblank=0',
-        })
-    else:
-        params['FAMILY'] = 'x86'
     params.update(param_urls)
-
-    # add KERNEL and INITRD arguments when needed
-    # TODO: this will not work until https://github.com/os-autoinst/openQA/pull/673 gets merged
-    # if 'KERNEL_URL' in params:
-    #     params['KERNEL'] = "vmlinuz.{0}".format(build)
-    # if 'INITRD_URL' in params:
-    #     params['INITRD'] = "initrd.img.{0}".format(build)
 
     client = OpenQA_Client()
 
@@ -264,7 +250,7 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     location = location.strip('/')
     compose = _get_compose_id(location)
     logger.debug("Finding images for compose %s in location %s", compose, location)
-    images = _get_images(location, wanted=wanted)
+    images = _get_images(location, compose, wanted=wanted)
     if len(images) == 0:
         raise TriggerException("Compose found, but no available images")
     jobs = []
