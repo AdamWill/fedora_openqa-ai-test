@@ -30,9 +30,9 @@ TESTCASES = {
     #
     #   special value       replacement
     #
-    #   $RUNARCH_OR_UEFI$   - "i386", "x86_64", or "UEFI" for x86_64 UEFI
     #   $RUNARCH$           - "i386", "x86_64"
     #   $BOOTMETHOD$        - "x86_64 BIOS", "x86_64 UEFI"
+    #   $FIRMWARE$          - "BIOS", "UEFI"
     #   $SUBVARIANT$        - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
     #   $SUBVARIANT_OR_ARM$ - productmd 'subvariant' as above, or "ARM" when running on ARM architecture
     #   $IMAGETYPE$         - pungi 'type': "boot", "live"... "boot" -> "netinst"
@@ -42,8 +42,8 @@ TESTCASES = {
 
     "QA:Testcase_Boot_default_install": {
         "name": "$SUBVARIANT$_$IMAGETYPE$",
-        "section": 'Default boot and install',
-        "env": "$RUNARCH_OR_UEFI$",
+        "section": 'Default boot and install ($RUNARCH$)',
+        "env": "VM $FIRMWARE$",
         "type": "Installation",
     },
     "QA:Testcase_arm_image_deployment": {

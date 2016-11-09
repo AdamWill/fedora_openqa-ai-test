@@ -71,10 +71,10 @@ def _uniqueres_replacements(job, tcdict):
     subvariant = subvariant.replace('_Base', '')
     subvariant_or_arm = "ARM" if arch == "arm" else subvariant
     if 'UEFI' in job['settings']:
-        uefi = 'UEFI'
+        firmware = 'UEFI'
         bootmethod = 'x86_64 UEFI'
     else:
-        uefi = arch
+        firmware = 'BIOS'
         bootmethod = 'x86_64 BIOS'
     role = ''
     if 'role_deploy_' in job['test']:
@@ -86,7 +86,7 @@ def _uniqueres_replacements(job, tcdict):
     # the modified values and be messed up
     changed = {}
     for key, value in tcdict.iteritems():
-        value = value.replace('$RUNARCH_OR_UEFI$', uefi)
+        value = value.replace('$FIRMWARE$', firmware)
         value = value.replace('$FS$', fs)
         value = value.replace('$RUNARCH$', arch)
         value = value.replace('$BOOTMETHOD$', bootmethod)
