@@ -31,6 +31,7 @@ import re
 
 # External dependencies
 import fedfind.helpers
+import fedfind.release
 from openqa_client.client import OpenQA_Client
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import URLError, HTTPError
@@ -52,78 +53,51 @@ class TriggerException(Exception):
     pass
 
 
-def _get_compose_id(location):
-    """Given a compose location, find the compose ID. Really we'd like
-    taskotron to give us this, as fedmsg provides it, but taskotron is
-    kinda tied to giving us just *one* variable property of the fedmsg
-    message. So we read it from the compose metadata's known location.
-    """
-    try:
-        resp = urlopen('{0}/metadata/composeinfo.json'.format(location))
-        metadata = json.load(resp)
-    except (ValueError, URLError, HTTPError):
-        raise TriggerException("Compose not found, or failed!")
-    return metadata['payload']['compose']['id']
-
-
 def _get_dkboot_urls(location, arch='armhfp'):
-    """Given a compose location (and arch if provided), return URLs for kernel and initrd
-    files.
+    """Given a fedfind release 'generic' location (and arch if provided), return URLs for kernel
+    and initrd files.
     """
-    pxeboot_url = '{0}/Everything/{1}/os/images/pxeboot/{2}'
-    return pxeboot_url.format(location, arch, 'vmlinuz'), pxeboot_url.format(location, arch, 'initrd.img')
+    pxeboot_url = '{0}/{1}/os/images/pxeboot/{2}'
+    return (pxeboot_url.format(location, arch, 'vmlinuz'), pxeboot_url.format(location, arch, 'initrd.img'))
 
 
-def _get_images(location, compose, wanted=WANTED):
-    """Given a Pungi compose top-level location and string containing compose ID, this returns a list
-    of (flavor, arch, score, {param: url}, subvariant, imagetype) tuples for images to be tested.
+def _get_images(rel, wanted=WANTED):
+    """Given a fedfind Release instance, this returns a list of (flavor, arch, score, {param: url},
+    subvariant, imagetype) tuples for images to be tested.
     """
-    try:
-        resp = urlopen('{0}/metadata/images.json'.format(location))
-        metadata = json.load(resp)
-    except (ValueError, URLError, HTTPError):
-        raise TriggerException("Compose not found, or failed!")
     images = []
-    for variant in wanted.keys():
-        for arch in wanted[variant].keys():
-            try:
-                foundimgs = metadata['payload']['images'][variant][arch]
-            except KeyError:
-                # not found in upstream metadata, move on
+    for wantimg in wanted:
+        matchdict = wantimg['match'].copy()
+        for foundimg in rel.all_images:
+            # see if the foundimg matches the wantimg
+            if not all(item in foundimg.items() for item in matchdict.items()): 
                 continue
+            score = wantimg.get('score', 0)
+            # assign a 'flavor' using fedfind's 'image identifier'
+            flavor = fedfind.helpers.identify_image(foundimg, undersub=True, out='string')
+            # get a couple of values we use for other reasons
+            subvariant = foundimg['subvariant']
+            imagetype = foundimg['type']
+            arch = foundimg['arch']
+            # FIXME: this is technically too simple though it works
+            # for all releases we currently test; see fedfind 'alt'
+            # location handling
+            url = "{0}/{1}".format(rel.location, foundimg['path'])
+            logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
 
-            wantimgs = wanted[variant][arch]
-            for wantimg in wantimgs:
-                matchdict = wantimg['match'].copy()
-                for foundimg in foundimgs:
-                    # let fedfind 'correct' the foundimg dict (fixes
-                    # problems with upstream metadata values)
-                    foundimg = fedfind.helpers.correct_image(foundimg)
-                    # see if the foundimg matches the wantimg
-                    if not all(item in foundimg.items() for item in matchdict.items()):
-                        continue
-                    score = wantimg.get('score', 0)
-                    # assign a 'flavor' using fedfind's 'image identifier'
-                    flavor = fedfind.helpers.identify_image(foundimg, undersub=True, out='string')
-                    # get a couple of values we use for other reasons
-                    subvariant = foundimg['subvariant']
-                    imagetype = foundimg['type']
-                    url = "{0}/{1}".format(location, foundimg['path'])
-                    logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
+            # some tests need more than one file, so let's collect them now
+            param_urls = {
+                FORMAT_TO_PARAM[foundimg['format']]: url
+            }
+            # if direct kernel boot is specified, we need to download kernel and initrd
+            if wantimg.get('dkboot', False):
+                (kernel_url, initrd_url) = _get_dkboot_urls(rel.https_url_generic, arch)
+                param_urls["KERNEL_URL"] = kernel_url
+                param_urls["KERNEL"] = "{0}.{1}.vmlinuz".format(rel.cid, arch)
+                param_urls["INITRD_URL"] = initrd_url
+                param_urls["INITRD"] = "{0}.{1}.initrd.img".format(rel.cid, arch)
 
-                    # some tests need more than one file, so let's collect them now
-                    param_urls = {
-                        FORMAT_TO_PARAM[foundimg['format']]: url
-                    }
-                    # if direct kernel boot is specified, we need to download kernel and initrd
-                    if wantimg.get('dkboot', False):
-                        kernel_url, initrd_url = _get_dkboot_urls(location, arch)
-                        param_urls["KERNEL_URL"] = kernel_url
-                        param_urls["KERNEL"] = "{0}.{1}.vmlinuz".format(compose, arch)
-                        param_urls["INITRD_URL"] = initrd_url
-                        param_urls["INITRD"] = "{0}.{1}.initrd.img".format(compose, arch)
-
-                    images.append((flavor, arch, score, param_urls, subvariant, imagetype))
+            images.append((flavor, arch, score, param_urls, subvariant, imagetype))
     return images
 
 
@@ -156,19 +130,21 @@ def _find_duplicate_jobs(client, param_urls, flavor):
     return []
 
 
-def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build,
+def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, version,
                     location, force=False, extraparams=None, resultsdb_job_id=None):
-    """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with given arch
-    and a build identifier. **NOTE**: 'build' is passed to openQA as
-    BUILD and is later retrieved and parsed by report.py for wiki
-    report generation. Returns list of job IDs. If force is False,
-    jobs will only be scheduled if there are no existing,
-    non-cancelled jobs for the same ISO and flavor. If extraparams
-    is specified, it must be a dict or something else that can be
-    combined with a dict using `update`; it adds additional parameters
-    (usually openQA variables) to the POST request. When extraparams
-    is used, the BUILD value has '-EXTRA' appended to signify that
-    this should not be considered a clean test run for the build.
+    """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with
+    given URLs, flavor, arch, subvariant, imagetype, build identifier,
+    and version. **NOTE**: 'build' is passed to openQA as BUILD and is
+    later retrieved and parsed by report.py for wiki reporting; for
+    this to work it should be a productmd/Pungi compose ID. Returns
+    list of job IDs. If force is False, jobs will only be scheduled if
+    there are no existing, non-cancelled jobs for the same ISO and
+    flavor. If extraparams is specified, it must be a dict or
+    something else that can be combined with a dict using `update`; it
+    adds additional parameters (usually openQA variables) to the POST
+    request. When extraparams is used, the BUILD value has '-EXTRA'
+    appended to signify that this should not be considered a clean run
+    for the build.
     """
     logger.info("sending jobs to openQA")
     # find current and previous releases; these are used to determine
@@ -185,7 +161,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build,
     # starts OpenQA jobs
     params = {
         'DISTRI': 'fedora',
-        'VERSION': build.split('-')[1],
+        'VERSION': version,
         'FLAVOR': flavor,
         'ARCH': arch if arch != 'armhfp' else 'arm',  # openQA does something special when `ARCH = arm`
         'BUILD': build,
@@ -247,10 +223,12 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     create_resultsdb_job controls whether to create job in ResultsDB for
     this compose.
     """
-    location = location.strip('/')
-    compose = _get_compose_id(location)
-    logger.debug("Finding images for compose %s in location %s", compose, location)
-    images = _get_images(location, compose, wanted=wanted)
+    try:
+        rel = fedfind.release.get_release(url=location)
+    except ValueError:
+        raise TriggerException("Could not find a release at {0}".format(location))
+    logger.debug("Finding images for compose %s in location %s", rel.cid, location)
+    images = _get_images(rel, wanted=wanted)
     if len(images) == 0:
         raise TriggerException("Compose found, but no available images")
     jobs = []
@@ -267,8 +245,8 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
             rdb_instance = ResultsDBapi(CONFIG.get('report', 'resultsdb_url'))
             # add link to page with overall results
             ref_url = "%s/tests/overview?distri=fedora&version=%s&build=%s" % (CONFIG.get('report', 'openqa_url'),
-                                                                               compose.split('-')[-2], compose)
-            job = rdb_instance.create_job(ref_url=ref_url, name=compose)
+                                                                               rel.release, rel.cid)
+            job = rdb_instance.create_job(ref_url=ref_url, name=rel.cid)
             rdb_job_id = job["id"]
         except ResultsDBapiException as e:
             logger.error(e)
@@ -276,8 +254,8 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     # schedule per-image jobs, keeping track of the highest score
     # per arch along the way
     for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
-        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, compose,
-                                    location, force=force, extraparams=extraparams,
+        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
+                                    rel.release, location, force=force, extraparams=extraparams,
                                     resultsdb_job_id=rdb_job_id))
         if score > univs.get(arch, [None, 0])[1]:
             univs[arch] = (param_urls, score, subvariant, imagetype)
@@ -290,7 +268,7 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
             # is ARM and there would be whole lot of other problems if universal tests are run on ARM.
             logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
             jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype,
-                                        compose, location, force=force, extraparams=extraparams,
-                                        resultsdb_job_id=rdb_job_id))
+                                        rel.cid, rel.release, location, force=force,
+                                        extraparams=extraparams, resultsdb_job_id=rdb_job_id))
 
-    return (compose, jobs)
+    return (rel.cid, jobs)

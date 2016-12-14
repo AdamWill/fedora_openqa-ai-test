@@ -26,6 +26,11 @@ import os.path
 # External dependencies
 from six.moves import configparser
 
+
+class ConfigError(Exception):
+    """Raised when there's an error in a config file."""
+    pass
+
 # Read in config from /etc/fedora-openqa/schedule.conf or
 # ~/.config/fedora-openqa/schedule.conf after setting some default
 # values.
@@ -43,23 +48,15 @@ CONFIG.set('report', 'wiki_stg_url', 'https://stg.fedoraproject.org/wiki')
 CONFIG.read('/etc/fedora-openqa/schedule.conf')
 CONFIG.read('{0}/.config/fedora-openqa/schedule.conf'.format(os.path.expanduser('~')))
 
-# The default set of tested images. The format intentionally follows
-# the format of images.json closely, and this set can be overridden by
-# an 'images.json' file in /etc/fedora-openqa or
-# ~/.config/fedora-openqa.
+# The default set of tested images. This set can be overridden by an
+# 'images.json' file in /etc/fedora-openqa or ~/.config/fedora-openqa.
 
-# There is one level added to this dict compared to images.json.
-# images.json is a dict of dicts representing "variants". Each variant
-# is a dict of lists representing arches. Each arch list contains
-# dicts which each contain the properties of a single image as simple
-# strings.
-
-# In our dict, things are same until we reach the image level. Again,
-# each item in the list for a given arch within a given variant is a
-# dict for a single image. However, one of the items in the image dict
-# is itself a dict, called 'match'. This dict determines whether the
-# image "matches": if all the items in this "match" dict match the
-# items in the image dict from the upstream metadata, we take that
+# The format is a list of dicts. Each dict represents a single image
+# we want to test. The list is compared against the list of image
+# dicts fedfind returns for the release being tested. One of the items
+# in the image dict is itself a dict called 'match'. This dict
+# determines whether the image "matches": if all the items in this
+# "match" dict match the items in the fedfind image dict, we take that
 # image.
 
 # The other items in the image dict here are not used for matching,
@@ -76,138 +73,139 @@ CONFIG.read('{0}/.config/fedora-openqa/schedule.conf'.format(os.path.expanduser(
 # Kernel Boot mode. Default value (used when dkboot item is not specified)
 # is False.
 
-WANTED = {
-    "Server": {
-        "x86_64": [
-            {
-                "match": {
-                    "type": "boot",
-                    "format": "iso",
-                },
-                "score": 6,
-            },
-            {
-                "match": {
-                    "type": "dvd",
-                    "format": "iso",
-                },
-                "score": 10,
-            },
-        ],
-        "i386": [
-            {
-                "match": {
-                    "type": "boot",
-                    "format": "iso",
-                },
-                "score": 6,
-            },
-            {
-                "match": {
-                    "type": "dvd",
-                    "format": "iso",
-                },
-                "score": 10,
-            },
-        ],
+WANTED = [
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "boot",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+        "score": 6,
     },
-    "Everything": {
-        "x86_64": [
-            {
-                "match": {
-                    "type": "boot",
-                    "format": "iso",
-                },
-                "score": 8,
-            },
-        ],
-        "i386": [
-            {
-                "match": {
-                    "type": "boot",
-                    "format": "iso",
-                },
-                "score": 8,
-            },
-        ],
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "dvd",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+        "score": 10,
     },
-    "Workstation": {
-        "x86_64": [
-            {
-                "match": {
-                    "type": "live",
-                    "format": "iso",
-                },
-            },
-            {
-                "match": {
-                    "type": "boot",
-                    "format": "iso",
-                },
-            },
-        ],
-        "i386": [
-            {
-                "match": {
-                    "type": "live",
-                    "format": "iso",
-                },
-            },
-            {
-                "match": {
-                    "type": "boot",
-                    "format": "iso",
-                },
-            },
-        ],
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "boot",
+            "format": "iso",
+            "arch": "i386",
+        },
+        "score": 6,
     },
-    "Spins": {
-        "x86_64": [
-            {
-                "match": {
-                    "subvariant": "KDE",
-                    "type": "live",
-                    "format": "iso",
-                },
-            },
-        ],
-        "i386": [
-            {
-                "match": {
-                    "subvariant": "KDE",
-                    "type": "live",
-                    "format": "iso",
-                },
-            },
-        ],
-        "armhfp": [
-            {
-                "match": {
-                    "subvariant": "Minimal",
-                    "type": "raw-xz",
-                    "format": "raw.xz",
-                },
-                "dkboot": True,
-            },
-        ],
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "dvd",
+            "format": "iso",
+            "arch": "i386",
+        },
+        "score": 10,
     },
-    "Atomic": {
-        "x86_64": [
-            {
-                "match": {
-                    "type": "dvd-ostree",
-                    "format": "iso",
-                },
-            },
-        ],
+    {
+        "match": {
+            "subvariant": "Everything",
+            "type": "boot",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+        "score": 8,
     },
-}
+    {
+        "match": {
+            "subvariant": "Everything",
+            "type": "boot",
+            "format": "iso",
+            "arch": "i386",
+        },
+        "score": 8,
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "live",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "boot",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "live",
+            "format": "iso",
+            "arch": "i386",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "boot",
+            "format": "iso",
+            "arch": "i386",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "KDE",
+            "type": "live",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "KDE",
+            "type": "live",
+            "format": "iso",
+            "arch": "i386",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Minimal",
+            "type": "raw-xz",
+            "format": "raw.xz",
+            "arch": "armhfp",
+        },
+        "dkboot": True,
+    },
+    {
+        "match": {
+            "subvariant": "Atomic",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+]
 
 for path in ('/etc/fedora-openqa',
              '{0}/.config/fedora-openqa'.format(os.path.expanduser('~'))):
     try:
-        with open('{0}/images.json'.format(path), 'r') as fout:
+        fname = '{0}/images.json'.format(path)
+        with open(fname, 'r') as fout:
             WANTED = json.load(fout)
+            try:
+                WANTED.keys()
+                raise ConfigError("{0} is in old format (dict, not list)!".format(fname))
+            except AttributeError:
+                pass
     except IOError:
         # file not found
         pass
