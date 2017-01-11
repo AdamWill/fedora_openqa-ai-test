@@ -83,6 +83,9 @@ def _get_images(rel, wanted=WANTED):
             # for all releases we currently test; see fedfind 'alt'
             # location handling
             url = "{0}/{1}".format(rel.location, foundimg['path'])
+            # fedfind gives us 'download.fedoraproject.org' for respins, but
+            # we don't want to go through the roulette...
+            url = url.replace('download.fedoraproject.org', 'dl.fedoraproject.org')
             logger.debug("Found image %s for arch %s at %s", flavor, arch, url)
 
             # some tests need more than one file, so let's collect them now
