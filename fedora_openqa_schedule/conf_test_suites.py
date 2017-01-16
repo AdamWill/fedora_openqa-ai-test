@@ -82,6 +82,11 @@ TESTCASES = {
         "env": "x86_64",
         "type": "Installation",
     },
+    "QA:Testcase_install_to_SATA": {
+        "section": "Storage devices",
+        "env": "x86_64",
+        "type": "Installation",
+    },
     "QA:Testcase_partitioning_guided_delete_all": {
         "section": "Guided storage configuration",
         "env": "$BOOTMETHOD$",
@@ -512,6 +517,12 @@ TESTSUITES = {
     "install_delete_pata": [
         "QA:Testcase_install_to_PATA",
         "QA:Testcase_partitioning_guided_delete_all",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_sata": [
+        "QA:Testcase_install_to_SATA",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
