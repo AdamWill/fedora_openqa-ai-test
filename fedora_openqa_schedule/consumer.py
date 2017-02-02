@@ -153,11 +153,10 @@ class OpenQAResultsDBReporter(fedmsg.consumers.FedmsgConsumer):
 
 class OpenQAProductionResultsDBReporter(OpenQAResultsDBReporter):
     """A result reporting consumer that listens for production fedmsgs
-    and reports to the production wiki. Only one of these should ever
-    be running at one time; it'd be particularly bad if we had two
-    running with different FAS accounts, all results would be duped.
-    Please don't enable this consumer unless you're sure you know what
-    you're doing.
+    and reports to the production ResultsDB. Only one of these should
+    ever be running at one time; it'd be particularly bad if we had
+    two running, all results would be duped. Please don't enable this
+    consumer unless you're sure you know what you're doing.
     """
     topic = "org.fedoraproject.prod.openqa.job.done"
     config_key = "fedora_openqa_schedule.resultsdb.reporter.prod.enabled"
@@ -167,9 +166,9 @@ class OpenQAProductionResultsDBReporter(OpenQAResultsDBReporter):
 
 class OpenQATestResultsDBReporter(OpenQAResultsDBReporter):
     """A result reporting consumer that listens for dev fedmsgs (so it
-    will catch ones produced by fedmsg-dg-replay) and does not really
-    report results, it should log the produced ResTuples instead. This
-    is the one you should use to test stuff, go nuts with it.
+    will catch ones produced by fedmsg-dg-replay) and reports to a
+    ResultsDB instance running on localhost:5001 (as you get by running
+    the development mode).
     """
     topic = "org.fedoraproject.dev.openqa.job.done"
     validate_signatures = False
