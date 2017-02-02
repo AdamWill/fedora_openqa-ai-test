@@ -311,8 +311,8 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resul
     target_regex = re.compile(r"^(ISO|HDD)(_\d+)?$")
 
     for job in jobs:
-        # don't report jobs that have clone or user-cancelled jobs
-        if job['clone_id'] is not None or job['result'] == "user_cancelled":
+        # don't report jobs that have clone or user-cancelled jobs, or were obsoleted
+        if job['clone_id'] is not None or job['result'] == "user_cancelled" or job['result'] == 'obsoleted':
             continue
 
         # don't report TEST_TARGET=NONE or jobs that are missing TEST_TARGET
@@ -338,6 +338,7 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resul
         kwargs["outcome"] = {
             'passed': "PASSED",
             'failed': "FAILED",
+            'parallel_failed': "FAILED",
             'softfailed': "INFO"
         }.get(job['result'], 'NEEDS_INSPECTION')
         job_url = "%s/tests/%s" % (CONFIG.get('report', 'openqa_url'), job['id'])
