@@ -129,3 +129,50 @@ class OpenQATestWikiConsumer(OpenQAWikiConsumer):
     config_key = "fedora_openqa_schedule.wiki.consumer.test.enabled"
     url = "stg.fedoraproject.org"
     report = False
+
+class OpenQAResultsDBReporter(fedmsg.consumers.FedmsgConsumer):
+    """A fedmsg consumer that reports openQA results to ResultsDB when
+    a job completes. This is a parent class for prod and test
+    variants, it is not complete in itself. Whichever child you use,
+    make sure the openQA client client.conf is pointed at the same
+    openQA instance that produces the fedmsgs you're listening for,
+    or things will get weird (you'll be getting job IDs from one
+    openQA but retrieving the jobs with those same IDs from the other
+    openQA).
+    """
+
+    def consume(self, message):
+        """Consume incoming message."""
+        job = message['body']['msg']['id']
+        self.log.info("%s: reporting results for %s", self.__class__.__name__, job)
+        results = report.resultsdb_report(self.url, jobs=[job], do_report=self.report)
+        if not self.report:
+            for res in results:
+                self.log.info("%s: would report %s", self.__class__.__name__, res)
+
+
+class OpenQAProductionResultsDBReporter(OpenQAResultsDBReporter):
+    """A result reporting consumer that listens for production fedmsgs
+    and reports to the production wiki. Only one of these should ever
+    be running at one time; it'd be particularly bad if we had two
+    running with different FAS accounts, all results would be duped.
+    Please don't enable this consumer unless you're sure you know what
+    you're doing.
+    """
+    topic = "org.fedoraproject.prod.openqa.job.done"
+    config_key = "fedora_openqa_schedule.resultsdb.reporter.prod.enabled"
+    url = "http://resultsdb01.qa.fedoraproject.org/resultsdb_api/api/v2.0/"
+    report = True
+
+
+class OpenQATestResultsDBReporter(OpenQAResultsDBReporter):
+    """A result reporting consumer that listens for dev fedmsgs (so it
+    will catch ones produced by fedmsg-dg-replay) and does not really
+    report results, it should log the produced ResTuples instead. This
+    is the one you should use to test stuff, go nuts with it.
+    """
+    topic = "org.fedoraproject.dev.openqa.job.done"
+    validate_signatures = False
+    config_key = "fedora_openqa_schedule.resultsdb.reporter.test.enabled"
+    url = "http://localhost:5001/api/v2.0/"
+    report = False
