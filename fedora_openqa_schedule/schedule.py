@@ -35,7 +35,6 @@ import fedfind.release
 from openqa_client.client import OpenQA_Client
 from six.moves.urllib.request import urlopen
 from six.moves.urllib.error import URLError, HTTPError
-from resultsdb_api import ResultsDBapi, ResultsDBapiException
 
 # Internal dependencies
 from fedora_openqa_schedule.config import CONFIG, WANTED
@@ -70,7 +69,7 @@ def _get_images(rel, wanted=WANTED):
         matchdict = wantimg['match'].copy()
         for foundimg in rel.all_images:
             # see if the foundimg matches the wantimg
-            if not all(item in foundimg.items() for item in matchdict.items()): 
+            if not all(item in foundimg.items() for item in matchdict.items()):
                 continue
             score = wantimg.get('score', 0)
             # assign a 'flavor' using fedfind's 'image identifier'
@@ -134,7 +133,7 @@ def _find_duplicate_jobs(client, param_urls, flavor):
 
 
 def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, version,
-                    location, force=False, extraparams=None, resultsdb_job_id=None):
+                    location, force=False, extraparams=None):
     """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with
     given URLs, flavor, arch, subvariant, imagetype, build identifier,
     and version. **NOTE**: 'build' is passed to openQA as BUILD and is
@@ -178,8 +177,6 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
         params.update(extraparams)
         # mung the BUILD so this is not considered a 'real' test run
         params['BUILD'] = "{0}-EXTRA".format(params['BUILD'])
-    if resultsdb_job_id:
-        params['RESULTSDB_JOB_ID'] = resultsdb_job_id
 
     params.update(param_urls)
 
@@ -237,29 +234,11 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     jobs = []
     univs = {}
 
-    # create jobs instance in resultsdb if necessary
-    rdb_job_id = None
-
-    if create_resultsdb_job is None:
-        create_resultsdb_job = CONFIG.getboolean('report', 'submit_resultsdb')
-
-    if create_resultsdb_job:
-        try:
-            rdb_instance = ResultsDBapi(CONFIG.get('report', 'resultsdb_url'))
-            # add link to page with overall results
-            ref_url = "%s/tests/overview?distri=fedora&version=%s&build=%s" % (CONFIG.get('report', 'openqa_url'),
-                                                                               rel.release, rel.cid)
-            job = rdb_instance.create_job(ref_url=ref_url, name=rel.cid)
-            rdb_job_id = job["id"]
-        except ResultsDBapiException as e:
-            logger.error(e)
-
     # schedule per-image jobs, keeping track of the highest score
     # per arch along the way
     for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
         jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
-                                    rel.release, location, force=force, extraparams=extraparams,
-                                    resultsdb_job_id=rdb_job_id))
+                                    rel.release, location, force=force, extraparams=extraparams))
         if score > univs.get(arch, [None, 0])[1]:
             univs[arch] = (param_urls, score, subvariant, imagetype)
 
@@ -272,6 +251,6 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
             logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
             jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype,
                                         rel.cid, rel.release, location, force=force,
-                                        extraparams=extraparams, resultsdb_job_id=rdb_job_id))
+                                        extraparams=extraparams))
 
     return (rel.cid, jobs)

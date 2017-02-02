@@ -34,6 +34,7 @@ from operator import attrgetter
 import mwclient.errors
 from openqa_client.client import OpenQA_Client
 from resultsdb_api import ResultsDBapi, ResultsDBapiException
+import resultsdb_conventions
 from wikitcms.wiki import Wiki, ResTuple
 
 # Internal dependencies
@@ -189,10 +190,11 @@ def _get_passed_tcnames(job, composeid, client=None):
             # we only get here if all the conditions are satisfied
             passed.append(testcase)
 
-    else: # isdict - this is the simple list case.
+    else:  # isdict - this is the simple list case.
         passed = testsuite
 
     return passed
+
 
 def get_passed_testcases(jobs, client=None):
     """Given an iterable of job dicts - any waiting, filtering and so
@@ -219,7 +221,7 @@ def get_passed_testcases(jobs, client=None):
             passed = _get_passed_tcnames(job, composeid, client)
             for testcase in passed:
                 # skip with warning if testcase is not in TESTCASES
-                if not testcase in conf_test_suites.TESTCASES:
+                if testcase not in conf_test_suites.TESTCASES:
                     logger.warning("No TESTCASES entry found for {0}!".format(testcase))
                     continue
                 # Each testcase name now in the `passed` list is the name of a dict in the
@@ -282,7 +284,7 @@ def wiki_report(wiki_url, jobs=None, build=None, do_report=None):
         return passed_testcases
 
 
-def resultsdb_report(resultsdb_url, jobs=None, build=None, resultsdb_job_id=None, do_report=None):
+def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resultsdb_job_id=None):
     """Report results from openQA jobs to ResultsDB. Either jobs (an
     iterable of job IDs) or build (an openQA BUILD string, usually a
     Fedora compose ID) is required (if neither is specified, the
@@ -305,48 +307,69 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, resultsdb_job_id=None
 
     client = OpenQA_Client()
     jobs = client.get_jobs(jobs=jobs, build=build)
-
-    tcname_safeify = re.compile(r"\W+")  # allow only words to be used in testcase name
+    tcname_safeify = re.compile(r"\W+")
+    target_regex = re.compile(r"^(ISO|HDD)(_\d+)?$")
 
     for job in jobs:
-        # ResultsDB's job_id must be set in argument or during test scheduling so we know what job to report to
-        rdb_job_id = resultsdb_job_id if resultsdb_job_id else job['settings'].get('RESULTSDB_JOB_ID', None)
-        if not rdb_job_id:
-            logger.warning("Job %s doesn't have ResultsDB job ID in settings nor was it set by CLI argument", job['id'])
+        # don't report jobs that have clone or user-cancelled jobs
+        if job['clone_id'] is not None or job['result'] == "user_cancelled":
             continue
-        testsuite = job['settings']['TEST']
-        if testsuite not in conf_test_suites.TESTSUITES:
-            logger.warning("No TESTSUITES entry found for test {0}!".format(testsuite))
+
+        # don't report TEST_TARGET=NONE or jobs that are missing TEST_TARGET
+        if 'TEST_TARGET' not in job['settings']:
+            logger.warning("cannot report job %d because TEST_TARGET variable is missing", job['id'])
             continue
-        # map openQA's result to ResultsDB's result
-        rdb_result = {'passed': "PASSED", 'failed': "FAILED"}.get(job['result'], 'NEEDS_INSPECTION')
-        for testcase in conf_test_suites.TESTSUITES[testsuite]:
-            # create dot-separated and safe name from testcase name from wiki
-            tc_name = tcname_safeify.sub("_", testcase).lower()
-            tc_name = tc_name[len("qa_testcase_"):] if tc_name.startswith("qa_testcase_") else tc_name
-            tc_name = "openqa.%s.%s" % (conf_test_suites.TESTCASES[testcase]['type'].lower(), tc_name)
+        if job['settings']['TEST_TARGET'] == "NONE":
+            continue
 
-            # append all extra data that could be useful
-            extradata = {}
-            extradata['arch'] = job['settings'].get('ARCH', None)
-            extradata['firmware'] = 'uefi' if 'UEFI' in job['settings'] else 'bios'
-            extradata['item'] = job['settings'].get('BUILD', None)
-            extradata['type'] = "compose"
-            extradata['subvariant'] = job['settings'].get('SUBVARIANT', None)
-            extradata['imagetype'] = job['settings'].get('IMAGETYPE', None)
-            # append all additional data
-            if testcase in conf_test_suites.TESTCASES_RESULTSDB_EXTRADATA:
-                extradata.update(_uniqueres_replacements(job, conf_test_suites.TESTCASES_RESULTSDB_EXTRADATA[testcase]))
+        try:
+            compose = job['settings']['BUILD']
+            distri = job['settings']['DISTRI']
+            version = job['settings']['VERSION']
+        except KeyError:
+            logger.warning("cannot report job %d because it is missing compose/distri/version", job['id'])
+            continue
 
-            # create link back to openQA testrun
-            job_url = "%s/tests/%s" % (CONFIG.get('report', 'openqa_url'), job['id'])
-            # create link to testcase page on Fedora wiki
-            testcase_url = "%s/%s" % (CONFIG.get('report', 'wiki_url'), testcase)
+        # construct args for resultsdb_conventions Result
+        kwargs = {}
+        tc_name = tcname_safeify.sub("_", job['test']).lower()
+        kwargs["tc_name"] = "compose." + tc_name  # FIXME: this will not be "compose." for update testing...
+        # map openQA's results to resultsdb's outcome
+        kwargs["outcome"] = {
+            'passed': "PASSED",
+            'failed': "FAILED",
+            'softfailed': "INFO"
+        }.get(job['result'], 'NEEDS_INSPECTION')
+        job_url = "%s/tests/%s" % (CONFIG.get('report', 'openqa_url'), job['id'])
+        if job["result"] in ["passed", "softfailed"]:
+            kwargs["tc_url"] = job_url  # point testcase url to latest passed test
+        kwargs["ref_url"] = job_url
+        kwargs["source"] = "openqa"
 
-            logger.info("ResultsDB: %s, %s, %s, %s", rdb_job_id, tc_name, rdb_result, extradata)
-            if do_report:
-                rdb_instance.create_result(rdb_job_id, tc_name, rdb_result, log_url=job_url, **extradata)
-                # this updates testcase link in ResultsDB with every POST. otherwise we would check whether
-                # this testcase exists in ResultsDB and update link if needed, but it would actually take more
-                # requests than this solution
-                rdb_instance.update_testcase(tc_name, testcase_url)
+        # create link to overall url for group ref_url
+        overall_url = "%s/tests/overview?distri=%s&version=%s&build=%s" % (
+            CONFIG.get('report', 'openqa_url'), distri, version, compose)
+
+        # put in the "note" field whether some module failed
+        for module in job["modules"]:
+            if module["result"] == "failed" and ("fatal" in module["flags"] or "important" in module["flags"]):
+                kwargs["note"] = module["name"] + " module failed"
+                break
+            if module["result"] == "failed" and job["result"] == "softfailed":
+                kwargs["note"] = module["name"] + " module softfailed"
+
+        if target_regex.match(job['settings']['TEST_TARGET']):
+            test_target_name = job['settings'][job['settings']['TEST_TARGET']]
+            rdb_object = resultsdb_conventions.FedoraImageResult(compose, test_target_name, **kwargs)
+        elif job['settings']['TEST_TARGET'] == "COMPOSE":
+            rdb_object = resultsdb_conventions.ComposeResult(compose, **kwargs)
+        else:
+            logger.warning("cannot report job %d because TEST_TARGET variable is invalid", job['id'])
+            continue
+
+        rdb_object.extradata.update({
+            'firmware': 'uefi' if 'UEFI' in job['settings'] else 'bios'
+        })
+        # FIXME: use overall_url as a group ref_url
+
+        rdb_object.report(rdb_instance)

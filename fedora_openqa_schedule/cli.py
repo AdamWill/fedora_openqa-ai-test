@@ -86,7 +86,7 @@ def command_report(args, wiki_url):
                 report.wiki_report(wiki_url, jobs=jobs, do_report=True)
             if args.resultsdb:
                 report.resultsdb_report(
-                    resultsdb_url, jobs=jobs, resultsdb_job_id=args.resultsdb_job_id, do_report=True)
+                    resultsdb_url, jobs=jobs, do_report=True, resultsdb_job_id=args.resultsdb_job_id)
             if not args.wiki and not args.resultsdb:
                 # use wiki_report to only print results
                 report.wiki_report(wiki_url, jobs=jobs, do_report=False)
@@ -99,7 +99,7 @@ def command_report(args, wiki_url):
                     report.wiki_report(wiki_url, build=build, do_report=True)
                 if args.resultsdb:
                     report.resultsdb_report(
-                        resultsdb_url, build=build, resultsdb_job_id=args.resultsdb_job_id, do_report=True)
+                        resultsdb_url, build=build, do_report=True, resultsdb_job_id=args.resultsdb_job_id)
                 if not args.wiki and not args.resultsdb:
                     # use wiki_report to only print results
                     report.wiki_report(wiki_url, build=build, do_report=False)
