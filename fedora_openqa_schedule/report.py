@@ -34,7 +34,7 @@ from operator import attrgetter
 import mwclient.errors
 from openqa_client.client import OpenQA_Client
 from resultsdb_api import ResultsDBapi, ResultsDBapiException
-import resultsdb_conventions
+from resultsdb_conventions.fedora import FedoraImageResult, FedoraComposeResult
 from wikitcms.wiki import Wiki, ResTuple
 
 # Internal dependencies
@@ -361,9 +361,9 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resul
 
         if target_regex.match(job['settings']['TEST_TARGET']):
             test_target_name = job['settings'][job['settings']['TEST_TARGET']]
-            rdb_object = resultsdb_conventions.FedoraImageResult(compose, test_target_name, **kwargs)
+            rdb_object = FedoraImageResult(test_target_name, compose, **kwargs)
         elif job['settings']['TEST_TARGET'] == "COMPOSE":
-            rdb_object = resultsdb_conventions.ComposeResult(compose, **kwargs)
+            rdb_object = FedoraComposeResult(compose, **kwargs)
         else:
             logger.warning("cannot report job %d because TEST_TARGET variable is invalid", job['id'])
             continue
