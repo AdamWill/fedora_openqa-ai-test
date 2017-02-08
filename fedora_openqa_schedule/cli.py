@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) 2015 Red Hat
+# Copyright (C) Red Hat Inc.
 #
 # This file is part of fedora-openqa-schedule.
 #
@@ -25,6 +25,7 @@
 
 # Standard libraries
 import argparse
+from functools import partial
 import logging
 import sys
 
@@ -32,16 +33,16 @@ import sys
 from resultsdb_api import ResultsDBapiException
 
 # Internal dependencies
-import fedora_openqa_schedule.schedule as schedule
-import fedora_openqa_schedule.report as report
-from fedora_openqa_schedule.config import CONFIG
+from . import schedule
+from . import report
+from .config import CONFIG
 
 logger = logging.getLogger(__name__)
 
 
 ### SUB-COMMAND METHODS
 
-def command_compose(args, *_, **__):
+def command_compose(args):
     """run OpenQA on a specified compose, optionally reporting
     results if a matching wikitcms ValidationEvent is found by
     relval/wikitcms.
@@ -50,14 +51,14 @@ def command_compose(args, *_, **__):
     if args.updates:
         extraparams = {'GRUBADD': "inst.updates={0}".format(args.updates)}
     try:
-        (compose, jobs) = schedule.jobs_from_compose(
-            args.location, force=args.force, extraparams=extraparams, create_resultsdb_job=args.create_resultsdb_job)
+        (_, jobs) = schedule.jobs_from_compose(
+            args.location, force=args.force, extraparams=extraparams, openqa_hostname=args.openqa_hostname)
     except schedule.TriggerException as err:
         logger.warning("No jobs run! %s", err)
         sys.exit(1)
 
     if jobs:
-        print("Scheduled jobs: {0}".format(jobs))
+        print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
         sys.exit()
     else:
         msg = "No jobs run!"
@@ -71,38 +72,42 @@ def command_compose(args, *_, **__):
     sys.exit()
 
 
-def command_report(args, wiki_url):
+def command_report(args):
     """Map a list of openQA job IDs and/or builds to Wikitcms test
     results, and either display the ResTups for inspection or report
     the results to the wiki and/or ResultsDB.
     """
     jobs = [int(job) for job in args.jobs if job.isdigit()]
     builds = [build for build in args.jobs if not build.isdigit()]
-    resultsdb_url = CONFIG.get('report', 'resultsdb_url')
 
+    openqa_args = {
+        'openqa_hostname': args.openqa_hostname,
+        'openqa_baseurl': args.openqa_baseurl
+    }
+    # to avoid a bunch of boiler plate below, let's use some partials
+    wikireport = partial(report.wiki_report, wiki_hostname=args.wiki_hostname, **openqa_args)
+    rdbreport = partial(report.resultsdb_report, resultsdb_url=args.resultsdb_url, **openqa_args)
     if jobs:
         try:
             if args.wiki:
-                report.wiki_report(wiki_url, jobs=jobs, do_report=True)
+                wikireport(jobs=jobs, do_report=True)
             if args.resultsdb:
-                report.resultsdb_report(
-                    resultsdb_url, jobs=jobs, do_report=True, resultsdb_job_id=args.resultsdb_job_id)
+                rdbreport(jobs=jobs, do_report=True)
             if not args.wiki and not args.resultsdb:
                 # use wiki_report to only print results
-                report.wiki_report(wiki_url, jobs=jobs, do_report=False)
+                wikireport(jobs=jobs, do_report=False)
         except (report.LoginError, ResultsDBapiException) as e:
             logger.error("Reporting failed: %s", e)
     if builds:
         for build in builds:
             try:
                 if args.wiki:
-                    report.wiki_report(wiki_url, build=build, do_report=True)
+                    wikireport(build=build, do_report=True)
                 if args.resultsdb:
-                    report.resultsdb_report(
-                        resultsdb_url, build=build, do_report=True, resultsdb_job_id=args.resultsdb_job_id)
+                    rdbreport(build=build, do_report=True)
                 if not args.wiki and not args.resultsdb:
                     # use wiki_report to only print results
-                    report.wiki_report(wiki_url, build=build, do_report=False)
+                    wikireport(build=build, do_report=False)
             except (report.LoginError, ResultsDBapiException) as e:
                 logger.error("Reporting failed: %s", e)
 
@@ -124,17 +129,13 @@ def run():
     # shut up, requests
     logging.getLogger('requests.packages.urllib3.connectionpool').setLevel(logging.WARNING)
 
-    wiki_url = "fedoraproject.org"
-    if args.test:
-        logger.debug("using test wiki")
-        wiki_url = "stg.fedoraproject.org"
-
-    args.func(args, wiki_url)
+    args.func(args)
 
 
-def parse_args():
-    """Parse arguments with argparse."""
-    test_help = "Operate on the staging wiki (for testing)"
+def parse_args(args=None):
+    """Parse arguments with argparse. Args can be passed in for
+    testing as args; usually, will parse sys.argv.
+    """
     parser = argparse.ArgumentParser(description=(
         "Run OpenQA tests for a release validation test event."))
     subparsers = parser.add_subparsers()
@@ -147,15 +148,14 @@ def parse_args():
         'location', help="The top-level URL of the compose",
         metavar="https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-24-20160113.n.1/compose")
     parser_compose.add_argument(
+        "--openqa-hostname", help="openQA host to schedule jobs on (default: client library "
+        "default)", metavar='localhost')
+    parser_compose.add_argument(
         '--force', '-f', help="For each ISO/flavor combination, schedule jobs even if there "
         "are existing, non-cancelled jobs for that combination", action='store_true')
     parser_compose.add_argument(
         '--updates', '-u', help="URL to an updates image to load for all tests. The tests that "
         "test updates image loading will fail when you use this")
-    parser_compose.add_argument(
-        '--create_resultsdb_job', '-r', help="Create job for this run in ResultsDB and add its ID "
-        "to openQA job settings. This is needed if you want to submit results of scheduled tests into ResultsDB",
-        action="store_true", default=False)
     parser_compose.set_defaults(func=command_compose)
 
     parser_report = subparsers.add_parser(
@@ -166,15 +166,22 @@ def parse_args():
         "'Fedora-24-20160113.n.1'). For each build included, the latest jobs will be reported.")
     parser_report.set_defaults(func=command_report)
     parser_report.add_argument(
+        "--openqa-hostname", help="openQA host to query for results (default: client library "
+        "default)", metavar='localhost')
+    parser_report.add_argument(
+        "--openqa-baseurl", help="Public openQA base URL for producing links to results (default: "
+        "client library baseurl)", metavar='https://openqa.example.org')
+    parser_report.add_argument(
         "--wiki", action="store_true", default=False, help="Submit results to wiki")
     parser_report.add_argument(
         "--resultsdb", action="store_true", default=False, help="Submit results to ResultsDB")
     parser_report.add_argument(
-        "--resultsdb_job_id", "-r", help="ResultsDB job ID (if it wasn't set automatically by scheduling with "
-                                         "--create_resultsdb_job argument)")
+        "--wiki-hostname", help="Mediawiki host to report to (default: stg.fedoraproject.org). "
+        "Scheme 'https' and path '/w/' are currently hard coded", metavar='fedoraproject.org')
+    parser_report.add_argument(
+        "--resultsdb-url", help="ResultsDB URL to report to (default: "
+        "http://localhost:5001/api/v2.0/)")
 
-    parser.add_argument(
-        '--test', '-t', help=test_help, action='store_true')
     parser.add_argument(
         '--log-file', '-f', help="If given, log into specified file. When not provided, stdout"
         " is used", default=CONFIG.get('cli', 'log-file'))
@@ -183,7 +190,10 @@ def parse_args():
         choices=('debug', 'info', 'warning', 'error', 'critical'),
         default=CONFIG.get('cli', 'log-level'))
 
-    return parser.parse_args()
+    if not args:
+        # usual case, use sys.argv
+        args = sys.argv[1:]
+    return parser.parse_args(args)
 
 
 def main():
@@ -196,3 +206,5 @@ def main():
 
 if __name__ == '__main__':
     main()
+
+# vim: set textwidth=120 ts=8 et sw=4:

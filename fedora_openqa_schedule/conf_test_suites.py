@@ -871,3 +871,5 @@ TESTSUITES = {
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
 }
+
+# vim: set textwidth=120 ts=8 et sw=4:

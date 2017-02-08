@@ -25,8 +25,6 @@ result reporting go here.
 
 # standard libraries
 import re
-import copy
-import time
 import logging
 from operator import attrgetter
 
@@ -38,8 +36,8 @@ from resultsdb_conventions.fedora import FedoraImageResult, FedoraComposeResult
 from wikitcms.wiki import Wiki, ResTuple
 
 # Internal dependencies
-import fedora_openqa_schedule.conf_test_suites as conf_test_suites
-from fedora_openqa_schedule.config import CONFIG
+from . import conf_test_suites
+from .config import CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -56,27 +54,24 @@ def _uniqueres_replacements(job, tcdict):
     and so on. Returns a new dict with the modifications.
     """
     arch = job['settings']['ARCH']
-    flavor = job['settings']['FLAVOR']
-    fs = job['settings']['TEST'].split('_')[-1]
+    fs = job['test'].split('_')[-1]
     desktop = job['settings'].get('DESKTOP', '')
-    try:
-        (subvariant, imagetype, _) = flavor.split('-')
-    except ValueError:
-        # the above fails when the flavor is 'universal'. This is just
-        # to avoid crashing, these values should never be used
-        subvariant = imagetype = 'universal'
+    subvariant = job['settings']['SUBVARIANT']
+    imagetype = job['settings']['IMAGETYPE']
     imagetype = imagetype.replace('boot', 'netinst')
-    # reverse the - to _ sub we do when constructing the flavor (we
-    # know no type values really have _ in them, so this is safe)
-    imagetype = imagetype.replace('_', '-')
     subvariant = subvariant.replace('_Base', '')
     subvariant_or_arm = "ARM" if arch == "arm" else subvariant
-    if 'UEFI' in job['settings']:
+
+    if arch == "arm":
+        bootmethod = 'ARM'
+        firmware = 'ARM'
+    elif 'UEFI' in job['settings']:
         firmware = 'UEFI'
         bootmethod = 'x86_64 UEFI'
     else:
         firmware = 'BIOS'
         bootmethod = 'x86_64 BIOS'
+
     role = ''
     if 'role_deploy_' in job['test']:
         role = job['test'].split('role_deploy_')[1]
@@ -114,11 +109,11 @@ def _get_passed_tcnames(job, composeid, client=None):
     assume they're already in the jobs list that get_passed_testcases
     got.
     """
-    tsname = job['settings']['TEST']
+    tsname = job['test']
     # There usually ought to be an entry in TESTSUITES for all
     # tests, but just in case someone messed up, let's be safe
     if tsname not in conf_test_suites.TESTSUITES:
-        logger.warning("No TESTSUITES entry found for test {0}!".format(tsname))
+        logger.warning("No TESTSUITES entry found for test %s!", tsname)
         return []
 
     passed = []
@@ -222,7 +217,7 @@ def get_passed_testcases(jobs, client=None):
             for testcase in passed:
                 # skip with warning if testcase is not in TESTCASES
                 if testcase not in conf_test_suites.TESTCASES:
-                    logger.warning("No TESTCASES entry found for {0}!".format(testcase))
+                    logger.warning("No TESTCASES entry found for %s!", testcase)
                     continue
                 # Each testcase name now in the `passed` list is the name of a dict in the
                 # TESTCASES dict-of-dicts which more precisely identifies the 'test instance' (when
@@ -240,25 +235,25 @@ def get_passed_testcases(jobs, client=None):
     return sorted(list(passed_testcases), key=attrgetter('testcase'))
 
 
-def wiki_report(wiki_url, jobs=None, build=None, do_report=None):
+def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openqa_hostname=None,
+                openqa_baseurl=None):
     """Report results from openQA jobs to Wikitcms. Either jobs (an
     iterable of job IDs) or build (an openQA BUILD string, usually a
     Fedora compose ID) is required (if neither is specified, the
     openQA client will raise TypeError). If do_report is False, will
-    just print out the python-wikitcms ResTups for inspection. If
-    do_report is None, will read the setting from the config file; if
-    no config file is present, default is True.
+    just print out the python-wikitcms ResTups for inspection.
     """
-    client = OpenQA_Client()
+    client = OpenQA_Client(openqa_hostname)
     jobs = client.get_jobs(jobs=jobs, build=build)
     passed_testcases = get_passed_testcases(jobs, client)
     logger.info("passed testcases: %s", passed_testcases)
-    if do_report is None:
-        do_report = CONFIG.getboolean('report', 'submit_wiki')
+
+    if not wiki_hostname:
+        wiki_hostname = CONFIG.get('report', 'wiki_hostname')
 
     if do_report:
-        logger.info("reporting test passes")
-        wiki = Wiki(('https', wiki_url), '/w/')
+        logger.info("reporting test passes to %s", wiki_hostname)
+        wiki = Wiki(('https', wiki_hostname), '/w/')
         if not wiki.logged_in:
             # This seems to occasionally throw bogus WrongPass errors
             try:
@@ -284,19 +279,22 @@ def wiki_report(wiki_url, jobs=None, build=None, do_report=None):
         return passed_testcases
 
 
-def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resultsdb_job_id=None):
+def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
+                     openqa_hostname=None, openqa_baseurl=None):
     """Report results from openQA jobs to ResultsDB. Either jobs (an
     iterable of job IDs) or build (an openQA BUILD string, usually a
     Fedora compose ID) is required (if neither is specified, the
-    openQA client will raise TypeError). If set, report jobs to ResultsDB
-    job, specified by resultsdb_job_id. If not set, try to obtain ID from
-    openQA job settings. If do_report is False, will
-    just print out list of jobs to report for inspection. If
-    do_report is None, will read the setting from the config file; if
-    no config file is present, default is True.
+    openQA client will raise TypeError). If do_report is false-y, will
+    just print out list of jobs to report for inspection.
+    openqa_hostname is the host name of the openQA server to connect
+    to; if set to None, the client library's default behaviour is used
+    (see library for more details). openqa_baseurl is the public base
+    URL for constructing links to openQA pages; if set to None, the
+    OpenQA_Client base_url property (which is derived from the host
+    name) will be used.
     """
-    if do_report is None:
-        do_report = CONFIG.getboolean('report', 'submit_resultsdb')
+    if not resultsdb_url:
+        resultsdb_url = CONFIG.get('report', 'resultsdb_url')
 
     if do_report:
         try:
@@ -304,8 +302,13 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resul
         except ResultsDBapiException as e:
             logger.error(e)
             return
+    else:
+        rdb_instance = None
 
-    client = OpenQA_Client()
+    client = OpenQA_Client(openqa_hostname)
+    if not openqa_baseurl:
+        openqa_baseurl = client.baseurl
+
     jobs = client.get_jobs(jobs=jobs, build=build)
     tcname_safeify = re.compile(r"\W+")
     target_regex = re.compile(r"^(ISO|HDD)(_\d+)?$")
@@ -341,7 +344,7 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resul
             'parallel_failed': "FAILED",
             'softfailed': "INFO"
         }.get(job['result'], 'NEEDS_INSPECTION')
-        job_url = "%s/tests/%s" % (CONFIG.get('report', 'openqa_url'), job['id'])
+        job_url = "%s/tests/%s" % (openqa_baseurl, job['id'])
         if job["result"] in ["passed", "softfailed"]:
             kwargs["tc_url"] = job_url  # point testcase url to latest passed test
         kwargs["ref_url"] = job_url
@@ -349,7 +352,7 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resul
 
         # create link to overall url for group ref_url
         overall_url = "%s/tests/overview?distri=%s&version=%s&build=%s" % (
-            CONFIG.get('report', 'openqa_url'), distri, version, compose)
+            openqa_baseurl, distri, version, compose)
 
         # put in the "note" field whether some module failed
         for module in job["modules"]:
@@ -357,7 +360,7 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resul
                 kwargs["note"] = module["name"] + " module failed"
                 break
             if module["result"] == "failed" and job["result"] == "softfailed":
-                kwargs["note"] = module["name"] + " module softfailed"
+                kwargs["note"] = "non-important module {0} failed".format(module["name"])
 
         if target_regex.match(job['settings']['TEST_TARGET']):
             test_target_name = job['settings'][job['settings']['TEST_TARGET']]
@@ -373,4 +376,6 @@ def resultsdb_report(resultsdb_url, jobs=None, build=None, do_report=None, resul
         })
         # FIXME: use overall_url as a group ref_url
 
-        rdb_object.report(rdb_instance)
+        return rdb_object.report(rdb_instance)
+
+# vim: set textwidth=120 ts=8 et sw=4:

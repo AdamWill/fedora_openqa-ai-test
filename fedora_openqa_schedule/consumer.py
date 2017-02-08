@@ -1,4 +1,4 @@
-# Copyright (C) 2016 John Dulaney, Adam Williamson
+# Copyright (C) 2016 John Dulaney, Red Hat Inc.
 #
 # This file is part of fedora-openqa-schedule.
 #
@@ -20,20 +20,79 @@
 
 """fedmsg consumer to schedule openQA jobs."""
 
-import re
-import sys
-
+# external imports
 import fedmsg.consumers
-import fedora_openqa_schedule.schedule as schedule
-import fedora_openqa_schedule.report as report
+
+# internal imports
+from .config import CONFIG
+from . import schedule
+from . import report
 
 
-class OpenQAConsumer(fedmsg.consumers.FedmsgConsumer):
+# COMMON BASE CLASSES WITH OPENQA CONFIG VALUES
+
+
+class OpenQAProductionConsumer(fedmsg.consumers.FedmsgConsumer):
+    """Production mixin for both wiki and ResultsDB reporters so they
+    can handily share some config settings.
+    """
+    topic = "org.fedoraproject.prod.openqa.job.done"
+
+    # Values read from CONFIG are implemented as properties (not class
+    # or instance variables) to ease testing
+    @property
+    def openqa_hostname(self):
+        """openQA hostname."""
+        return CONFIG.get('consumers', 'prod_oqa_hostname')
+
+    @property
+    def openqa_baseurl(self):
+        """openQA base URL."""
+        return CONFIG.get('consumers', 'prod_oqa_baseurl')
+
+
+class OpenQAStagingConsumer(fedmsg.consumers.FedmsgConsumer):
+    """Staging mixin for both wiki and ResultsDB reporters so they can
+    handily share some config settings.
+    """
+    topic = "org.fedoraproject.stg.openqa.job.done"
+
+    @property
+    def openqa_hostname(self):
+        """openQA hostname."""
+        return CONFIG.get('consumers', 'stg_oqa_hostname')
+
+    @property
+    def openqa_baseurl(self):
+        """openQA base URL."""
+        return CONFIG.get('consumers', 'stg_oqa_baseurl')
+
+
+class OpenQATestConsumer(fedmsg.consumers.FedmsgConsumer):
+    """Test mixin for both wiki and ResultsDB reporters so they can
+    handily share some config settings.
+    """
+    topic = "org.fedoraproject.dev.openqa.job.done"
+    validate_signatures = False
+
+    @property
+    def openqa_hostname(self):
+        """openQA hostname."""
+        return CONFIG.get('consumers', 'test_oqa_hostname')
+
+    @property
+    def openqa_baseurl(self):
+        """openQA base URL."""
+        return CONFIG.get('consumers', 'test_oqa_baseurl')
+
+
+# SCHEDULER CLASSES
+
+
+class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
     """A fedmsg consumer that schedules openQA jobs when a new compose
     appears.
     """
-    topic = ["org.fedoraproject.prod.pungi.compose.status.change"]
-    config_key = "fedora_openqa_schedule.consumer.enabled"
 
     def _log(self, level, message):
         """Convenience function for sticking the class name on the
@@ -52,7 +111,8 @@ class OpenQAConsumer(fedmsg.consumers.FedmsgConsumer):
             # We have a complete pungi4 compose
             self._log('info', "Scheduling openQA jobs for {0}".format(compstr))
             try:
-                (compose, jobs) = schedule.jobs_from_compose(location)
+                # pylint: disable=no-member
+                (compose, jobs) = schedule.jobs_from_compose(location, openqa_hostname=self.openqa_hostname)
             except schedule.TriggerException as err:
                 self._log('warning', "No openQA jobs run! {0}".format(err))
                 return
@@ -69,28 +129,58 @@ class OpenQAConsumer(fedmsg.consumers.FedmsgConsumer):
         return
 
 
-class OpenQAWikiConsumer(fedmsg.consumers.FedmsgConsumer):
+class OpenQAProductionScheduler(OpenQAScheduler, OpenQAProductionConsumer):
+    """A scheduling consumer that listens for production fedmsgs and
+    creates events in the production openQA instance by default.
+    """
+    topic = ["org.fedoraproject.prod.pungi.compose.status.change"]
+    config_key = "fedora_openqa_schedule.scheduler.prod.enabled"
+
+
+class OpenQAStagingScheduler(OpenQAScheduler, OpenQAStagingConsumer):
+    """A scheduling consumer that listens for staging fedmsgs and
+    creates events in the staging openQA instance by default.
+    """
+    topic = ["org.fedoraproject.stg.pungi.compose.status.change"]
+    config_key = "fedora_openqa_schedule.scheduler.stg.enabled"
+
+
+class OpenQATestScheduler(OpenQAScheduler):
+    """A scheduling consumer that listens for dev fedmsgs and creates
+    events in a local openQA instance by default.
+    """
+    topic = ["org.fedoraproject.dev.pungi.compose.status.change"]
+    config_key = "fedora_openqa_schedule.scheduler.test.enabled"
+    # We just hardcode this here and don't inherit from TestConsumer,
+    # as the config values are intended for the Reporter consumers
+    # that *consume* openQA jobs, we likely always want localhost for
+    # test *creating* openQA jobs
+    openqa_hostname = 'localhost'
+
+
+# WIKI REPORTER CLASSES
+
+
+class OpenQAWikiReporter(fedmsg.consumers.FedmsgConsumer):
     """A fedmsg consumer that reports openQA results to Wikitcms when
     a job completes. This is a parent class for prod, stg and test
-    variants, it is not complete in itself. Whichever child you use,
-    make sure the openQA client client.conf is pointed at the same
-    openQA instance that produces the fedmsgs you're listening for,
-    or things will get weird (you'll be getting job IDs from one
-    openQA but retrieving the jobs with those same IDs from the other
-    openQA).
+    variants, it is not intended to be used itself.
     """
 
     def consume(self, message):
         """Consume incoming message."""
         job = message['body']['msg']['id']
         self.log.info("%s: reporting results for %s", self.__class__.__name__, job)
-        results = report.wiki_report(self.url, jobs=[job], do_report=self.report)
-        if not self.report:
+        # pylint: disable=no-member
+        results = report.wiki_report(
+            wiki_hostname=self.wiki_hostname, jobs=[job], do_report=self.do_report,
+            openqa_hostname=self.openqa_hostname, openqa_baseurl=self.openqa_baseurl)
+        if not self.do_report:
             for res in results:
                 self.log.info("%s: would report %s", self.__class__.__name__, res)
 
 
-class OpenQAProductionWikiConsumer(OpenQAWikiConsumer):
+class OpenQAProductionWikiReporter(OpenQAWikiReporter, OpenQAProductionConsumer):
     """A result reporting consumer that listens for production fedmsgs
     and reports to the production wiki. Only one of these should ever
     be running at one time; it'd be particularly bad if we had two
@@ -98,13 +188,20 @@ class OpenQAProductionWikiConsumer(OpenQAWikiConsumer):
     Please don't enable this consumer unless you're sure you know what
     you're doing.
     """
-    topic = "org.fedoraproject.prod.openqa.job.done"
-    config_key = "fedora_openqa_schedule.wiki.consumer.prod.enabled"
-    url = "fedoraproject.org"
-    report = True
+    config_key = "fedora_openqa_schedule.wiki.reporter.prod.enabled"
+
+    @property
+    def wiki_hostname(self):
+        """Wiki hostname."""
+        return CONFIG.get('consumers', 'prod_wiki_hostname')
+
+    @property
+    def do_report(self):
+        """Whether to report."""
+        return CONFIG.getboolean('consumers', 'prod_wiki_report')
 
 
-class OpenQAStagingWikiConsumer(OpenQAWikiConsumer):
+class OpenQAStagingWikiReporter(OpenQAWikiReporter, OpenQAStagingConsumer):
     """A result reporting consumer that listens for staging fedmsgs
     and reports to the staging wiki. Only one of these should ever
     be running at one time; it'd be particularly bad if we had two
@@ -112,66 +209,113 @@ class OpenQAStagingWikiConsumer(OpenQAWikiConsumer):
     Please don't enable this consumer unless you're sure you know what
     you're doing.
     """
-    topic = "org.fedoraproject.stg.openqa.job.done"
-    config_key = "fedora_openqa_schedule.wiki.consumer.stg.enabled"
-    url = "stg.fedoraproject.org"
-    report = True
+    config_key = "fedora_openqa_schedule.wiki.reporter.stg.enabled"
+
+    @property
+    def wiki_hostname(self):
+        """Wiki hostname."""
+        return CONFIG.get('consumers', 'stg_wiki_hostname')
+
+    @property
+    def do_report(self):
+        """Whether to report."""
+        return CONFIG.getboolean('consumers', 'stg_wiki_report')
 
 
-class OpenQATestWikiConsumer(OpenQAWikiConsumer):
+class OpenQATestWikiReporter(OpenQAWikiReporter, OpenQATestConsumer):
     """A result reporting consumer that listens for dev fedmsgs (so it
     will catch ones produced by fedmsg-dg-replay) and does not really
     report results, it should log the produced ResTuples instead. This
     is the one you should use to test stuff, go nuts with it.
     """
-    topic = "org.fedoraproject.dev.openqa.job.done"
-    validate_signatures = False
-    config_key = "fedora_openqa_schedule.wiki.consumer.test.enabled"
-    url = "stg.fedoraproject.org"
-    report = False
+    config_key = "fedora_openqa_schedule.wiki.reporter.test.enabled"
+
+    @property
+    def wiki_hostname(self):
+        """Wiki hostname."""
+        return CONFIG.get('consumers', 'test_wiki_hostname')
+
+    @property
+    def do_report(self):
+        """Whether to report."""
+        return CONFIG.getboolean('consumers', 'test_wiki_report')
+
+
+# RESULTSDB REPORTER CLASSES
+
 
 class OpenQAResultsDBReporter(fedmsg.consumers.FedmsgConsumer):
     """A fedmsg consumer that reports openQA results to ResultsDB when
     a job completes. This is a parent class for prod and test
-    variants, it is not complete in itself. Whichever child you use,
-    make sure the openQA client client.conf is pointed at the same
-    openQA instance that produces the fedmsgs you're listening for,
-    or things will get weird (you'll be getting job IDs from one
-    openQA but retrieving the jobs with those same IDs from the other
-    openQA).
+    variants, it is not complete in itself.
     """
 
     def consume(self, message):
         """Consume incoming message."""
         job = message['body']['msg']['id']
         self.log.info("%s: reporting results for %s", self.__class__.__name__, job)
-        results = report.resultsdb_report(self.url, jobs=[job], do_report=self.report)
-        if not self.report:
-            for res in results:
-                self.log.info("%s: would report %s", self.__class__.__name__, res)
+        # pylint: disable=no-member
+        report.resultsdb_report(
+            resultsdb_url=self.resultsdb_url, jobs=[job], do_report=self.do_report,
+            openqa_hostname=self.openqa_hostname, openqa_baseurl=self.openqa_baseurl)
 
 
-class OpenQAProductionResultsDBReporter(OpenQAResultsDBReporter):
+class OpenQAProductionResultsDBReporter(OpenQAResultsDBReporter, OpenQAProductionConsumer):
     """A result reporting consumer that listens for production fedmsgs
     and reports to the production ResultsDB. Only one of these should
     ever be running at one time; it'd be particularly bad if we had
     two running, all results would be duped. Please don't enable this
     consumer unless you're sure you know what you're doing.
     """
-    topic = "org.fedoraproject.prod.openqa.job.done"
     config_key = "fedora_openqa_schedule.resultsdb.reporter.prod.enabled"
-    url = "http://resultsdb01.qa.fedoraproject.org/resultsdb_api/api/v2.0/"
-    report = True
+
+    @property
+    def resultsdb_url(self):
+        """ResultsDB URL."""
+        return CONFIG.get('consumers', 'prod_rdb_url')
+
+    @property
+    def do_report(self):
+        """Whether to report."""
+        return CONFIG.getboolean('consumers', 'prod_rdb_report')
 
 
-class OpenQATestResultsDBReporter(OpenQAResultsDBReporter):
+class OpenQAStagingResultsDBReporter(OpenQAResultsDBReporter, OpenQAStagingConsumer):
+    """A result reporting consumer that listens for staging fedmsgs
+    and reports to the production ResultsDB. Only one of these should
+    ever be running at one time; it'd be particularly bad if we had
+    two running, all results would be duped. Please don't enable this
+    consumer unless you're sure you know what you're doing.
+    """
+    config_key = "fedora_openqa_schedule.resultsdb.reporter.prod.enabled"
+
+    @property
+    def resultsdb_url(self):
+        """ResultsDB URL."""
+        return CONFIG.get('consumers', 'stg_rdb_url')
+
+    @property
+    def do_report(self):
+        """Whether to report."""
+        return CONFIG.getboolean('consumers', 'stg_rdb_report')
+
+
+class OpenQATestResultsDBReporter(OpenQAResultsDBReporter, OpenQATestConsumer):
     """A result reporting consumer that listens for dev fedmsgs (so it
     will catch ones produced by fedmsg-dg-replay) and reports to a
     ResultsDB instance running on localhost:5001 (as you get by running
     the development mode).
     """
-    topic = "org.fedoraproject.dev.openqa.job.done"
-    validate_signatures = False
     config_key = "fedora_openqa_schedule.resultsdb.reporter.test.enabled"
-    url = "http://localhost:5001/api/v2.0/"
-    report = False
+
+    @property
+    def resultsdb_url(self):
+        """ResultsDB URL."""
+        return CONFIG.get('consumers', 'test_rdb_url')
+
+    @property
+    def do_report(self):
+        """Whether to report."""
+        return CONFIG.getboolean('consumers', 'test_rdb_report')
+
+# vim: set textwidth=120 ts=8 et sw=4:

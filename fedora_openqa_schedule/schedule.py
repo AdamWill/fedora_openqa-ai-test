@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Red Hat
+# Copyright (C) 2015 Red Hat Inc.
 #
 # This file is part of fedora-openqa-schedule.
 #
@@ -24,20 +24,16 @@ job scheduling go here.
 """
 
 # Standard libraries
-import json
 import logging
 import os.path
-import re
 
 # External dependencies
 import fedfind.helpers
 import fedfind.release
 from openqa_client.client import OpenQA_Client
-from six.moves.urllib.request import urlopen
-from six.moves.urllib.error import URLError, HTTPError
 
 # Internal dependencies
-from fedora_openqa_schedule.config import CONFIG, WANTED
+from .config import WANTED
 
 logger = logging.getLogger(__name__)
 
@@ -60,10 +56,12 @@ def _get_dkboot_urls(location, arch='armhfp'):
     return (pxeboot_url.format(location, arch, 'vmlinuz'), pxeboot_url.format(location, arch, 'initrd.img'))
 
 
-def _get_images(rel, wanted=WANTED):
+def _get_images(rel, wanted=None):
     """Given a fedfind Release instance, this returns a list of (flavor, arch, score, {param: url},
     subvariant, imagetype) tuples for images to be tested.
     """
+    if not wanted:
+        wanted = WANTED
     images = []
     for wantimg in wanted:
         matchdict = wantimg['match'].copy()
@@ -133,7 +131,7 @@ def _find_duplicate_jobs(client, param_urls, flavor):
 
 
 def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, version,
-                    location, force=False, extraparams=None):
+                    location, force=False, extraparams=None, openqa_hostname=None):
     """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with
     given URLs, flavor, arch, subvariant, imagetype, build identifier,
     and version. **NOTE**: 'build' is passed to openQA as BUILD and is
@@ -146,7 +144,11 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     adds additional parameters (usually openQA variables) to the POST
     request. When extraparams is used, the BUILD value has '-EXTRA'
     appended to signify that this should not be considered a clean run
-    for the build.
+    for the build. openqa_hostname can be used to specify a particular
+    host to schedule the jobs on, if not set, the client library will
+    choose (see library documentation for details on how). You must
+    have a key and secret in your openQA client library config for the
+    chosen host.
     """
     logger.info("sending jobs to openQA")
     # find current and previous releases; these are used to determine
@@ -180,7 +182,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
 
     params.update(param_urls)
 
-    client = OpenQA_Client()
+    client = OpenQA_Client(openqa_hostname)
 
     if not force:
         duplicates = _find_duplicate_jobs(client, param_urls, flavor)
@@ -195,7 +197,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     return output["ids"]
 
 
-def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, create_resultsdb_job=None):
+def jobs_from_compose(location, wanted=None, force=False, extraparams=None, openqa_hostname=None):
     """Schedule jobs against a specific compose. Returns a 2-tuple
     of the compose ID and the list of job IDs.
 
@@ -220,9 +222,12 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     containing arbitrary extra parameters to be included in the ISO
     post request (usually this will be to specify extra openQA vars).
 
-    create_resultsdb_job controls whether to create job in ResultsDB for
-    this compose.
+    openqa_hostname is passed through as well. It specifies which
+    openQA host to schedule the jobs on. If not set, the client lib
+    will choose.
     """
+    if not wanted:
+        wanted = WANTED
     try:
         rel = fedfind.release.get_release(url=location)
     except ValueError:
@@ -238,7 +243,8 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
     # per arch along the way
     for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
         jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
-                                    rel.release, location, force=force, extraparams=extraparams))
+                                    rel.release, location, force=force, extraparams=extraparams,
+                                    openqa_hostname=openqa_hostname))
         if score > univs.get(arch, [None, 0])[1]:
             univs[arch] = (param_urls, score, subvariant, imagetype)
 
@@ -251,6 +257,8 @@ def jobs_from_compose(location, wanted=WANTED, force=False, extraparams=None, cr
             logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
             jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype,
                                         rel.cid, rel.release, location, force=force,
-                                        extraparams=extraparams))
+                                        extraparams=extraparams, openqa_hostname=openqa_hostname))
 
     return (rel.cid, jobs)
+
+# vim: set textwidth=120 ts=8 et sw=4:

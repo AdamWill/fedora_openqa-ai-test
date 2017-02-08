@@ -1,0 +1,1003 @@
+{
+    "header": {
+        "version": "1.2",
+        "type": "productmd.images"
+    },
+    "payload": {
+        "images": {
+            "Workstation": {
+                "x86_64": [
+                    {
+                        "subvariant": "Workstation",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479210327,
+                        "checksums": {
+                            "sha256": "ab2f75f485e4d21e62c35354a72f8cecaac1631f28c07adfa5772abe766ff006"
+                        },
+                        "arch": "x86_64",
+                        "size": 1440743424,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Workstation",
+                        "format": "iso",
+                        "volume_id": "Fedora-WS-dvd-x86_64-25",
+                        "mtime": 1479200831,
+                        "checksums": {
+                            "sha256": "9ad01c6775a4b1a9a5991d326550d24d2b80c1c64079edea41f1cc228323d28d"
+                        },
+                        "arch": "x86_64",
+                        "size": 440401920,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "3841fb686e76f57383b4abcae62db5af",
+                        "disc_number": 1,
+                        "path": "Workstation/x86_64/iso/Fedora-Workstation-netinst-x86_64-25-20161115.n.0.iso",
+                        "type": "boot"
+                    }
+                ],
+                "i386": [
+                    {
+                        "subvariant": "Workstation",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479211255,
+                        "checksums": {
+                            "sha256": "9414e66d1ad68b8f79d46b02e08a7626cc34b33100c1f43c188ff8d6033e757b"
+                        },
+                        "arch": "i386",
+                        "size": 1529872384,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Workstation/i386/iso/Fedora-Workstation-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Workstation",
+                        "format": "iso",
+                        "volume_id": "Fedora-WS-dvd-i386-25",
+                        "mtime": 1479200179,
+                        "checksums": {
+                            "sha256": "4bbb4cb2402987227942a49d848a7534b899d72ff6284ab3c73b54086bec68c9"
+                        },
+                        "arch": "i386",
+                        "size": 494927872,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "e43ac8b1aeb2bc4dfebd79eea3e048d1",
+                        "disc_number": 1,
+                        "path": "Workstation/i386/iso/Fedora-Workstation-netinst-i386-25-20161115.n.0.iso",
+                        "type": "boot"
+                    }
+                ],
+                "armhfp": [
+                    {
+                        "subvariant": "Workstation",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479215135,
+                        "checksums": {
+                            "sha256": "7f6d38157314c6699f33e7210add789691003bb546aeb1fba2b5f1231264579a"
+                        },
+                        "arch": "armhfp",
+                        "size": 1268161584,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Workstation/armhfp/images/Fedora-Workstation-armhfp-25-20161115.n.0-sda.raw.xz",
+                        "type": "raw-xz"
+                    }
+                ]
+            },
+            "Spins": {
+                "x86_64": [
+                    {
+                        "subvariant": "Cinnamon",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479209111,
+                        "checksums": {
+                            "sha256": "71a25161f1b6688ffcd6e73d631aafe6512e5016788b92a51b0387bf9e917345"
+                        },
+                        "arch": "x86_64",
+                        "size": 1423966208,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/x86_64/iso/Fedora-Cinnamon-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "KDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479208700,
+                        "checksums": {
+                            "sha256": "6e300d3a0f985122f05d9551aa494306388ceda09557f72805434debf2488cfc"
+                        },
+                        "arch": "x86_64",
+                        "size": 1389363200,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/x86_64/iso/Fedora-KDE-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "LXDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479209380,
+                        "checksums": {
+                            "sha256": "e330903a0cfd1955af7e79083f95e573844e04b8d58661f708641945458f7207"
+                        },
+                        "arch": "x86_64",
+                        "size": 955252736,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/x86_64/iso/Fedora-LXDE-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Mate",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479210302,
+                        "checksums": {
+                            "sha256": "84a2b1eb9ed3bf09641c740bd282e03c34c1da6856e62b8abcf923816dd705f1"
+                        },
+                        "arch": "x86_64",
+                        "size": 1453326336,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/x86_64/iso/Fedora-MATE_Compiz-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "SoaS",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479207180,
+                        "checksums": {
+                            "sha256": "902811c6a4331dce70e43b57b40be3b60e19199e1650e1a49e89017bcb50204c"
+                        },
+                        "arch": "x86_64",
+                        "size": 732954624,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/x86_64/iso/Fedora-SoaS-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Xfce",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479207846,
+                        "checksums": {
+                            "sha256": "58d8a5fb927a7fb71e70cd07188b64e499cc387e2f1429a9ebcc0f2ff9d9dc63"
+                        },
+                        "arch": "x86_64",
+                        "size": 1124073472,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/x86_64/iso/Fedora-Xfce-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    }
+                ],
+                "i386": [
+                    {
+                        "subvariant": "Cinnamon",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479211041,
+                        "checksums": {
+                            "sha256": "f8c74c80a8a8fe03e9339be9a23bd37fa6602e7b16c5ef5a705e2fc84a0f9a8a"
+                        },
+                        "arch": "i386",
+                        "size": 1512046592,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/i386/iso/Fedora-Cinnamon-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "KDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479208933,
+                        "checksums": {
+                            "sha256": "73021f95068ced29a9e77abd825a3c8129ade2e85b81d83bb1d31b8065e5e80f"
+                        },
+                        "arch": "i386",
+                        "size": 1498415104,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/i386/iso/Fedora-KDE-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "LXDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479210086,
+                        "checksums": {
+                            "sha256": "b9e59cfd0e19b0a885ec824fb7baa7d66f3d47a2ecc455a088ce53d2c6bbcc3e"
+                        },
+                        "arch": "i386",
+                        "size": 1035993088,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/i386/iso/Fedora-LXDE-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Mate",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479210889,
+                        "checksums": {
+                            "sha256": "8d0cadd1b7145e56ba15dfb5878d9de44f7275ba84279b2a365fd0b582fc8f11"
+                        },
+                        "arch": "i386",
+                        "size": 1540358144,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/i386/iso/Fedora-MATE_Compiz-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "SoaS",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479208682,
+                        "checksums": {
+                            "sha256": "6815612adce5dbd7e7c2cadaa633248ccd4ccd014f035ab20d5722edf5c189db"
+                        },
+                        "arch": "i386",
+                        "size": 816840704,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/i386/iso/Fedora-SoaS-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Xfce",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479208283,
+                        "checksums": {
+                            "sha256": "abcdab7781ac30b30ed0d94854b84384019a1ec57f770b830984e9c4a00064d1"
+                        },
+                        "arch": "i386",
+                        "size": 1207959552,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/i386/iso/Fedora-Xfce-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    }
+                ],
+                "armhfp": [
+                    {
+                        "subvariant": "KDE",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479217065,
+                        "checksums": {
+                            "sha256": "e1f1672aa851d7a0a88325e41c05e611023cf79cc648fca5e28790032f753026"
+                        },
+                        "arch": "armhfp",
+                        "size": 1564056212,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/armhfp/images/Fedora-KDE-armhfp-25-20161115.n.0-sda.raw.xz",
+                        "type": "raw-xz"
+                    },
+                    {
+                        "subvariant": "LXDE",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479213120,
+                        "checksums": {
+                            "sha256": "b5755ed84d469db91c644db8c83723d307efb52399eba83bc710fb3b62a8a1ba"
+                        },
+                        "arch": "armhfp",
+                        "size": 972112996,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/armhfp/images/Fedora-LXDE-armhfp-25-20161115.n.0-sda.raw.xz",
+                        "type": "raw-xz"
+                    },
+                    {
+                        "subvariant": "Mate",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479215621,
+                        "checksums": {
+                            "sha256": "ae38bc9d131336920c111a6cc1c036506436e67c63efeb35f9e8d7b92514e85f"
+                        },
+                        "arch": "armhfp",
+                        "size": 1362142988,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/armhfp/images/Fedora-Mate-armhfp-25-20161115.n.0-sda.raw.xz",
+                        "type": "raw-xz"
+                    },
+                    {
+                        "subvariant": "Minimal",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479208414,
+                        "checksums": {
+                            "sha256": "2df956ad12a0ec8974d856bde8220151eb8daa57d5cd0ddc2d0d71193524d7b9"
+                        },
+                        "arch": "armhfp",
+                        "size": 463850920,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/armhfp/images/Fedora-Minimal-armhfp-25-20161115.n.0-sda.raw.xz",
+                        "type": "raw-xz"
+                    },
+                    {
+                        "subvariant": "SoaS",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479211746,
+                        "checksums": {
+                            "sha256": "c6938e03ffbff9e81e33f5efdee8f8a4a2fe599f953b4dd1246ec591e383ee56"
+                        },
+                        "arch": "armhfp",
+                        "size": 743196620,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/armhfp/images/Fedora-SoaS-armhfp-25-20161115.n.0-sda.raw.xz",
+                        "type": "raw-xz"
+                    },
+                    {
+                        "subvariant": "Xfce",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479213599,
+                        "checksums": {
+                            "sha256": "8b58a8831042438c59658336486e4679a62b963387fd478bfdd2d975a44bd0f7"
+                        },
+                        "arch": "armhfp",
+                        "size": 1109282280,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Spins/armhfp/images/Fedora-Xfce-armhfp-25-20161115.n.0-sda.raw.xz",
+                        "type": "raw-xz"
+                    }
+                ]
+            },
+            "Server": {
+                "x86_64": [
+                    {
+                        "subvariant": "Server",
+                        "format": "iso",
+                        "volume_id": "Fedora-S-dvd-x86_64-25",
+                        "mtime": 1479204983,
+                        "checksums": {
+                            "sha256": "40345a89c5cd003138bce4ce4531c2c3cd3e943d098f65ce5020cb9cf24df9ae"
+                        },
+                        "arch": "x86_64",
+                        "size": 2014314496,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "ef7e282fff842d75689b9c546cbc9db5",
+                        "disc_number": 1,
+                        "path": "Server/x86_64/iso/Fedora-Server-dvd-x86_64-25-20161115.n.0.iso",
+                        "type": "dvd"
+                    },
+                    {
+                        "subvariant": "Server",
+                        "format": "iso",
+                        "volume_id": "Fedora-S-dvd-x86_64-25",
+                        "mtime": 1479200781,
+                        "checksums": {
+                            "sha256": "461e75a5559e99ee9fd90829d59b9dbf18bbb7364dae54a71897de3e218e359b"
+                        },
+                        "arch": "x86_64",
+                        "size": 503316480,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "739a2b5a4699342c23f2cb30e5dc8e1a",
+                        "disc_number": 1,
+                        "path": "Server/x86_64/iso/Fedora-Server-netinst-x86_64-25-20161115.n.0.iso",
+                        "type": "boot"
+                    }
+                ],
+                "i386": [
+                    {
+                        "subvariant": "Server",
+                        "format": "iso",
+                        "volume_id": "Fedora-S-dvd-i386-25",
+                        "mtime": 1479204945,
+                        "checksums": {
+                            "sha256": "f59dada096b9273efa6a3312e778608b82a78a1fdc78d1b13c9e4f1ec145424f"
+                        },
+                        "arch": "i386",
+                        "size": 2135949312,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "56ba2b784c3fc46fde6db629212b35be",
+                        "disc_number": 1,
+                        "path": "Server/i386/iso/Fedora-Server-dvd-i386-25-20161115.n.0.iso",
+                        "type": "dvd"
+                    },
+                    {
+                        "subvariant": "Server",
+                        "format": "iso",
+                        "volume_id": "Fedora-S-dvd-i386-25",
+                        "mtime": 1479200290,
+                        "checksums": {
+                            "sha256": "45e5d78aef27cb39b970f23f4eb5c14579ed1246992542c81349d07f5cba0282"
+                        },
+                        "arch": "i386",
+                        "size": 511705088,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "b31ba52f3158d847a0dbc18edc41bf92",
+                        "disc_number": 1,
+                        "path": "Server/i386/iso/Fedora-Server-netinst-i386-25-20161115.n.0.iso",
+                        "type": "boot"
+                    }
+                ],
+                "armhfp": [
+                    {
+                        "subvariant": "Server",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479210124,
+                        "checksums": {
+                            "sha256": "3bf5a1989fd72a8f146bd5a885b493e42111bf1c98505f152526ac23cfeec18b"
+                        },
+                        "arch": "armhfp",
+                        "size": 589321868,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Server/armhfp/images/Fedora-Server-armhfp-25-20161115.n.0-sda.raw.xz",
+                        "type": "raw-xz"
+                    },
+                    {
+                        "subvariant": "Server",
+                        "format": "iso",
+                        "volume_id": "Fedora-S-dvd-armhfp-25",
+                        "mtime": 1479205068,
+                        "checksums": {
+                            "sha256": "2becaa9eec8b8efbbec16a53a2a2dec3d42bf541ea0fa32688779d200fba88fe"
+                        },
+                        "arch": "armhfp",
+                        "size": 1904973824,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "f5c8a3037617c9bc103b5687e699ecee",
+                        "disc_number": 1,
+                        "path": "Server/armhfp/iso/Fedora-Server-dvd-armhfp-25-20161115.n.0.iso",
+                        "type": "dvd"
+                    }
+                ]
+            },
+            "Labs": {
+                "x86_64": [
+                    {
+                        "subvariant": "Astronomy_KDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479210412,
+                        "checksums": {
+                            "sha256": "ad48d3d83469528b765eda3eeabc3c1da82f3de93a7ac7d1cac81d4d26e29e3f"
+                        },
+                        "arch": "x86_64",
+                        "size": 2541748224,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/x86_64/iso/Fedora-Astronomy_KDE-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Design_suite",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479209809,
+                        "checksums": {
+                            "sha256": "85c9cec2b8efb11bd892b47496474e289496e16d6254b5b5cca36156653f7af5"
+                        },
+                        "arch": "x86_64",
+                        "size": 2204106752,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/x86_64/iso/Fedora-Design_suite-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Jam_KDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479210098,
+                        "checksums": {
+                            "sha256": "255b2eb02202ef337942477f663bca131ae2d2b84bdcab3579da1db9dee2fa83"
+                        },
+                        "arch": "x86_64",
+                        "size": 2080374784,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/x86_64/iso/Fedora-Jam_KDE-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Robotics",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479209829,
+                        "checksums": {
+                            "sha256": "6c646f6eb4f058a2b0b73a49336372f811fb8d0c27f535b53a68c1e19773b77f"
+                        },
+                        "arch": "x86_64",
+                        "size": 2358247424,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/x86_64/iso/Fedora-Robotics-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Scientific_KDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479211856,
+                        "checksums": {
+                            "sha256": "d697c7b87916cba2a1d354c35fc61b43ab543c2a30ff5c4a89d6fcdca53b0839"
+                        },
+                        "arch": "x86_64",
+                        "size": 3107979264,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/x86_64/iso/Fedora-Scientific_KDE-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Security",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479208108,
+                        "checksums": {
+                            "sha256": "a4e92394ebf823957f5bc18a063e4e7a037d145c17050343432086b239b3582c"
+                        },
+                        "arch": "x86_64",
+                        "size": 1158676480,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/x86_64/iso/Fedora-Security-Live-x86_64-25-20161115.n.0.iso",
+                        "type": "live"
+                    }
+                ],
+                "i386": [
+                    {
+                        "subvariant": "Astronomy_KDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479211391,
+                        "checksums": {
+                            "sha256": "d624c54dfccfdd5919ff7357a92090a49032b674a330a420400485c3d6bb5534"
+                        },
+                        "arch": "i386",
+                        "size": 2642411520,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/i386/iso/Fedora-Astronomy_KDE-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Design_suite",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479210739,
+                        "checksums": {
+                            "sha256": "238b836b083d5a620f4b060f6116ce23a88ea9b58dcc75ad9b095e12c0b4ef43"
+                        },
+                        "arch": "i386",
+                        "size": 2285895680,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/i386/iso/Fedora-Design_suite-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Jam_KDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479210709,
+                        "checksums": {
+                            "sha256": "87528afa7f806e0be6558425a9c09fb98eda0d096adcfca6a1b066932997efaa"
+                        },
+                        "arch": "i386",
+                        "size": 2190475264,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/i386/iso/Fedora-Jam_KDE-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Robotics",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479211078,
+                        "checksums": {
+                            "sha256": "9be049ed133ea588ad4bb8bf597491cad6bdcc1842246ee6cb6bcbe92cd034dc"
+                        },
+                        "arch": "i386",
+                        "size": 2450522112,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/i386/iso/Fedora-Robotics-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Scientific_KDE",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479212599,
+                        "checksums": {
+                            "sha256": "37145e195fb6f9fc39dfb6b0a19548965eb61c65eb594a9c30558d52db997a26"
+                        },
+                        "arch": "i386",
+                        "size": 3158310912,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/i386/iso/Fedora-Scientific_KDE-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    },
+                    {
+                        "subvariant": "Security",
+                        "format": "iso",
+                        "volume_id": null,
+                        "mtime": 1479209192,
+                        "checksums": {
+                            "sha256": "9a46003cab1214dca60e835d57fff41ad23026061b6e2428c7da192bf5d0c361"
+                        },
+                        "arch": "i386",
+                        "size": 1241513984,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Labs/i386/iso/Fedora-Security-Live-i386-25-20161115.n.0.iso",
+                        "type": "live"
+                    }
+                ]
+            },
+            "Everything": {
+                "x86_64": [
+                    {
+                        "subvariant": "Everything",
+                        "format": "iso",
+                        "volume_id": "Fedora-E-dvd-x86_64-25",
+                        "mtime": 1479200010,
+                        "checksums": {
+                            "sha256": "cf9ca329d24ed921765e4fed8985e5fd68fa7044a0ced2b0116498d1b7660829"
+                        },
+                        "arch": "x86_64",
+                        "size": 436207616,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "bb22a0a89e132c151e4af8206c21271e",
+                        "disc_number": 1,
+                        "path": "Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-25-20161115.n.0.iso",
+                        "type": "boot"
+                    }
+                ],
+                "i386": [
+                    {
+                        "subvariant": "Everything",
+                        "format": "iso",
+                        "volume_id": "Fedora-E-dvd-i386-25",
+                        "mtime": 1479200349,
+                        "checksums": {
+                            "sha256": "49f51faba79345ffafe1e1534c1da91297bea0c257bfd40b768c8ba81f307b47"
+                        },
+                        "arch": "i386",
+                        "size": 558891008,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "c06d3f7900bcc990e0c609412df208cc",
+                        "disc_number": 1,
+                        "path": "Everything/i386/iso/Fedora-Everything-netinst-i386-25-20161115.n.0.iso",
+                        "type": "boot"
+                    }
+                ]
+            },
+            "Cloud": {
+                "x86_64": [
+                    {
+                        "subvariant": "Cloud",
+                        "format": "iso",
+                        "volume_id": "Fedora-C-dvd-x86_64-25",
+                        "mtime": 1479199778,
+                        "checksums": {
+                            "sha256": "e0429140cd02a7f60afa1fb91c3a974007c209b08a15fb90da6ef0a26e11a326"
+                        },
+                        "arch": "x86_64",
+                        "size": 501219328,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "f14d80045519b660f19b3d1bc6f150ec",
+                        "disc_number": 1,
+                        "path": "Cloud/x86_64/iso/Fedora-Cloud-netinst-x86_64-25-20161115.n.0.iso",
+                        "type": "boot"
+                    }
+                ],
+                "i386": [
+                    {
+                        "subvariant": "Cloud",
+                        "format": "iso",
+                        "volume_id": "Fedora-C-dvd-i386-25",
+                        "mtime": 1479200229,
+                        "checksums": {
+                            "sha256": "630e913bcb753a21a18ca03ba8f47a04d66ff771dc200f71ce03a3a3c3da3421"
+                        },
+                        "arch": "i386",
+                        "size": 559939584,
+                        "disc_count": 1,
+                        "bootable": true,
+                        "implant_md5": "d85cc3c3cc93f588ef0b17684f22d8bd",
+                        "disc_number": 1,
+                        "path": "Cloud/i386/iso/Fedora-Cloud-netinst-i386-25-20161115.n.0.iso",
+                        "type": "boot"
+                    }
+                ]
+            },
+            "Docker": {
+                "x86_64": [
+                    {
+                        "subvariant": "Docker_Base",
+                        "format": "tar.xz",
+                        "volume_id": null,
+                        "mtime": 1479205048,
+                        "checksums": {
+                            "sha256": "18050e9c6dc79732a7c2d67b26b19f132618b90c744d6efd78202ca14707612e"
+                        },
+                        "arch": "x86_64",
+                        "size": 42344364,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Docker/x86_64/images/Fedora-Docker-Base-25-20161115.n.0.x86_64.tar.xz",
+                        "type": "docker"
+                    }
+                ],
+                "armhfp": [
+                    {
+                        "subvariant": "Docker_Base",
+                        "format": "tar.xz",
+                        "volume_id": null,
+                        "mtime": 1479205802,
+                        "checksums": {
+                            "sha256": "9011f3d4d21c6f8adf62cd65474faab82b4be5a4a8f58cf008ee2da8f7061b5f"
+                        },
+                        "arch": "armhfp",
+                        "size": 38366024,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "Docker/armhfp/images/Fedora-Docker-Base-25-20161115.n.0.armhfp.tar.xz",
+                        "type": "docker"
+                    }
+                ]
+            },
+            "CloudImages": {
+                "x86_64": [
+                    {
+                        "subvariant": "Atomic",
+                        "format": "qcow2",
+                        "volume_id": null,
+                        "mtime": 1479207020,
+                        "checksums": {
+                            "sha256": "5e78e224d58739d9c3ccc08a651d2811159605bb02059ffb48eb4de4465d7556"
+                        },
+                        "arch": "x86_64",
+                        "size": 524401152,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "CloudImages/x86_64/images/Fedora-Atomic-25-20161115.n.0.x86_64.qcow2",
+                        "type": "qcow2"
+                    },
+                    {
+                        "subvariant": "Atomic",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479207292,
+                        "checksums": {
+                            "sha256": "ecbe2e322965ffac8346667b38b4d8bfd735771cb3fa5e337a8d7eb0bb2120fc"
+                        },
+                        "arch": "x86_64",
+                        "size": 387064052,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "CloudImages/x86_64/images/Fedora-Atomic-25-20161115.n.0.x86_64.raw.xz",
+                        "type": "raw-xz"
+                    },
+                    {
+                        "subvariant": "Atomic",
+                        "format": "vagrant-libvirt.box",
+                        "volume_id": null,
+                        "mtime": 1479206936,
+                        "checksums": {
+                            "sha256": "e8fcc17f0594807c784a6ea00f83ab9e1cc7ec17214140b2e69364e0d3f67baa"
+                        },
+                        "arch": "x86_64",
+                        "size": 498056705,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "CloudImages/x86_64/images/Fedora-Atomic-Vagrant-25-20161115.n.0.x86_64.vagrant-libvirt.box",
+                        "type": "vagrant-libvirt"
+                    },
+                    {
+                        "subvariant": "Atomic",
+                        "format": "vagrant-virtualbox.box",
+                        "volume_id": null,
+                        "mtime": 1479206580,
+                        "checksums": {
+                            "sha256": "9bf49f4b59ed1733beb4baf41059be5847e5f09231fd5a0156b21e4b04b36fdd"
+                        },
+                        "arch": "x86_64",
+                        "size": 508835840,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "CloudImages/x86_64/images/Fedora-Atomic-Vagrant-25-20161115.n.0.x86_64.vagrant-virtualbox.box",
+                        "type": "vagrant-virtualbox"
+                    },
+                    {
+                        "subvariant": "Cloud_Base",
+                        "format": "qcow2",
+                        "volume_id": null,
+                        "mtime": 1479205678,
+                        "checksums": {
+                            "sha256": "e086655076d1beb1728013d9aac8d56337c8aba642b448a667ebc38740a4c0d1"
+                        },
+                        "arch": "x86_64",
+                        "size": 203489280,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "CloudImages/x86_64/images/Fedora-Cloud-Base-25-20161115.n.0.x86_64.qcow2",
+                        "type": "qcow2"
+                    },
+                    {
+                        "subvariant": "Cloud_Base",
+                        "format": "raw.xz",
+                        "volume_id": null,
+                        "mtime": 1479205771,
+                        "checksums": {
+                            "sha256": "5c8ae13c42c5368fa78c1da3909004b58a82738131c01ca0a49e7443efd4fe23"
+                        },
+                        "arch": "x86_64",
+                        "size": 135888340,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "CloudImages/x86_64/images/Fedora-Cloud-Base-25-20161115.n.0.x86_64.raw.xz",
+                        "type": "raw-xz"
+                    },
+                    {
+                        "subvariant": "Cloud_Base",
+                        "format": "vagrant-libvirt.box",
+                        "volume_id": null,
+                        "mtime": 1479206970,
+                        "checksums": {
+                            "sha256": "678f93745e24a5e2fc7244d687bbd8347195aa8a63c612d3a559161c4c1597e9"
+                        },
+                        "arch": "x86_64",
+                        "size": 212668330,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "CloudImages/x86_64/images/Fedora-Cloud-Base-Vagrant-25-20161115.n.0.x86_64.vagrant-libvirt.box",
+                        "type": "vagrant-libvirt"
+                    },
+                    {
+                        "subvariant": "Cloud_Base",
+                        "format": "vagrant-virtualbox.box",
+                        "volume_id": null,
+                        "mtime": 1479206814,
+                        "checksums": {
+                            "sha256": "beb61e1bfed5f3a8aee23b4b597fd610b99810b293e53be50e74f9919016e4cb"
+                        },
+                        "arch": "x86_64",
+                        "size": 222023680,
+                        "disc_count": 1,
+                        "bootable": false,
+                        "implant_md5": null,
+                        "disc_number": 1,
+                        "path": "CloudImages/x86_64/images/Fedora-Cloud-Base-Vagrant-25-20161115.n.0.x86_64.vagrant-virtualbox.box",
+                        "type": "vagrant-virtualbox"
+                    }
+                ]
+            }
+        },
+        "compose": {
+            "date": "20161115",
+            "respin": 0,
+            "type": "nightly",
+            "id": "Fedora-25-20161115.n.0"
+        }
+    }
+}
