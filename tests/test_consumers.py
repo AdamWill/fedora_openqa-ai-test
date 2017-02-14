@@ -220,7 +220,7 @@ class TestConsumers:
                 {
                     'report': False,
                     'oqah': 'openqa.fedoraproject.org',
-                    'rdburl': 'http://resultsdb01.qa.fedoraproject.org/resultsdb_api/api/v2.0/'
+                    'rdburl': 'http://localhost:5001/api/v2.0/'
                 }
             ),
             (
@@ -228,7 +228,7 @@ class TestConsumers:
                 {
                     'report': False,
                     'oqah': 'openqa.stg.fedoraproject.org',
-                    'rdburl': 'http://resultsdb-stg01.qa.fedoraproject.org/resultsdb_api/api/v2.0/'
+                    'rdburl': 'http://localhost:5001/api/v2.0/'
                 }
             ),
             (

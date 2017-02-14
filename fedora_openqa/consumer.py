@@ -261,11 +261,10 @@ class OpenQAResultsDBReporter(fedmsg.consumers.FedmsgConsumer):
 
 
 class OpenQAProductionResultsDBReporter(OpenQAResultsDBReporter, OpenQAProductionConsumer):
-    """A result reporting consumer that listens for production fedmsgs
-    and reports to the production ResultsDB. Only one of these should
-    ever be running at one time; it'd be particularly bad if we had
-    two running, all results would be duped. Please don't enable this
-    consumer unless you're sure you know what you're doing.
+    """A result reporting consumer that listens for production fedmsgs.
+    By default it reports to localhost; please don't configure it to
+    report to the official ResultsDB instances unless you're sure you
+    know what you're doing.
     """
     config_key = "fedora_openqa.reporter.resultsdb.prod.enabled"
 
@@ -281,13 +280,12 @@ class OpenQAProductionResultsDBReporter(OpenQAResultsDBReporter, OpenQAProductio
 
 
 class OpenQAStagingResultsDBReporter(OpenQAResultsDBReporter, OpenQAStagingConsumer):
-    """A result reporting consumer that listens for staging fedmsgs
-    and reports to the production ResultsDB. Only one of these should
-    ever be running at one time; it'd be particularly bad if we had
-    two running, all results would be duped. Please don't enable this
-    consumer unless you're sure you know what you're doing.
+    """A result reporting consumer that listens for staging fedmsgs.
+By default it reports to localhost; please don't configure it to
+    report to the official ResultsDB instances unless you're sure you
+    know what you're doing.
     """
-    config_key = "fedora_openqa.reporter.resultsdb.prod.enabled"
+    config_key = "fedora_openqa.reporter.resultsdb.stg.enabled"
 
     @property
     def resultsdb_url(self):

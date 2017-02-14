@@ -55,11 +55,12 @@ CONFIG.set('consumers', 'stg_oqa_baseurl', '')
 # this all depends on which instance's messages you replay...
 CONFIG.set('consumers', 'test_oqa_hostname', 'openqa.fedoraproject.org')
 CONFIG.set('consumers', 'test_oqa_baseurl', '')
-# NOTE: these are a bit of a hack for Fedora infra, we can't use the
-# public URLs due to RDB using IP-based authentication
-CONFIG.set('consumers', 'prod_rdb_url', 'http://resultsdb01.qa.fedoraproject.org/resultsdb_api/api/v2.0/')
+# We default to localhost for all of these for safety (and so you can
+# test reporting from 'real' fedmsgs to a test rdb instance), and the
+# infra deployments change in their local configs
+CONFIG.set('consumers', 'prod_rdb_url', 'http://localhost:5001/api/v2.0/')
 CONFIG.set('consumers', 'prod_rdb_report', 'false')
-CONFIG.set('consumers', 'stg_rdb_url', 'http://resultsdb-stg01.qa.fedoraproject.org/resultsdb_api/api/v2.0/')
+CONFIG.set('consumers', 'stg_rdb_url', 'http://localhost:5001/api/v2.0/')
 CONFIG.set('consumers', 'stg_rdb_report', 'false')
 CONFIG.set('consumers', 'test_rdb_url', 'http://localhost:5001/api/v2.0/')
 CONFIG.set('consumers', 'test_rdb_report', 'true')
