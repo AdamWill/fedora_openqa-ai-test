@@ -82,7 +82,7 @@ To run openQA jobs whenever a compose completes, you must install and enable fed
         sudo dnf install fedmsg-hub
         sudo systemctl enable fedmsg-hub.service
 
-Now enable the consumer. Create a file `/etc/fedmsg.d/openqa_fedora.py` with the contents:
+Now enable the consumer. Create a file `/etc/fedmsg.d/fedora_openqa.py` with the contents:
 
         config = {
             'fedora_openqa.scheduler.prod.enabled': True,
@@ -97,7 +97,7 @@ In the Docker configuration you should probably set up the fedmsg consumer on th
         sudo chown root.fedmsg /etc/openqa/client.conf
         sudo chmod 0640 /etc/openqa/client.conf
 
-To report results automatically when tests complete, you can use the various `reporter` consumers. There are six of these, three for reporting to Wikitcms and three for reporting to ResultsDB. For each system, one consumer listens out for production fedmsgs, one for staging fedmsgs, and one for 'dev' fedmsgs (which are what you get when replaying fedmsgs using `fedmsg-dg-replay`, commonly used for testing). Their configuration keys (to be added to the `/etc/fedmsg.d/openqa_fedora.py` file) are:
+To report results automatically when tests complete, you can use the various `reporter` consumers. There are six of these, three for reporting to Wikitcms and three for reporting to ResultsDB. For each system, one consumer listens out for production fedmsgs, one for staging fedmsgs, and one for 'dev' fedmsgs (which are what you get when replaying fedmsgs using `fedmsg-dg-replay`, commonly used for testing). Their configuration keys (to be added to the `/etc/fedmsg.d/fedora_openqa.py` file) are:
 
         fedora_openqa.reporter.resultsdb.prod.enabled
         fedora_openqa.reporter.resultsdb.stg.enabled
