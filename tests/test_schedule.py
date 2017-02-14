@@ -34,7 +34,7 @@ import mock
 import pytest
 
 # 'internal' imports
-import fedora_openqa_schedule.schedule as schedule
+import fedora_openqa.schedule as schedule
 
 COMPURL = 'https://kojipkgs.fedoraproject.org/compose/branched/Fedora-25-20161115.n.0/compose/'
 
@@ -253,8 +253,8 @@ def test_find_duplicate_jobs():
 
 
 @mock.patch('fedfind.helpers.get_current_release', return_value=25, autospec=True)
-@mock.patch('fedora_openqa_schedule.schedule.OpenQA_Client', autospec=True)
-@mock.patch('fedora_openqa_schedule.schedule._find_duplicate_jobs', return_value=[], autospec=True)
+@mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
+@mock.patch('fedora_openqa.schedule._find_duplicate_jobs', return_value=[], autospec=True)
 def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     """Tests for run_openqa_jobs."""
     # get our expected images from the ffmock02 image list.
@@ -323,7 +323,7 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     assert instance.openqa_request.call_count == 1
     assert instance.openqa_request.call_args[0][2]['CURRREL'] == 'FEDFINDERROR'
 
-@mock.patch('fedora_openqa_schedule.schedule.run_openqa_jobs', return_value=[1], autospec=True)
+@mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
 def test_jobs_from_compose(fakerun, ffmock02):
     """Tests for jobs_from_compose."""
     # simple case
@@ -360,7 +360,7 @@ def test_jobs_from_compose(fakerun, ffmock02):
         with pytest.raises(schedule.TriggerException):
             ret = schedule.jobs_from_compose(COMPURL)
 
-    with mock.patch('fedora_openqa_schedule.schedule._get_images', return_value=[]):
+    with mock.patch('fedora_openqa.schedule._get_images', return_value=[]):
         with pytest.raises(schedule.TriggerException):
             ret = schedule.jobs_from_compose(COMPURL)
 

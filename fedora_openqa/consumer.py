@@ -134,7 +134,7 @@ class OpenQAProductionScheduler(OpenQAScheduler, OpenQAProductionConsumer):
     creates events in the production openQA instance by default.
     """
     topic = ["org.fedoraproject.prod.pungi.compose.status.change"]
-    config_key = "fedora_openqa_schedule.scheduler.prod.enabled"
+    config_key = "fedora_openqa.scheduler.prod.enabled"
 
 
 class OpenQAStagingScheduler(OpenQAScheduler, OpenQAStagingConsumer):
@@ -142,7 +142,7 @@ class OpenQAStagingScheduler(OpenQAScheduler, OpenQAStagingConsumer):
     creates events in the staging openQA instance by default.
     """
     topic = ["org.fedoraproject.stg.pungi.compose.status.change"]
-    config_key = "fedora_openqa_schedule.scheduler.stg.enabled"
+    config_key = "fedora_openqa.scheduler.stg.enabled"
 
 
 class OpenQATestScheduler(OpenQAScheduler):
@@ -150,7 +150,7 @@ class OpenQATestScheduler(OpenQAScheduler):
     events in a local openQA instance by default.
     """
     topic = ["org.fedoraproject.dev.pungi.compose.status.change"]
-    config_key = "fedora_openqa_schedule.scheduler.test.enabled"
+    config_key = "fedora_openqa.scheduler.test.enabled"
     # We just hardcode this here and don't inherit from TestConsumer,
     # as the config values are intended for the Reporter consumers
     # that *consume* openQA jobs, we likely always want localhost for
@@ -188,7 +188,7 @@ class OpenQAProductionWikiReporter(OpenQAWikiReporter, OpenQAProductionConsumer)
     Please don't enable this consumer unless you're sure you know what
     you're doing.
     """
-    config_key = "fedora_openqa_schedule.wiki.reporter.prod.enabled"
+    config_key = "fedora_openqa.reporter.wiki.prod.enabled"
 
     @property
     def wiki_hostname(self):
@@ -209,7 +209,7 @@ class OpenQAStagingWikiReporter(OpenQAWikiReporter, OpenQAStagingConsumer):
     Please don't enable this consumer unless you're sure you know what
     you're doing.
     """
-    config_key = "fedora_openqa_schedule.wiki.reporter.stg.enabled"
+    config_key = "fedora_openqa.reporter.wiki.stg.enabled"
 
     @property
     def wiki_hostname(self):
@@ -228,7 +228,7 @@ class OpenQATestWikiReporter(OpenQAWikiReporter, OpenQATestConsumer):
     report results, it should log the produced ResTuples instead. This
     is the one you should use to test stuff, go nuts with it.
     """
-    config_key = "fedora_openqa_schedule.wiki.reporter.test.enabled"
+    config_key = "fedora_openqa.reporter.wiki.test.enabled"
 
     @property
     def wiki_hostname(self):
@@ -267,7 +267,7 @@ class OpenQAProductionResultsDBReporter(OpenQAResultsDBReporter, OpenQAProductio
     two running, all results would be duped. Please don't enable this
     consumer unless you're sure you know what you're doing.
     """
-    config_key = "fedora_openqa_schedule.resultsdb.reporter.prod.enabled"
+    config_key = "fedora_openqa.reporter.resultsdb.prod.enabled"
 
     @property
     def resultsdb_url(self):
@@ -287,7 +287,7 @@ class OpenQAStagingResultsDBReporter(OpenQAResultsDBReporter, OpenQAStagingConsu
     two running, all results would be duped. Please don't enable this
     consumer unless you're sure you know what you're doing.
     """
-    config_key = "fedora_openqa_schedule.resultsdb.reporter.prod.enabled"
+    config_key = "fedora_openqa.reporter.resultsdb.prod.enabled"
 
     @property
     def resultsdb_url(self):
@@ -306,7 +306,7 @@ class OpenQATestResultsDBReporter(OpenQAResultsDBReporter, OpenQATestConsumer):
     ResultsDB instance running on localhost:5001 (as you get by running
     the development mode).
     """
-    config_key = "fedora_openqa_schedule.resultsdb.reporter.test.enabled"
+    config_key = "fedora_openqa.reporter.resultsdb.test.enabled"
 
     @property
     def resultsdb_url(self):

@@ -210,7 +210,7 @@ def oqaclientmock(jobdict01):
     mock, the instance mock, and the jobdict (so tests can modify it
     if they like).
     """
-    patcher = mock.patch('fedora_openqa_schedule.report.OpenQA_Client', autospec=True)
+    patcher = mock.patch('fedora_openqa.report.OpenQA_Client', autospec=True)
     mockedoqa = patcher.start()
     # this is the MagicMock that will always be returned when a test
     # instantiates the class
@@ -228,7 +228,7 @@ def wikimock():
     report_validation_results. Yields the class mock and the
     instance mock.
     """
-    patcher = mock.patch('fedora_openqa_schedule.report.Wiki', autospec=True)
+    patcher = mock.patch('fedora_openqa.report.Wiki', autospec=True)
     mockedwiki = patcher.start()
     # this is the MagicMock that will always be returned when a test
     # instantiates the class

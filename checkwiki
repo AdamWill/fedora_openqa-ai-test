@@ -33,8 +33,8 @@ import sys
 from wikitcms import wiki
 from wikitcms.exceptions import NotFoundError, TooManyError
 
-from fedora_openqa_schedule.conf_test_suites import (TESTCASES, TESTSUITES)
-import fedora_openqa_schedule.report as report
+from fedora_openqa.conf_test_suites import (TESTCASES, TESTSUITES)
+import fedora_openqa.report as report
 
 # wikitcms site object
 SITE = wiki.Wiki()

@@ -32,10 +32,10 @@ import mock
 import pytest
 
 # 'internal' imports
-import fedora_openqa_schedule.cli as cli
+import fedora_openqa.cli as cli
 
 
-@mock.patch('fedora_openqa_schedule.schedule.jobs_from_compose', return_value=[None, (1, 2)], autospec=True)
+@mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=[None, (1, 2)], autospec=True)
 class TestCommandCompose:
     """Tests for the command_compose function."""
 
@@ -144,8 +144,8 @@ class TestCommandCompose:
         (["--resultsdb-url", "test3.ing"], "test3.ing")
     ]
 )
-@mock.patch('fedora_openqa_schedule.report.wiki_report', autospec=True)
-@mock.patch('fedora_openqa_schedule.report.resultsdb_report', autospec=True)
+@mock.patch('fedora_openqa.report.wiki_report', autospec=True)
+@mock.patch('fedora_openqa.report.resultsdb_report', autospec=True)
 def test_variations(fakerdb, fakewiki, jobargs, argname, expecteds, targargs, repwiki, reprdb,
                     oqaargs, oqah, oqau, wikiargs, wikih, rdbargs, rdbu):
     """Okay, that was a lot of parametrization! But really we're

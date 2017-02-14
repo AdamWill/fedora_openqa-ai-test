@@ -36,8 +36,8 @@ import resultsdb_api
 from wikitcms.wiki import ResTuple
 
 # 'internal' imports
-from fedora_openqa_schedule.config import CONFIG
-import fedora_openqa_schedule.report as fosreport
+from fedora_openqa.config import CONFIG
+import fedora_openqa.report as fosreport
 
 
 def test_uniqueres_replacements(jobdict01):
@@ -270,7 +270,7 @@ class TestGetPassedTestcases:
         ret = fosreport.get_passed_testcases([jobdict01])
         assert len(ret) == 0
 
-    @mock.patch('fedora_openqa_schedule.report._get_passed_tcnames', return_value=['unknowntestcase'])
+    @mock.patch('fedora_openqa.report._get_passed_tcnames', return_value=['unknowntestcase'])
     def test_missing(self, faketcnames, jobdict01):
         """Check get_passed_testcases returns nothing (but doesn't crash)
         when testcase isn't in TESTCASES.
@@ -287,7 +287,7 @@ class TestGetPassedTestcases:
         assert len(ret) == 0
 
 
-@mock.patch('fedora_openqa_schedule.report.get_passed_testcases', return_value=['atest'], autospec=True)
+@mock.patch('fedora_openqa.report.get_passed_testcases', return_value=['atest'], autospec=True)
 @pytest.mark.usefixtures("oqaclientmock")
 class TestWikiReport:
     """Tests for the wiki_report function."""

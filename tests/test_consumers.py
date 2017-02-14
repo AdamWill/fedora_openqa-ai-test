@@ -30,7 +30,7 @@ import mock
 import pytest
 
 # 'internal' imports
-import fedora_openqa_schedule.consumer
+import fedora_openqa.consumer
 
 # Passed test message
 PASSMSG = {
@@ -127,15 +127,15 @@ FINCOMPLETE = {
 # proper consumer init requires a fedmsg hub instance, we don't have
 # one and don't want to faff around faking one.
 with mock.patch('fedmsg.consumers.FedmsgConsumer.__init__', return_value=None):
-    PRODSCHED = fedora_openqa_schedule.consumer.OpenQAProductionScheduler(None)
-    STGSCHED = fedora_openqa_schedule.consumer.OpenQAStagingScheduler(None)
-    TESTSCHED = fedora_openqa_schedule.consumer.OpenQATestScheduler(None)
-    PRODWIKI = fedora_openqa_schedule.consumer.OpenQAProductionWikiReporter(None)
-    STGWIKI = fedora_openqa_schedule.consumer.OpenQAStagingWikiReporter(None)
-    TESTWIKI = fedora_openqa_schedule.consumer.OpenQATestWikiReporter(None)
-    PRODRDB = fedora_openqa_schedule.consumer.OpenQAProductionResultsDBReporter(None)
-    STGRDB = fedora_openqa_schedule.consumer.OpenQAStagingResultsDBReporter(None)
-    TESTRDB = fedora_openqa_schedule.consumer.OpenQATestResultsDBReporter(None)
+    PRODSCHED = fedora_openqa.consumer.OpenQAProductionScheduler(None)
+    STGSCHED = fedora_openqa.consumer.OpenQAStagingScheduler(None)
+    TESTSCHED = fedora_openqa.consumer.OpenQATestScheduler(None)
+    PRODWIKI = fedora_openqa.consumer.OpenQAProductionWikiReporter(None)
+    STGWIKI = fedora_openqa.consumer.OpenQAStagingWikiReporter(None)
+    TESTWIKI = fedora_openqa.consumer.OpenQATestWikiReporter(None)
+    PRODRDB = fedora_openqa.consumer.OpenQAProductionResultsDBReporter(None)
+    STGRDB = fedora_openqa.consumer.OpenQAStagingResultsDBReporter(None)
+    TESTRDB = fedora_openqa.consumer.OpenQATestResultsDBReporter(None)
 
 PRODS = (PRODWIKI, PRODRDB, PRODSCHED)
 STGS = (STGWIKI, STGRDB, STGSCHED)
@@ -150,7 +150,7 @@ for _con in PRODS + STGS + TESTS + (TESTSCHED,):
 class TestConsumers:
     """Tests for the consumers."""
 
-    @mock.patch('fedora_openqa_schedule.schedule.jobs_from_compose', return_value=('somecompose', [1]), autospec=True)
+    @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=('somecompose', [1]), autospec=True)
     @pytest.mark.parametrize(
         "consumer,oqah",
         [
@@ -186,7 +186,7 @@ class TestConsumers:
         fake_schedule.reset_mock()
 
 
-    @mock.patch('fedora_openqa_schedule.report.wiki_report', autospec=True)
+    @mock.patch('fedora_openqa.report.wiki_report', autospec=True)
     @pytest.mark.parametrize(
         "consumer,expected",
         [
@@ -211,7 +211,7 @@ class TestConsumers:
         fake_report.reset_mock()
 
 
-    @mock.patch('fedora_openqa_schedule.report.resultsdb_report', autospec=True)
+    @mock.patch('fedora_openqa.report.resultsdb_report', autospec=True)
     @pytest.mark.parametrize(
         "consumer,expected",
         [
@@ -256,9 +256,9 @@ class TestConsumers:
         fake_report.reset_mock()
 
 
-    @mock.patch('fedora_openqa_schedule.schedule.jobs_from_compose', return_value=('somecompose', []), autospec=True)
-    @mock.patch('fedora_openqa_schedule.report.resultsdb_report', autospec=True)
-    @mock.patch('fedora_openqa_schedule.report.wiki_report', autospec=True)
+    @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=('somecompose', []), autospec=True)
+    @mock.patch('fedora_openqa.report.resultsdb_report', autospec=True)
+    @mock.patch('fedora_openqa.report.wiki_report', autospec=True)
     @pytest.mark.parametrize(
         "consumers,setting,value,arg,expected",
         [
@@ -294,18 +294,18 @@ class TestConsumers:
         whose call_count is 1 to know which one got hit, then we check
         the arg.
         """
-        backup = fedora_openqa_schedule.consumer.CONFIG.get('consumers', setting)
-        fedora_openqa_schedule.consumer.CONFIG.set('consumers', setting, value)
+        backup = fedora_openqa.consumer.CONFIG.get('consumers', setting)
+        fedora_openqa.consumer.CONFIG.set('consumers', setting, value)
         for consumer in consumers:
             for fake in (fake_wiki, fake_rdb, fake_sched):
                 fake.reset_mock()
-            if isinstance(consumer, fedora_openqa_schedule.consumer.OpenQAScheduler):
+            if isinstance(consumer, fedora_openqa.consumer.OpenQAScheduler):
                 consumer.consume(FINISHEDCOMPOSE)
             else:
                 consumer.consume(PASSMSG)
             # figure out which mock to check the calls for
             fake = next(fake for fake in (fake_wiki, fake_rdb, fake_sched) if fake.call_count == 1)
             assert fake.call_args[1][arg] == expected
-        fedora_openqa_schedule.consumer.CONFIG.set('consumers', setting, backup)
+        fedora_openqa.consumer.CONFIG.set('consumers', setting, backup)
 
 # vim: set textwidth=120 ts=8 et sw=4:
