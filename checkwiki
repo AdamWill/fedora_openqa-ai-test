@@ -107,10 +107,18 @@ def fake_jobs(templates, modules):
     """
     fakejobs = []
     for jobtemp in templates['JobTemplates']:
+        subv = jobtemp['product']['flavor'].split('-')[0]
+        try:
+            imagetype = jobtemp['product']['flavor'].split('-')[1].replace('_', '-')
+        except IndexError:
+            # universal
+            imagetype = "universal"
         job = {
             'settings': {
                 'ARCH': jobtemp['product']['arch'],
                 'FLAVOR': jobtemp['product']['flavor'],
+                'SUBVARIANT': subv,
+                'IMAGETYPE': imagetype,
                 'TEST': jobtemp['test_suite']['name'],
                 'MACHINE': jobtemp['machine']['name'],
                 # we don't need the BUILD value; we're just going to use
@@ -168,7 +176,7 @@ def templates_suites_match(templates):
     vice versa, except for ones we know are OK (e.g. support_server).
     """
     failed = 0
-    tempwhite = set(('support_server',))
+    tempwhite = set(('support_server', 'memory_check'))
     tempsuites = [suite['name'] for suite in templates['TestSuites']]
     onlytemp = set(tempsuites) - set(TESTSUITES.keys()) - tempwhite
     for suite in onlytemp:
