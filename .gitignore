@@ -1,0 +1,14 @@
+*~
+*.swp
+*.pyc
+*.pyo
+build/
+dist/
+fedora_openqa.egg-info/
+.cache/
+.coverage
+# so you can keep symlinks to checkouts if you like
+fedfind
+openqa_client
+resultsdb_conventions
+wikitcms
