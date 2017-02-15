@@ -7,6 +7,11 @@ This repository does not contain the actual Fedora openQA tests. Those can be fo
 
 For general information on openQA in Fedora, including an overview of the system and how to install your own instance for testing, please see [the Fedora openQA wiki page](https://fedoraproject.org/wiki/openQA).
 
+Issues
+------
+
+For the present, issues (and pull requests - 'diffs') are tracked in [Fedora QA Phabricator](https://phab.qa.fedoraproject.org/). You can open issues against the `fedora_openqa` project [here](https://phab.qa.fedoraproject.org/maniphest/task/edit/form/default/?tags=fedora_openqa). See [the QA Phabricator wiki page](https://fedoraproject.org/wiki/QA:Phabricator#issues-diffs) for detailed instructions on filing issues and diffs. Note that this repository does not use the 'gitflow' system, so the main development branch is `master`: please branch from `master` and submit diffs against it. Running the unit tests is not yet integrated into the diff process, so you do not have to follow the instructions regarding `virtualenv`, but please do run the tests manually to check any diffs you submit if possible.
+
 Requirements
 ------------
 
