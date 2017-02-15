@@ -7,6 +7,7 @@ dist/
 fedora_openqa.egg-info/
 .cache/
 .coverage
+.eggs/
 # so you can keep symlinks to checkouts if you like
 fedfind
 openqa_client

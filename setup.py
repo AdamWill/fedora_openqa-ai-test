@@ -1,5 +1,22 @@
 import os
+import sys
 from setuptools import setup, find_packages
+from setuptools.command.test import test as TestCommand
+
+
+class PyTest(TestCommand):
+    user_options = [('pytest-args=', 'a', "Arguments to pass to py.test")]
+
+    def initialize_options(self):
+        TestCommand.initialize_options(self)
+        self.pytest_args = ''
+        self.test_suite = 'tests'
+
+    def run_tests(self):
+        #import here, cause outside the eggs aren't loaded
+        import pytest
+        errno = pytest.main(self.pytest_args.split())
+        sys.exit(errno)
 
 # Utility function to read the README file.
 # Used for the long_description.  It's nice, because now 1) we have a top level
@@ -36,7 +53,9 @@ setup(
     url = "https://pagure.io/fedora-qa/fedora_openqa",
     packages = ["fedora_openqa"],
     install_requires = ['fedfind>=2.5.0', 'fedmsg', 'openqa-client>=1.1', 'setuptools',
-                        'six', 'resultsdb_api', 'resultsdb_conventions>=2.0.0'],
+                        'six', 'resultsdb_api', 'resultsdb_conventions>=2.0.0', 'wikitcms'],
+    tests_require=['pytest', 'mock'],
+    cmdclass = {'test': PyTest},
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
