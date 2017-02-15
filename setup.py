@@ -7,7 +7,7 @@ from setuptools import setup, find_packages
 # string in below. Stolen from
 # https://pythonhosted.org/an_example_pypi_project/setuptools.html
 def read(fname):
-    return open(os.path.join(os.path.dirname(__file__), "..", fname)).read()
+    return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
 setup(
     name = "fedora_openqa",
