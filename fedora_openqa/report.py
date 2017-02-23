@@ -24,15 +24,16 @@ result reporting go here.
 """
 
 # standard libraries
-import re
 import logging
+import re
+from functools import partial
 from operator import attrgetter
 
 # External dependencies
 import mwclient.errors
 from openqa_client.client import OpenQA_Client
 from resultsdb_api import ResultsDBapi, ResultsDBapiException
-from resultsdb_conventions.fedora import FedoraImageResult, FedoraComposeResult
+from resultsdb_conventions.fedora import FedoraImageResult, FedoraComposeResult, FedoraBodhiResult
 from wikitcms.wiki import Wiki, ResTuple
 
 # Internal dependencies
@@ -245,6 +246,11 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
     """
     client = OpenQA_Client(openqa_hostname)
     jobs = client.get_jobs(jobs=jobs, build=build)
+    # cannot do wiki reporting for update jobs
+    jobs = [job for job in jobs if 'ADVISORY' not in job['settings']]
+    if not jobs:
+        logger.debug("No wiki-reportable jobs: most likely all jobs were update tests")
+        return []
     passed_testcases = get_passed_testcases(jobs, client)
     logger.info("passed testcases: %s", passed_testcases)
 
@@ -311,33 +317,65 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
 
     jobs = client.get_jobs(jobs=jobs, build=build)
     tcname_safeify = re.compile(r"\W+")
-    target_regex = re.compile(r"^(ISO|HDD)(_\d+)?$")
+    # regex for identifying TEST_TARGET values that suggest an image
+    # specific compose test
+    image_target_regex = re.compile(r"^(ISO|HDD)(_\d+)?$")
 
     for job in jobs:
         # don't report jobs that have clone or user-cancelled jobs, or were obsoleted
         if job['clone_id'] is not None or job['result'] == "user_cancelled" or job['result'] == 'obsoleted':
             continue
 
-        # don't report TEST_TARGET=NONE or jobs that are missing TEST_TARGET
-        if 'TEST_TARGET' not in job['settings']:
-            logger.warning("cannot report job %d because TEST_TARGET variable is missing", job['id'])
-            continue
-        ttarget = job['settings']['TEST_TARGET']
-        if ttarget == "NONE":
-            continue
-
         try:
-            compose = job['settings']['BUILD']
+            build = job['settings']['BUILD']
             distri = job['settings']['DISTRI']
             version = job['settings']['VERSION']
         except KeyError:
-            logger.warning("cannot report job %d because it is missing compose/distri/version", job['id'])
+            logger.warning("cannot report job %d because it is missing build/distri/version", job['id'])
             continue
 
-        # construct args for resultsdb_conventions Result
-        kwargs = {}
+        # sanitize the test name
         tc_name = tcname_safeify.sub("_", job['test']).lower()
-        kwargs["tc_name"] = "compose." + tc_name  # FIXME: this will not be "compose." for update testing...
+
+        # figure out the resultsdb_convention result type we want and
+        # what the 'item' will be, and create a partial for the Result
+        # class we want to use with the type-specific args
+        ttarget = job['settings'].get('TEST_TARGET', '')
+        rdbpartial = None
+        if 'ADVISORY' in job['settings']:
+            # the 'target' (what will become the 'item' in RDB) is
+            # always the update ID for the update test workflow
+            rdbpartial = partial(FedoraBodhiResult, job['settings']['ADVISORY'], tc_name='update.' + tc_name)
+
+        elif image_target_regex.match(ttarget):
+            # We have a compose test result for a specific image
+            # 'build' will be the compose ID, job['settings'][ttarget]
+            # will be the filename of the tested image
+            imagename = job['settings'][ttarget]
+            # special case for images decompressed for testing
+            if job['settings']['IMAGETYPE'] == 'raw-xz' and imagename.endswith('.raw'):
+                imagename += '.xz'
+            rdbpartial = partial(FedoraImageResult, imagename, build, tc_name='compose.' + tc_name)
+
+        elif ttarget == 'COMPOSE':
+            # We have a non-image-specific compose test result
+            # 'build' will be the compose ID
+            rdbpartial = partial(FedoraComposeResult, build, tc_name='compose.' + tc_name)
+
+        # don't report TEST_TARGET=NONE, non-update jobs that are
+        # missing TEST_TARGET, or TEST_TARGET values we don't grok
+        if ttarget == "NONE":
+            # this is an explicit 'do not report' setting, so no warn
+            continue
+        if not rdbpartial:
+            if not ttarget:
+                logger.warning("cannot report job %d because TEST_TARGET variable is missing", job['id'])
+            else:
+                logger.warning("Could not understand TEST_TARGET value %s for job %d", ttarget, job['id'])
+            continue
+
+        # construct common args for resultsdb_conventions Result
+        kwargs = {}
         # map openQA's results to resultsdb's outcome
         kwargs["outcome"] = {
             'passed': "PASSED",
@@ -353,7 +391,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
 
         # create link to overall url for group ref_url
         overall_url = "%s/tests/overview?distri=%s&version=%s&build=%s" % (
-            openqa_baseurl, distri, version, compose)
+            openqa_baseurl, distri, version, build)
 
         # put in the "note" field whether some module failed
         for module in job["modules"]:
@@ -363,20 +401,13 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             if module["result"] == "failed" and job["result"] == "softfailed":
                 kwargs["note"] = "non-important module {0} failed".format(module["name"])
 
-        if target_regex.match(ttarget):
-            test_target_name = job['settings'][ttarget]
-            # special case for images decompressed for testing
-            if job['settings']['IMAGETYPE'] == 'raw-xz' and test_target_name.endswith('.raw'):
-                test_target_name += '.xz'
-            rdb_object = FedoraImageResult(test_target_name, compose, **kwargs)
-        elif ttarget == "COMPOSE":
-            rdb_object = FedoraComposeResult(compose, **kwargs)
-        else:
-            logger.warning("cannot report job %d because TEST_TARGET variable is invalid", job['id'])
-            continue
+        # create the Result instance
+        rdb_object = rdbpartial(**kwargs)
 
+        # Add some more extradata items
         rdb_object.extradata.update({
-            'firmware': 'uefi' if 'UEFI' in job['settings'] else 'bios'
+            'firmware': 'uefi' if 'UEFI' in job['settings'] else 'bios',
+            'arch': job['settings']['ARCH']
         })
         # FIXME: use overall_url as a group ref_url
 

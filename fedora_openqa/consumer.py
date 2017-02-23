@@ -91,7 +91,7 @@ class OpenQATestConsumer(fedmsg.consumers.FedmsgConsumer):
 
 class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
     """A fedmsg consumer that schedules openQA jobs when a new compose
-    appears.
+    or update appears.
     """
 
     def _log(self, level, message):
@@ -101,15 +101,15 @@ class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
         logfnc = getattr(self.log, level)
         logfnc("%s: %s", self.__class__.__name__, message)
 
-    def consume(self, message):
-        """Consume incoming message."""
+    def _consume_compose(self, message):
+        """Consume a 'compose' type message."""
         status = message['body']['msg'].get('status')
         location = message['body']['msg'].get('location')
         compstr = message['body']['msg'].get('compose_id', location)
 
         if 'FINISHED' in status and location:
             # We have a complete pungi4 compose
-            self._log('info', "Scheduling openQA jobs for {0}".format(compstr))
+            self._log('info', "Scheduling openQA jobs for compose {0}".format(compstr))
             try:
                 # pylint: disable=no-member
                 (compose, jobs) = schedule.jobs_from_compose(location, openqa_hostname=self.openqa_hostname)
@@ -117,7 +117,7 @@ class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
                 self._log('warning', "No openQA jobs run! {0}".format(err))
                 return
             if jobs:
-                self._log('info', "openQA jobs run on {0}: "
+                self._log('info', "openQA jobs run on compose {0}: "
                           "{1}".format(compose, ' '.join(str(job) for job in jobs)))
             else:
                 self._log('warning', "No openQA jobs run!")
@@ -128,12 +128,41 @@ class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
 
         return
 
+    def _consume_update(self, message):
+        """Consume an 'update' type message."""
+        update = message['body']['msg'].get('update', {})
+        advisory = update.get('alias')
+        critpath = update.get('critpath', False)
+        version = update.get('release', {}).get('version')
+        if critpath and advisory and version:
+            self._log('info', "Scheduling openQA jobs for update {0}".format(advisory))
+            # pylint: disable=no-member
+            jobs = schedule.jobs_from_update(advisory, version, openqa_hostname=self.openqa_hostname)
+            if jobs:
+                self._log('info', "openQA jobs run on update {0}: "
+                          "{1}".format(advisory, ' '.join(str(job) for job in jobs)))
+            else:
+                self._log('warning', "No openQA jobs run!")
+                return
+
+            self._log('debug', "Finished")
+            return
+
+    def consume(self, message):
+        """Consume incoming message."""
+        if 'pungi' in message['body']['topic']:
+            return self._consume_compose(message)
+        elif 'bodhi' in message['body']['topic']:
+            return self._consume_update(message)
+
 
 class OpenQAProductionScheduler(OpenQAScheduler, OpenQAProductionConsumer):
     """A scheduling consumer that listens for production fedmsgs and
     creates events in the production openQA instance by default.
     """
-    topic = ["org.fedoraproject.prod.pungi.compose.status.change"]
+    topic = ["org.fedoraproject.prod.pungi.compose.status.change",
+             "org.fedoraproject.prod.bodhi.update.request.testing",
+             "org.fedoraproject.prod.bodhi.update.edit"]
     config_key = "fedora_openqa.scheduler.prod.enabled"
 
 
@@ -141,7 +170,9 @@ class OpenQAStagingScheduler(OpenQAScheduler, OpenQAStagingConsumer):
     """A scheduling consumer that listens for staging fedmsgs and
     creates events in the staging openQA instance by default.
     """
-    topic = ["org.fedoraproject.stg.pungi.compose.status.change"]
+    topic = ["org.fedoraproject.stg.pungi.compose.status.change",
+             "org.fedoraproject.stg.bodhi.update.request.testing",
+             "org.fedoraproject.stg.bodhi.update.edit"]
     config_key = "fedora_openqa.scheduler.stg.enabled"
 
 
@@ -149,7 +180,9 @@ class OpenQATestScheduler(OpenQAScheduler):
     """A scheduling consumer that listens for dev fedmsgs and creates
     events in a local openQA instance by default.
     """
-    topic = ["org.fedoraproject.dev.pungi.compose.status.change"]
+    topic = ["org.fedoraproject.dev.pungi.compose.status.change",
+             "org.fedoraproject.dev.bodhi.update.request.testing",
+             "org.fedoraproject.dev.bodhi.update.edit"]
     config_key = "fedora_openqa.scheduler.test.enabled"
     # We just hardcode this here and don't inherit from TestConsumer,
     # as the config values are intended for the Reporter consumers

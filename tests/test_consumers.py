@@ -25,6 +25,9 @@
 from __future__ import unicode_literals
 from __future__ import print_function
 
+# stdlib imports
+import copy
+
 # external imports
 import mock
 import pytest
@@ -124,6 +127,70 @@ FINCOMPLETE = {
     }
 }
 
+# Critpath update creation message. These are huge, so this is heavily
+# edited.
+CRITPATHCREATE = {
+    "body": {
+        "i": 1,
+        "msg": {
+            "agent": "msekleta",
+            "update": {
+                "alias": "FEDORA-2017-ea07abb5d5",
+                "critpath": True,
+                "release": {
+                    "branch": "f24",
+                    "dist_tag": "f24",
+                    "id_prefix": "FEDORA",
+                    "long_name": "Fedora 24",
+                    "name": "F24",
+                    "version": "24"
+                },
+            },
+        },
+        "msg_id": "2017-a6e10ab5-f861-4671-8945-ac1cf004a474",
+        "source_name": "datanommer",
+        "source_version": "0.6.5",
+        "timestamp": 1487862992.0,
+        "topic": "org.fedoraproject.prod.bodhi.update.request.testing"
+    }
+}
+
+# Non-critpath update creation message
+NONCRITCREATE = copy.deepcopy(CRITPATHCREATE)
+NONCRITCREATE['body']['msg']['update']['critpath'] = False
+
+# Critpath update edit message
+CRITPATHEDIT = {
+    "body": {
+        "i": 1,
+        "msg": {
+            "agent": "hobbes1069",
+            "update": {
+                "alias": "FEDORA-2017-e6d7184200",
+                "critpath": True,
+                "release": {
+                    "branch": "f24",
+                    "dist_tag": "f24",
+                    "id_prefix": "FEDORA",
+                    "long_name": "Fedora 24",
+                    "name": "F24",
+                    "version": "24"
+                },
+            },
+        },
+        "msg_id": "2017-7213730f-40c8-4e27-9135-630f5de2113d",
+        "source_name": "datanommer",
+        "source_version": "0.6.5",
+        "timestamp": 1487735650.0,
+        "topic": "org.fedoraproject.prod.bodhi.update.edit"
+    }
+}
+
+# Non-critpath update edit message
+NONCRITEDIT = copy.deepcopy(CRITPATHEDIT)
+NONCRITEDIT['body']['msg']['update']['critpath'] = False
+
+
 # proper consumer init requires a fedmsg hub instance, we don't have
 # one and don't want to faff around faking one.
 with mock.patch('fedmsg.consumers.FedmsgConsumer.__init__', return_value=None):
@@ -151,6 +218,7 @@ class TestConsumers:
     """Tests for the consumers."""
 
     @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=('somecompose', [1]), autospec=True)
+    @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1], autospec=True)
     @pytest.mark.parametrize(
         "consumer,oqah",
         [
@@ -166,9 +234,13 @@ class TestConsumers:
             (DOOMEDCOMPOSE, False),
             (FINISHEDCOMPOSE, True),
             (FINCOMPLETE, True),
+            (CRITPATHCREATE, True),
+            (CRITPATHEDIT, True),
+            (NONCRITCREATE, False),
+            (NONCRITEDIT, False),
         ]
     )
-    def test_scheduler(self, fake_schedule, consumer, oqah, message, create):
+    def test_scheduler(self, fake_update, fake_schedule, consumer, oqah, message, create):
         """Test the job scheduling consumers do their thing. The
         parametrization pairs are:
         1. (consumer, expected openQA hostname)
@@ -179,11 +251,14 @@ class TestConsumers:
         """
         consumer.consume(message)
         if create:
-            assert fake_schedule.call_count == 1
-            assert fake_schedule.call_args[1]['openqa_hostname'] == oqah
+            assert fake_schedule.call_count + fake_update.call_count == 1
+            if fake_schedule.call_count == 1:
+                assert fake_schedule.call_args[1]['openqa_hostname'] == oqah
+            else:
+                assert fake_update.call_args[1]['openqa_hostname'] == oqah
         else:
-            assert fake_schedule.call_count == 0
-        fake_schedule.reset_mock()
+            assert fake_schedule.call_count + fake_update.call_count == 0
+        #fake_schedule.reset_mock()
 
 
     @mock.patch('fedora_openqa.report.wiki_report', autospec=True)

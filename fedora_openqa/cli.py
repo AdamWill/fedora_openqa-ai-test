@@ -43,10 +43,7 @@ logger = logging.getLogger(__name__)
 ### SUB-COMMAND METHODS
 
 def command_compose(args):
-    """run OpenQA on a specified compose, optionally reporting
-    results if a matching wikitcms ValidationEvent is found by
-    relval/wikitcms.
-    """
+    """Schedule openQA jobs for a specified compose."""
     extraparams = None
     if args.updates:
         extraparams = {'GRUBADD': "inst.updates={0}".format(args.updates)}
@@ -71,6 +68,13 @@ def command_compose(args):
     logger.debug("finished")
     sys.exit()
 
+
+def command_update(args):
+    """Schedule openQA jobs for a specified update."""
+    jobs = schedule.jobs_from_update(args.update, args.release, flavors=[args.flavor], force=args.force,
+                                     openqa_hostname=args.openqa_hostname)
+    print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
+    sys.exit()
 
 def command_report(args):
     """Map a list of openQA job IDs and/or builds to Wikitcms test
@@ -140,23 +144,33 @@ def parse_args(args=None):
         "Run OpenQA tests for a release validation test event."))
     subparsers = parser.add_subparsers()
 
-    parser_compose = subparsers.add_parser(
-        'compose', description="Run for a specific compose (TC/RC or nightly). If a matching "
-        "release validation test event can be found and --submit-results is passed, results "
-        "will be reported.")
+    parser_compose = subparsers.add_parser('compose', description="Schedule jobs for a specific compose.")
     parser_compose.add_argument(
-        'location', help="The top-level URL of the compose",
-        metavar="https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-24-20160113.n.1/compose")
+        'location', help="The URL of the compose (for Pungi 4 composes, the /compose directory)",
+        metavar="COMPOSE_URL")
     parser_compose.add_argument(
         "--openqa-hostname", help="openQA host to schedule jobs on (default: client library "
-        "default)", metavar='localhost')
+        "default)", metavar='HOSTNAME')
     parser_compose.add_argument(
         '--force', '-f', help="For each ISO/flavor combination, schedule jobs even if there "
         "are existing, non-cancelled jobs for that combination", action='store_true')
     parser_compose.add_argument(
         '--updates', '-u', help="URL to an updates image to load for all tests. The tests that "
-        "test updates image loading will fail when you use this")
+        "test updates image loading will fail when you use this", metavar='UPDATE_IMAGE_URL')
     parser_compose.set_defaults(func=command_compose)
+
+    parser_update = subparsers.add_parser('update', description="Schedule jobs for a specific update.")
+    parser_update.add_argument('update', help="The update ID (e.g. 'FEDORA-2017-b07d628952')", metavar='UPDATE')
+    parser_update.add_argument('release', help="The release the update is for (e.g. '25')", type=int, metavar="NN")
+    parser_update.add_argument('--flavor', help="A single flavor to schedule jobs for (e.g. 'server'), "
+                               "otherwise jobs will be scheduled for all update flavors")
+    parser_update.add_argument(
+        "--openqa-hostname", help="openQA host to schedule jobs on (default: client library "
+        "default)", metavar='HOSTNAME')
+    parser_update.add_argument(
+        '--force', '-f', help="For each flavor, schedule jobs even if there "
+        "are existing, non-cancelled jobs for the update for that flavor", action='store_true')
+    parser_update.set_defaults(func=command_update)
 
     parser_report = subparsers.add_parser(
         'report', description="Map openQA job results to Wikitcms test results and either log them to output or "
@@ -167,17 +181,17 @@ def parse_args(args=None):
     parser_report.set_defaults(func=command_report)
     parser_report.add_argument(
         "--openqa-hostname", help="openQA host to query for results (default: client library "
-        "default)", metavar='localhost')
+        "default)", metavar='HOSTNAME')
     parser_report.add_argument(
         "--openqa-baseurl", help="Public openQA base URL for producing links to results (default: "
-        "client library baseurl)", metavar='https://openqa.example.org')
+        "client library baseurl, e.g. 'https://openqa.example.org')", metavar='OPENQA_BASEURL')
     parser_report.add_argument(
         "--wiki", action="store_true", default=False, help="Submit results to wiki")
     parser_report.add_argument(
         "--resultsdb", action="store_true", default=False, help="Submit results to ResultsDB")
     parser_report.add_argument(
         "--wiki-hostname", help="Mediawiki host to report to (default: stg.fedoraproject.org). "
-        "Scheme 'https' and path '/w/' are currently hard coded", metavar='fedoraproject.org')
+        "Scheme 'https' and path '/w/' are currently hard coded", metavar='WIKI_HOSTNAME')
     parser_report.add_argument(
         "--resultsdb-url", help="ResultsDB URL to report to (default: "
         "http://localhost:5001/api/v2.0/)")

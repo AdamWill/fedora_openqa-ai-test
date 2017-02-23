@@ -36,7 +36,7 @@ COMPURL = "https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-201
 
 @pytest.fixture(scope="function")
 def jobdict01():
-    """An openQA job dict."""
+    """An openQA job dict, for a compose test."""
     return {
         "children": {
             "Chained": [],
@@ -113,6 +113,88 @@ def jobdict01():
         "t_finished": "2017-02-01T11:57:32",
         "t_started": None,
         "test": "server_realmd_join_kickstart"
+    }
+
+@pytest.fixture(scope="function")
+def jobdict02():
+    """Another openQA job dict, this one for an update test."""
+    return {
+        "assets": {
+            "hdd": ["disk_f25_server_3_x86_64.img"]
+        },
+        "assigned_worker_id": 8,
+        "children": {
+            "Chained": [],
+            "Parallel": []
+        },
+        "clone_id": None,
+        "group": "fedora",
+        "group_id": 1,
+        "id": 72517,
+        "modules": [
+            {
+                "category": "tests",
+                "flags": ["fatal", "milestone"],
+                "name": "_console_wait_login",
+                "result": "passed"
+            },
+            {
+                "category": "tests",
+                "flags": ["fatal"],
+                "name": "_advisory_update",
+                "result": "passed"
+            }
+            ,
+            {
+                "category": "tests",
+                "flags": ["fatal"],
+                "name": "base_selinux",
+                "result": "passed"
+            },
+            {
+                "category": "tests",
+                "flags": ["fatal"],
+                "name": "_advisory_post",
+                "result": "passed"
+            }
+        ],
+        "name": "fedora-25-updates-server-x86_64-BuildFEDORA-2017-376ae2b92c-base_selinux@64bit",
+        "parents": {
+            "Chained": [],
+            "Parallel":[]
+        },
+        "priority": 40,
+        "result": "passed",
+        "retry_avbl": 3,
+        "settings": {
+            "ADVISORY": "FEDORA-2017-376ae2b92c",
+            "ARCH": "x86_64",
+            "BACKEND": "qemu",
+            "BOOTFROM": "c",
+            "BUILD": "FEDORA-2017-376ae2b92c",
+            "CURRREL": "25",
+            "DISTRI": "fedora",
+            "FLAVOR": "updates-server",
+            "HDD_1": "disk_f25_server_3_x86_64.img",
+            "MACHINE": "64bit",
+            "NAME": "00072517-fedora-25-updates-server-x86_64-BuildFEDORA-2017-376ae2b92c-base_selinux@64bit",
+            "PART_TABLE_TYPE": "mbr",
+            "POSTINSTALL": "base_selinux",
+            "PREVREL": "24",
+            "QEMUCPU": "Nehalem",
+            "QEMUCPUS": "2",
+            "QEMURAM": "2048",
+            "QEMUVGA": "qxl",
+            "ROOT_PASSWORD": "weakpassword",
+            "START_AFTER_TEST": "install_default_upload",
+            "TEST": "base_selinux",
+            "USER_LOGIN": "false",
+            "VERSION": "25"
+        },
+        "state": "done",
+        "t_finished": "2017-02-22T23:13:13",
+        "t_started": "2017-02-22T23:07:29",
+        "test": "base_selinux"
     }
 
 @pytest.fixture(scope="function")

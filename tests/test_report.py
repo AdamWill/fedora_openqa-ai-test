@@ -334,6 +334,18 @@ class TestWikiReport:
         # check results didn't happen
         assert mockinst.report_validation_results.call_args is None
 
+    def  test_update_noreport(self, fake_getpassed, wikimock, oqaclientmock, jobdict02):
+        """Check we do no reporting (but don't crash or do anything
+        else odd) for an update test job.
+        """
+        # adjust the OpenQA_Client instance mock to return jobdict02
+        instmock = oqaclientmock[1]
+        instmock.get_jobs.return_value = [jobdict02]
+        (_, mockinst) = wikimock
+        ret = fosreport.wiki_report(jobs=[1])
+        # check results didn't happen
+        assert mockinst.report_validation_results.call_args is None
+        assert ret == []
 
 @mock.patch.object(resultsdb_api.ResultsDBapi, 'create_result')
 @pytest.mark.usefixtures("ffmock", "oqaclientmock")
@@ -346,6 +358,20 @@ class TestResultsDBReport:
         assert fakeres.call_args[1]['item'] == 'Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso'
         assert fakeres.call_args[1]['ref_url'] == 'https://some.url/tests/70581'
         assert fakeres.call_args[1]['testcase']['name'] == 'compose.server_realmd_join_kickstart'
+        assert fakeres.call_args[1]['firmware'] == 'bios'
+        assert fakeres.call_args[1]['outcome'] == 'PASSED'
+
+    def test_update(self, fakeres, oqaclientmock, jobdict02):
+        """Check report behaviour with an update test job (rather than
+        a compose test job).
+        """
+        # adjust the OpenQA_Client instance mock to return jobdict02
+        instmock = oqaclientmock[1]
+        instmock.get_jobs.return_value = [jobdict02]
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['item'] == 'FEDORA-2017-376ae2b92c'
+        assert fakeres.call_args[1]['ref_url'] == 'https://some.url/tests/72517'
+        assert fakeres.call_args[1]['testcase']['name'] == 'update.base_selinux'
         assert fakeres.call_args[1]['firmware'] == 'bios'
         assert fakeres.call_args[1]['outcome'] == 'PASSED'
 

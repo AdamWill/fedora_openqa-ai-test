@@ -53,7 +53,7 @@ setup(
     url = "https://pagure.io/fedora-qa/fedora_openqa",
     packages = ["fedora_openqa"],
     install_requires = ['fedfind>=2.5.0', 'fedmsg', 'openqa-client>=1.1', 'setuptools',
-                        'six', 'resultsdb_api', 'resultsdb_conventions>=2.0.0', 'wikitcms'],
+                        'six', 'resultsdb_api', 'resultsdb_conventions>=2.0.2', 'wikitcms'],
     tests_require=['pytest', 'mock'],
     cmdclass = {'test': PyTest},
     long_description=read('README.md'),

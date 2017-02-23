@@ -364,4 +364,99 @@ def test_jobs_from_compose(fakerun, ffmock02):
         with pytest.raises(schedule.TriggerException):
             ret = schedule.jobs_from_compose(COMPURL)
 
+@mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
+def test_jobs_from_update(fakeclient):
+    """Tests for jobs_from_update."""
+    # the OpenQA_Client instance mock
+    fakeinst = fakeclient.return_value
+    # for now, return no 'jobs' (for the dupe query), one 'id' (for
+    # the post request)
+    fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
+    # simple case
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25')
+    # should get two jobs (as we schedule for two flavors by default)
+    assert ret == [1, 1]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # two flavors by default, two calls
+    assert len(posts) == 2
+    parmdicts = [call[0][2] for call in posts]
+    parmdicts.sort()
+    assert parmdicts == [
+        {
+            'DISTRI': 'fedora',
+            'VERSION': '25',
+            'ARCH': 'x86_64',
+            'BUILD': 'Update-FEDORA-2017-b07d628952',
+            'ADVISORY': 'FEDORA-2017-b07d628952',
+            'HDD_1': 'disk_f25_server_3_x86_64.img',
+            'FLAVOR': 'updates-server',
+        },
+        {
+            'DISTRI': 'fedora',
+            'VERSION': '25',
+            'ARCH': 'x86_64',
+            'BUILD': 'Update-FEDORA-2017-b07d628952',
+            'ADVISORY': 'FEDORA-2017-b07d628952',
+            'HDD_1': 'disk_f25_workstation_3_x86_64.img',
+            'FLAVOR': 'updates-workstation',
+            'DESKTOP': 'gnome',
+        }
+    ]
+
+    # test 'flavors'
+    fakeinst.openqa_request.reset_mock()
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', flavors=['server'])
+    # should get one job
+    assert ret == [1]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # one flavor, one call
+    assert len(posts) == 1
+    # check parm dict FLAVOR value
+    assert posts[0][0][2]['FLAVOR'] == 'updates-server'
+
+    # test dupe detection and 'force'
+    fakeinst.openqa_request.reset_mock()
+    # this looks like a 'dupe' for the server flavor
+    fakeinst.openqa_request.return_value = {
+        'jobs': [
+            {
+                'settings': {
+                    'FLAVOR': 'updates-server',
+                },
+            },
+        ],
+        'ids': [1],
+    }
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25')
+    # should get one job, as we shouldn't POST for server
+    assert ret == [1]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # one flavor, one call
+    assert len(posts) == 1
+    # check parm dict FLAVOR value
+    assert posts[0][0][2]['FLAVOR'] == 'updates-workstation'
+    # now try with force=True
+    fakeinst.openqa_request.reset_mock()
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', force=True)
+    # should get two jobs this time
+    assert ret == [1, 1]
+
+    # test extraparams
+    fakeinst.openqa_request.reset_mock()
+    # set the openqa_request return value back to the no-dupes version
+    fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', flavors=['server'], extraparams={'FOO': 'bar'})
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # check parm dict values
+    assert posts[0][0][2]['BUILD'] == 'Update-FEDORA-2017-b07d628952-EXTRA'
+    assert posts[0][0][2]['FOO'] == 'bar'
+
+    # test openqa_hostname
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', openqa_hostname='openqa.example')
+    assert fakeclient.call_args[0][0] == 'openqa.example'
+
 # vim: set textwidth=120 ts=8 et sw=4:

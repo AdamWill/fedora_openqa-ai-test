@@ -261,4 +261,58 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
 
     return (rel.cid, jobs)
 
+def jobs_from_update(update, version, flavors=None, force=False, extraparams=None, openqa_hostname=None):
+    """Schedule jobs for a specific Fedora update. update is the
+    advisory ID, version is the release number, flavors defines which
+    update tests should be run (valid values are the 'flavdict' keys).
+    force, extraparams and openqa_hostname are as for
+    jobs_from_compose.
+    """
+    version = str(version)
+    build = 'Update-{0}'.format(update)
+    if extraparams:
+        build = '{0}-EXTRA'.format(build)
+    flavdict = {
+        'server': {
+            'HDD_1': 'disk_f{0}_server_3_x86_64.img'.format(version),
+        },
+        'workstation': {
+            'HDD_1': 'disk_f{0}_workstation_3_x86_64.img'.format(version),
+            'DESKTOP': 'gnome',
+        },
+    }
+    baseparams = {
+        'DISTRI': 'fedora',
+        'VERSION': version,
+        'ARCH': 'x86_64',
+        'BUILD': build,
+        'ADVISORY': update,
+    }
+    client = OpenQA_Client(openqa_hostname)
+    jobs = []
+
+    if not flavors:
+        flavors = flavdict.keys()
+
+    for flavor in flavors:
+        fullflav = 'updates-{0}'.format(flavor)
+        if not force:
+            # dupe check
+            currjobs = client.openqa_request('GET', 'jobs', params={'build': build})['jobs']
+            currjobs = [cjob for cjob in currjobs if cjob['settings']['FLAVOR'] == fullflav]
+            if currjobs:
+                logger.info("jobs_from_update: Existing jobs found for update %s flavor %s, and force "
+                            "not set! No jobs scheduled.", update, flavor)
+                continue
+        flavparams = flavdict[flavor]
+        flavparams.update(baseparams)
+        flavparams['FLAVOR'] = fullflav
+        if extraparams:
+            flavparams.update(extraparams)
+        output = client.openqa_request('POST', 'isos', flavparams)
+        logger.debug("jobs_from_update: planned %s jobs: %s", flavor, output["ids"])
+        jobs.extend(output["ids"])
+
+    return jobs
+
 # vim: set textwidth=120 ts=8 et sw=4:
