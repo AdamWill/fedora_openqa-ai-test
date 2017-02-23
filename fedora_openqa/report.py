@@ -322,7 +322,8 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         if 'TEST_TARGET' not in job['settings']:
             logger.warning("cannot report job %d because TEST_TARGET variable is missing", job['id'])
             continue
-        if job['settings']['TEST_TARGET'] == "NONE":
+        ttarget = job['settings']['TEST_TARGET']
+        if ttarget == "NONE":
             continue
 
         try:
@@ -362,10 +363,13 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             if module["result"] == "failed" and job["result"] == "softfailed":
                 kwargs["note"] = "non-important module {0} failed".format(module["name"])
 
-        if target_regex.match(job['settings']['TEST_TARGET']):
-            test_target_name = job['settings'][job['settings']['TEST_TARGET']]
+        if target_regex.match(ttarget):
+            test_target_name = job['settings'][ttarget]
+            # special case for images decompressed for testing
+            if job['settings']['IMAGETYPE'] == 'raw-xz' and test_target_name.endswith('.raw'):
+                test_target_name += '.xz'
             rdb_object = FedoraImageResult(test_target_name, compose, **kwargs)
-        elif job['settings']['TEST_TARGET'] == "COMPOSE":
+        elif ttarget == "COMPOSE":
             rdb_object = FedoraComposeResult(compose, **kwargs)
         else:
             logger.warning("cannot report job %d because TEST_TARGET variable is invalid", job['id'])

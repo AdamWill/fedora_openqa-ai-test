@@ -387,6 +387,15 @@ class TestResultsDBReport:
                 fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_args[1]['item'] == 'somefile.img'
 
+        # our ARM tests have the decompressed filename as HDD_1, but
+        # we need to pass the compressed filename to rdb_conventions,
+        # there is special code to handle this: check it
+        mods = {'TEST_TARGET': 'HDD_1', 'HDD_1': 'somefile.raw', 'IMAGETYPE': 'raw-xz'}
+        with mock.patch.dict(jobdict['settings'], mods):
+            with mock.patch.dict(imgdict, {'path': '/path/to/somefile.raw.xz'}):
+                fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['item'] == 'somefile.raw.xz'
+
         jobdict['settings']['TEST_TARGET'] = 'COMPOSE'
         fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_args[1]['item'] == 'Fedora-Rawhide-20170207.n.0'
