@@ -380,6 +380,6 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         })
         # FIXME: use overall_url as a group ref_url
 
-        return rdb_object.report(rdb_instance)
+        rdb_object.report(rdb_instance)
 
 # vim: set textwidth=120 ts=8 et sw=4:
