@@ -101,6 +101,8 @@ def test_command_update(fakejfu, capsys):
     with pytest.raises(SystemExit) as excinfo:
         cli.command_update(args)
     (out, _) = capsys.readouterr()
+    # flavors kwarg should be false-y (not, e.g., [None])
+    assert not fakejfu.call_args[1]['flavors']
     # should print out list of scheduled jobs
     assert out == "Scheduled jobs: 1, 2\n"
     # should exit 0

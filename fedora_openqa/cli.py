@@ -71,7 +71,10 @@ def command_compose(args):
 
 def command_update(args):
     """Schedule openQA jobs for a specified update."""
-    jobs = schedule.jobs_from_update(args.update, args.release, flavors=[args.flavor], force=args.force,
+    flavors = []
+    if args.flavor:
+        flavors = [args.flavor]
+    jobs = schedule.jobs_from_update(args.update, args.release, flavors=flavors, force=args.force,
                                      openqa_hostname=args.openqa_hostname)
     print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
     sys.exit()
