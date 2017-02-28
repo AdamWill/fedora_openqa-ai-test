@@ -277,7 +277,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
             'HDD_1': 'disk_f{0}_server_3_x86_64.img'.format(version),
         },
         'workstation': {
-            'HDD_1': 'disk_f{0}_workstation_3_x86_64.img'.format(version),
+            'HDD_1': 'disk_f{0}_desktop_3_x86_64.img'.format(version),
             'DESKTOP': 'gnome',
         },
     }
