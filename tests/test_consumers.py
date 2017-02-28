@@ -159,6 +159,10 @@ CRITPATHCREATE = {
 NONCRITCREATE = copy.deepcopy(CRITPATHCREATE)
 NONCRITCREATE['body']['msg']['update']['critpath'] = False
 
+# Critpath EPEL update creation message
+EPELCREATE = copy.deepcopy(CRITPATHCREATE)
+EPELCREATE['body']['msg']['update']['release']['id_prefix'] = 'FEDORA-EPEL'
+
 # Critpath update edit message
 CRITPATHEDIT = {
     "body": {
@@ -189,6 +193,10 @@ CRITPATHEDIT = {
 # Non-critpath update edit message
 NONCRITEDIT = copy.deepcopy(CRITPATHEDIT)
 NONCRITEDIT['body']['msg']['update']['critpath'] = False
+
+# Critpath EPEL update edit message
+EPELEDIT = copy.deepcopy(CRITPATHEDIT)
+EPELEDIT['body']['msg']['update']['release']['id_prefix'] = 'FEDORA-EPEL'
 
 
 # proper consumer init requires a fedmsg hub instance, we don't have
@@ -238,6 +246,8 @@ class TestConsumers:
             (CRITPATHEDIT, True),
             (NONCRITCREATE, False),
             (NONCRITEDIT, False),
+            (EPELCREATE, False),
+            (EPELEDIT, False),
         ]
     )
     def test_scheduler(self, fake_update, fake_schedule, consumer, oqah, message, create):

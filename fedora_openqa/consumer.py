@@ -134,7 +134,9 @@ class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
         advisory = update.get('alias')
         critpath = update.get('critpath', False)
         version = update.get('release', {}).get('version')
-        if critpath and advisory and version:
+        # to make sure this is a Fedora, not EPEL, update
+        idpref = update.get('release', {}).get('id_prefix')
+        if critpath and advisory and version and idpref == 'FEDORA':
             self._log('info', "Scheduling openQA jobs for update {0}".format(advisory))
             # pylint: disable=no-member
             jobs = schedule.jobs_from_update(advisory, version, openqa_hostname=self.openqa_hostname)
