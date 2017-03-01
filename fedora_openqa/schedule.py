@@ -287,6 +287,9 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         'ARCH': 'x86_64',
         'BUILD': build,
         'ADVISORY': update,
+        # this disables the openQA logic that cancels all running jobs
+        # with the same DISTRI, VERSION, FLAVOR and ARCH
+        '_NOOBSOLETEBUILD': 1,
     }
     client = OpenQA_Client(openqa_hostname)
     jobs = []
