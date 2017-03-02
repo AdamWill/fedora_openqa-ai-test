@@ -245,7 +245,16 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
     just print out the python-wikitcms ResTups for inspection.
     """
     client = OpenQA_Client(openqa_hostname)
-    jobs = client.get_jobs(jobs=jobs, build=build)
+    # NOTE: `filter_dupes=True` has an odd consequence here. When a
+    # job dies and is automatically duplicated, we will try to report
+    # a result for the original job, but because of this filter_dupes
+    # setting we will actually get the job dict for the clone and try
+    # to 'report' that. This is harmless, though, because the clone
+    # will still be running and we'll just do nothing (as the result
+    # won't be 'passed'). When the clone completes, the consumer will
+    # try again and do the right thing.
+    jobs = client.get_jobs(jobs=jobs, build=build, filter_dupes=True)
+
     # cannot do wiki reporting for update jobs
     jobs = [job for job in jobs if 'ADVISORY' not in job['settings']]
     if not jobs:
@@ -315,7 +324,16 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
     if not openqa_baseurl:
         openqa_baseurl = client.baseurl
 
-    jobs = client.get_jobs(jobs=jobs, build=build)
+    # For ResultsDB reporting, we don't want the 'filter_dupes' stuff,
+    # which replaces cloned jobs with their clones and only takes the
+    # most recent job for each 'scenario' when searching by build. For
+    # RDB we just want to forward the results for the exact job IDs we
+    # were given, or *all* results for the build, including 'duped'
+    # ones. The scenario that's 'harmless' for wiki reporting is not
+    # harmless here; if we set True, when a job dies and is cloned,
+    # we'll file a bad report due to getting the dict for the clone.
+    jobs = client.get_jobs(jobs=jobs, build=build, filter_dupes=False)
+
     tcname_safeify = re.compile(r"\W+")
     # regex for identifying TEST_TARGET values that suggest an image
     # specific compose test
