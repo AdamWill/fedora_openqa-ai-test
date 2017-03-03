@@ -32,6 +32,7 @@ from operator import attrgetter
 # External dependencies
 import mwclient.errors
 from openqa_client.client import OpenQA_Client
+from openqa_client.const import JOB_SCENARIO_WITH_MACHINE_KEYS
 from resultsdb_api import ResultsDBapi, ResultsDBapiException
 from resultsdb_conventions.fedora import FedoraImageResult, FedoraComposeResult, FedoraBodhiResult
 from wikitcms.wiki import Wiki, ResTuple
@@ -425,8 +426,10 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         # Add some more extradata items
         rdb_object.extradata.update({
             'firmware': 'uefi' if 'UEFI' in job['settings'] else 'bios',
-            'arch': job['settings']['ARCH']
+            'arch': job['settings']['ARCH'],
+            'scenario': '.'.join(job['settings'][key] for key in JOB_SCENARIO_WITH_MACHINE_KEYS)
         })
+
         # FIXME: use overall_url as a group ref_url
 
         rdb_object.report(rdb_instance)

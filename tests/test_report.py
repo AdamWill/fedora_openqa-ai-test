@@ -360,6 +360,8 @@ class TestResultsDBReport:
         assert fakeres.call_args[1]['testcase']['name'] == 'compose.server_realmd_join_kickstart'
         assert fakeres.call_args[1]['firmware'] == 'bios'
         assert fakeres.call_args[1]['outcome'] == 'PASSED'
+        scenario = 'fedora.Rawhide.Server-dvd-iso.x86_64.server_realmd_join_kickstart.64bit'
+        assert fakeres.call_args[1]['scenario'] == scenario
 
     def test_update(self, fakeres, oqaclientmock, jobdict02):
         """Check report behaviour with an update test job (rather than
