@@ -173,7 +173,11 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
         'CURRREL': currrel,
         'PREVREL': prevrel,
         'SUBVARIANT': subvariant,
-        'IMAGETYPE': imagetype
+        'IMAGETYPE': imagetype,
+        # FIXME: this is a workaround for
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1430043 , should
+        # be removed when that is fixed
+        'CDMODEL': 'ide-cd',
     }
     if extraparams:
         params.update(extraparams)
@@ -290,6 +294,10 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # this disables the openQA logic that cancels all running jobs
         # with the same DISTRI, VERSION, FLAVOR and ARCH
         '_NOOBSOLETEBUILD': 1,
+        # FIXME: this is a workaround for
+        # https://bugzilla.redhat.com/show_bug.cgi?id=1430043 , should
+        # be removed when that is fixed
+        'CDMODEL': 'ide-cd',
     }
     client = OpenQA_Client(openqa_hostname)
     jobs = []
