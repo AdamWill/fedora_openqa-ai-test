@@ -299,6 +299,15 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # be removed when that is fixed
         'CDMODEL': 'ide-cd',
     }
+    # mark if release is a development release; the tests need to know
+    try:
+        curr = int(fedfind.helpers.get_current_release())
+        if str(version).lower() == 'rawhide' or int(version) > curr:
+            baseparams['DEVELOPMENT'] = 1
+    except ValueError:
+        # but don't fail to schedule if fedfind fails...
+        logger.warning("jobs_from_update: could not determine current release! Assuming update is "
+                       "for stable release.")
     client = OpenQA_Client(openqa_hostname)
     jobs = []
 

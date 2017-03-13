@@ -365,8 +365,9 @@ def test_jobs_from_compose(fakerun, ffmock02):
         with pytest.raises(schedule.TriggerException):
             ret = schedule.jobs_from_compose(COMPURL)
 
+@mock.patch('fedfind.helpers.get_current_release', return_value=25)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-def test_jobs_from_update(fakeclient):
+def test_jobs_from_update(fakeclient, fakecurr):
     """Tests for jobs_from_update."""
     # the OpenQA_Client instance mock
     fakeinst = fakeclient.return_value
@@ -408,6 +409,22 @@ def test_jobs_from_update(fakeclient):
             'DESKTOP': 'gnome',
         }
     ]
+
+    # test DEVELOPMENT var set when release is higher than current
+    fakeinst.openqa_request.reset_mock()
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    parmdicts = [call[0][2] for call in posts]
+    assert all(parmdict.get('DEVELOPMENT') == 1 for parmdict in parmdicts)
+
+    # check we don't crash or fail to schedule if get_current_release
+    # fails
+    fakeinst.openqa_request.reset_mock()
+    fakecurr.side_effect = ValueError("Well, that was unfortunate")
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
+    assert ret == [1, 1]
+    fakecurr.side_effect = None
 
     # test 'flavors'
     fakeinst.openqa_request.reset_mock()
