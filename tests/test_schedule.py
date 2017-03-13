@@ -279,7 +279,8 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
             'CURRREL': '25',
             'PREVREL': '24',
             'SUBVARIANT': subvariant,
-            'IMAGETYPE': imagetype
+            'IMAGETYPE': imagetype,
+            'CDMODEL': 'ide-cd',
         }
         expdict.update(param_urls)
         assert instance.openqa_request.call_args[0] == ('POST', 'isos', expdict)
@@ -390,6 +391,7 @@ def test_jobs_from_update(fakeclient):
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
             '_NOOBSOLETEBUILD': 1,
+            'CDMODEL': 'ide-cd',
             'HDD_1': 'disk_f25_server_3_x86_64.img',
             'FLAVOR': 'updates-server',
         },
@@ -400,6 +402,7 @@ def test_jobs_from_update(fakeclient):
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
             '_NOOBSOLETEBUILD': 1,
+            'CDMODEL': 'ide-cd',
             'HDD_1': 'disk_f25_desktop_3_x86_64.img',
             'FLAVOR': 'updates-workstation',
             'DESKTOP': 'gnome',
