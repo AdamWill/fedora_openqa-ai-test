@@ -139,7 +139,7 @@ class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
         if critpath and advisory and version and idpref == 'FEDORA':
             self._log('info', "Scheduling openQA jobs for update {0}".format(advisory))
             # pylint: disable=no-member
-            jobs = schedule.jobs_from_update(advisory, version, openqa_hostname=self.openqa_hostname)
+            jobs = schedule.jobs_from_update(advisory, version, openqa_hostname=self.openqa_hostname, force=True)
             if jobs:
                 self._log('info', "openQA jobs run on update {0}: "
                           "{1}".format(advisory, ' '.join(str(job) for job in jobs)))
