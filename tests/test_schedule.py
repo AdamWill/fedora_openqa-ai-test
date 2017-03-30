@@ -365,6 +365,18 @@ def test_jobs_from_compose(fakerun, ffmock02):
         with pytest.raises(schedule.TriggerException):
             ret = schedule.jobs_from_compose(COMPURL)
 
+@mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
+@mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
+@mock.patch.object(fedfind.release.BranchedNightly, 'type', 'production')
+def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
+    """Check that we tag candidate composes as 'important'."""
+    ret = schedule.jobs_from_compose(COMPURL)
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(15)])
+    # find the args that openqa_request was last called with
+    reqargs = fakeclient.return_value.openqa_request.call_args
+    assert reqargs[0] == ('POST', 'groups/1/comments')
+    assert reqargs[1]['params'] == {'text': 'tag:Fedora-25-20161115.n.0:important:candidate'}
+
 @mock.patch('fedfind.helpers.get_current_release', return_value=25)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
 def test_jobs_from_update(fakeclient, fakecurr):

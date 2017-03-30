@@ -263,6 +263,16 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
                                         rel.cid, rel.release, location, force=force,
                                         extraparams=extraparams, openqa_hostname=openqa_hostname))
 
+    # if we scheduled any jobs, and this is a candidate compose, tag
+    # this build as 'important'
+    # this prevents its jobs being obsoleted if a nightly compose shows
+    # up while they're running, and prevents it being garbage-collected
+    if rel.type == 'production' and jobs:
+        client = OpenQA_Client(openqa_hostname)
+        # we expect group 1 to be 'fedora'. I think this is reliable.
+        params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
+        client.openqa_request('POST', 'groups/1/comments', params=params)
+
     return (rel.cid, jobs)
 
 def jobs_from_update(update, version, flavors=None, force=False, extraparams=None, openqa_hostname=None):
