@@ -267,7 +267,9 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     # this build as 'important'
     # this prevents its jobs being obsoleted if a nightly compose shows
     # up while they're running, and prevents it being garbage-collected
-    if rel.type == 'production' and jobs:
+    # don't do this for post-release nightlies that are *always*
+    # candidates, though
+    if rel.type == 'production' and rel.product == 'Fedora' and jobs:
         client = OpenQA_Client(openqa_hostname)
         # we expect group 1 to be 'fedora'. I think this is reliable.
         params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
