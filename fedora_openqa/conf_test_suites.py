@@ -30,7 +30,7 @@ TESTCASES = {
     #
     #   special value       replacement
     #
-    #   $RUNARCH$           - "i386", "x86_64"
+    #   $RUNARCH$           - "i386", "x86_64", "arm"
     #   $BOOTMETHOD$        - "x86_64 BIOS", "x86_64 UEFI"
     #   $FIRMWARE$          - "BIOS", "UEFI"
     #   $SUBVARIANT$        - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
@@ -313,22 +313,27 @@ TESTCASES = {
         "type": "Installation",
     },
     "QA:Testcase_base_initial_setup": {
-        "env": "$SUBVARIANT_OR_ARM$",
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT$",
         "type": "Base",
     },
     "QA:Testcase_base_selinux": {
+        "section": "$RUNARCH$",
         "env": "$SUBVARIANT$",
         "type": "Base",
     },
     "QA:Testcase_Services_start": {
-        "env": "$SUBVARIANT_OR_ARM$",
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT$",
         "type": "Base",
     },
     "QA:Testcase_base_service_manipulation": {
+        "section": "$RUNARCH$",
         "env": "$SUBVARIANT$",
         "type": "Base",
     },
     "QA:Testcase_base_update_cli": {
+        "section": "$RUNARCH$",
         "env": "$SUBVARIANT$",
         "type": "Base",
     },
