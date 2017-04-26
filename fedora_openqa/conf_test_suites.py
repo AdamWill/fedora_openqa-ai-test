@@ -317,6 +317,11 @@ TESTCASES = {
         "env": "$SUBVARIANT$",
         "type": "Base",
     },
+    "QA:Testcase_base_startup": {
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT$",
+        "type": "Base",
+    },
     "QA:Testcase_base_selinux": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT$",
@@ -505,6 +510,7 @@ TESTSUITES = {
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_base_startup",
     ],
     "install_default_upload": [
         "QA:Testcase_Boot_default_install",
@@ -512,6 +518,7 @@ TESTSUITES = {
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_base_startup",
     ],
     "install_arm_image_deployment_upload": [
         "QA:Testcase_arm_image_deployment",
@@ -888,6 +895,12 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_no_user": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_base_initial_setup",
     ],
 }
 
