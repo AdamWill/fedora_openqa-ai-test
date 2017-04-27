@@ -24,7 +24,7 @@
 import fedmsg.consumers
 
 # internal imports
-from .config import CONFIG
+from .config import CONFIG, UPDATEWL
 from . import schedule
 from . import report
 
@@ -136,19 +136,58 @@ class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
         version = update.get('release', {}).get('version')
         # to make sure this is a Fedora, not EPEL, update
         idpref = update.get('release', {}).get('id_prefix')
-        if critpath and advisory and version and idpref == 'FEDORA':
-            self._log('info', "Scheduling openQA jobs for update {0}".format(advisory))
-            # pylint: disable=no-member
-            jobs = schedule.jobs_from_update(advisory, version, openqa_hostname=self.openqa_hostname, force=True)
-            if jobs:
-                self._log('info', "openQA jobs run on update {0}: "
-                          "{1}".format(advisory, ' '.join(str(job) for job in jobs)))
-            else:
-                self._log('warning', "No openQA jobs run!")
-                return
+        # list of flavors to run the tests for, starts empty. If set
+        # to None, means 'run all tests'.
+        flavors = []
 
-            self._log('debug', "Finished")
+        # if update is critpath, always run all update tests
+        if critpath and advisory and version and idpref == 'FEDORA':
+            self._log('info', "Scheduling openQA jobs for critical path update {0}".format(advisory))
+            flavors = None
+
+        # otherwise check the whitelist
+        elif advisory and version and idpref == 'FEDORA':
+            self._log('debug', "Checking whitelist for update {0}".format(advisory))
+            for build in update.get('builds', []):
+                # get just the package name by splitting the NVR. This
+                # assumes all NVRs actually contain a V and an R.
+                # Happily, RPM rejects dashes in version or release.
+                pkgname = build['nvr'].rsplit('-', 2)[0]
+                # now check the whitelist and adjust flavors
+                if pkgname in UPDATEWL:
+                    if not UPDATEWL[pkgname]:
+                        # this means *all* flavors, and we can short
+                        self._log('info', "Running ALL openQA tests for whitelisted update {0}".format(advisory))
+                        flavors = None
+                        break
+                    else:
+                        flavors.extend(UPDATEWL[pkgname])
+
+        if flavors:
+            # this means we have a list of flavors, not None indicating
+            # *all* flavors, let's log that
+            tmpl = "Running update tests for flavors {0} for whitelisted update {1}"
+            self._log('info', tmpl.format(', '.join(flavors), advisory))
+        elif flavors == []:
+            # This means we ain't running nothin'
+            self._log('debug', "Update is not critical path and no packages in whitelist, no jobs scheduled")
             return
+
+        # Finally, now we've decided on flavors, run the jobs. flavors
+        # being None here results in our desired behaviour (jobs will
+        # be created for *all* flavors)
+        # pylint: disable=no-member
+        jobs = schedule.jobs_from_update(
+            advisory, version, flavors=flavors, openqa_hostname=self.openqa_hostname, force=True)
+        if jobs:
+            self._log('info', "openQA jobs run on update {0}: "
+                      "{1}".format(advisory, ' '.join(str(job) for job in jobs)))
+        else:
+            self._log('warning', "No openQA jobs run!")
+            return
+
+        self._log('debug', "Finished")
+        return
 
     def consume(self, message):
         """Consume incoming message."""

@@ -34,6 +34,15 @@ import pytest
 
 # 'internal' imports
 import fedora_openqa.consumer
+from fedora_openqa.config import UPDATEWL
+
+# Modified version of the default UPDATEWL for testing purposes
+# we have to do this because we don't have any real-world cases
+# for whitelisting anything but the 'server' tests yet, so we can't
+# fully test the feature with the real default whitelist
+MODIFIEDWL = copy.deepcopy(UPDATEWL)
+MODIFIEDWL['gnome-terminal'] = ('workstation',)
+MODIFIEDWL['kernel'] = None
 
 # Passed test message
 PASSMSG = {
@@ -136,6 +145,13 @@ CRITPATHCREATE = {
             "agent": "msekleta",
             "update": {
                 "alias": "FEDORA-2017-ea07abb5d5",
+                "builds": [
+                    {
+                        "epoch": 0,
+                        "nvr": "systemd-231-14.fc24",
+                        "signed": False
+                    }
+                ],
                 "critpath": True,
                 "release": {
                     "branch": "f24",
@@ -155,9 +171,14 @@ CRITPATHCREATE = {
     }
 }
 
-# Non-critpath update creation message
+# Non-critpath, non-whitelisted update creation message
 NONCRITCREATE = copy.deepcopy(CRITPATHCREATE)
 NONCRITCREATE['body']['msg']['update']['critpath'] = False
+
+# Non-critpath, one-flavor-whitelisted update creation message
+WLCREATE = copy.deepcopy(CRITPATHCREATE)
+WLCREATE['body']['msg']['update']['critpath'] = False
+WLCREATE['body']['msg']['update']['builds'] = [{"epoch": 0, "nvr": "freeipa-4.4.4-1.fc24", "signed": False}]
 
 # Critpath EPEL update creation message
 EPELCREATE = copy.deepcopy(CRITPATHCREATE)
@@ -190,9 +211,22 @@ CRITPATHEDIT = {
     }
 }
 
-# Non-critpath update edit message
+# Non-critpath, non-whitelisted update edit message
 NONCRITEDIT = copy.deepcopy(CRITPATHEDIT)
 NONCRITEDIT['body']['msg']['update']['critpath'] = False
+
+# Non-critpath, two-flavors-whitelisted update edit message
+WLEDIT = copy.deepcopy(CRITPATHEDIT)
+WLEDIT['body']['msg']['update']['critpath'] = False
+WLEDIT['body']['msg']['update']['builds'] = [
+    {"epoch": 0, "nvr": "freeipa-4.4.4-1.fc26", "signed": False},
+    {"epoch": 0, "nvr": "gnome-terminal-3.24.1-1.fc24", "signed": False},
+]
+
+# Non-critpath, all-flavors-whitelisted update edit message
+WLALLEDIT = copy.deepcopy(CRITPATHEDIT)
+WLALLEDIT['body']['msg']['update']['critpath'] = False
+WLALLEDIT['body']['msg']['update']['builds'] = [{"epoch": 0, "nvr": "kernel-4.10.12-100.fc24", "signed": False}]
 
 # Critpath EPEL update edit message
 EPELEDIT = copy.deepcopy(CRITPATHEDIT)
@@ -225,6 +259,7 @@ for _con in PRODS + STGS + TESTS + (TESTSCHED,):
 class TestConsumers:
     """Tests for the consumers."""
 
+    @mock.patch('fedora_openqa.consumer.UPDATEWL', MODIFIEDWL)
     @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=('somecompose', [1]), autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1], autospec=True)
     @pytest.mark.parametrize(
@@ -236,38 +271,53 @@ class TestConsumers:
         ]
     )
     @pytest.mark.parametrize(
-        "message,create",
+        "message,flavors",
         [
+            # For 'flavors': 'False' means no jobs should be created. For
+            # compose scheduling, any other value just means "jobs should
+            # be created". For update scheduling, any value but 'False'
+            # means "jobs should be created, and this is the expected value
+            # of the 'flavors' kwarg to the fake_update call" (remember,
+            # None means "run tests for all flavors").
             (STARTEDCOMPOSE, False),
             (DOOMEDCOMPOSE, False),
             (FINISHEDCOMPOSE, True),
             (FINCOMPLETE, True),
-            (CRITPATHCREATE, True),
-            (CRITPATHEDIT, True),
+            # for all critpath updates we should schedule for all flavors
+            (CRITPATHCREATE, None),
+            (CRITPATHEDIT, None),
             (NONCRITCREATE, False),
             (NONCRITEDIT, False),
             (EPELCREATE, False),
             (EPELEDIT, False),
+            # WLCREATE contains only a 'server'-whitelisted package
+            (WLCREATE, ['server']),
+            # WLEDIT contains both 'server' and 'workstation'-whitelisted
+            # packages
+            (WLEDIT, ['server', 'workstation']),
+            # WLALLEDIT contains an 'all flavors'-whitelisted package
+            (WLALLEDIT, None),
         ]
     )
-    def test_scheduler(self, fake_update, fake_schedule, consumer, oqah, message, create):
+    def test_scheduler(self, fake_update, fake_schedule, consumer, oqah, message, flavors):
         """Test the job scheduling consumers do their thing. The
         parametrization pairs are:
         1. (consumer, expected openQA hostname)
-        2. (fedmsg, should job scheduling happen?)
+        2. (fedmsg, job creation? / expected flavors value (see above)
         If jobs are expected, we check the schedule function was hit
         and that the hostname is as expected. If jobs aren't expected,
         we check the schedule function was not hit.
         """
         consumer.consume(message)
-        if create:
+        if flavors is False:
+            assert fake_schedule.call_count + fake_update.call_count == 0
+        else:
             assert fake_schedule.call_count + fake_update.call_count == 1
             if fake_schedule.call_count == 1:
                 assert fake_schedule.call_args[1]['openqa_hostname'] == oqah
             else:
                 assert fake_update.call_args[1]['openqa_hostname'] == oqah
-        else:
-            assert fake_schedule.call_count + fake_update.call_count == 0
+                assert fake_update.call_args[1]['flavors'] == flavors
         #fake_schedule.reset_mock()
 
 

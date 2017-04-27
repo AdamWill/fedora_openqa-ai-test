@@ -222,9 +222,31 @@ WANTED = [
     },
 ]
 
+# Whitelist of non-critpath package names to run update tests on.
+# Dict keys are the package names, value is either an iterable of the
+# flavor(s) of update tests to run for that package or can just be
+# None (or anything else false-y) which means "run all the flavors".
+UPDATEWL = {
+    # FreeIPA-related bits
+    '389-ds': ('server',),
+    '389-ds-base': ('server',),
+    'bind': ('server',),
+    'bind-dyndb-ldap': ('server',),
+    'certmonger': ('server',),
+    'ding-libs': ('server',),
+    'freeipa': ('server',),
+    'krb5-server': ('server',),
+    'pki-core': ('server',),
+    'sssd': ('server',),
+    'tomcat': ('server',),
+    # PostgreSQL is a release-blocking server role
+    'postgresql': ('server',),
+}
+
 for path in ('/etc/fedora-openqa',
              '{0}/.config/fedora-openqa'.format(os.path.expanduser('~'))):
     try:
+        # load WANTED override config file
         fname = '{0}/images.json'.format(path)
         with open(fname, 'r') as fout:
             WANTED = json.load(fout)
@@ -233,6 +255,15 @@ for path in ('/etc/fedora-openqa',
                 raise ConfigError("{0} is in old format (dict, not list)!".format(fname))
             except AttributeError:
                 pass
+    except IOError:
+        # file not found
+        pass
+
+    try:
+        # load UPDATEWL override config file
+        fname = '{0}/updatewl.json'.format(path)
+        with open(fname, 'r') as fout:
+            UPDATEWL = json.load(fout)
     except IOError:
         # file not found
         pass
