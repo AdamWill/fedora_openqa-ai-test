@@ -327,6 +327,11 @@ TESTCASES = {
         "env": "$SUBVARIANT$",
         "type": "Base",
     },
+    "QA:Testcase_base_system_logging": {
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT$",
+        "type": "Base",
+    },
     "QA:Testcase_Services_start": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT$",
@@ -819,6 +824,9 @@ TESTSUITES = {
     ],
     "base_update_cli": [
         "QA:Testcase_base_update_cli",
+    ],
+    "base_system_logging": [
+        "QA:Testcase_base_system_logging",
     ],
     "install_kickstart_firewall_disabled": [
         "QA:Testcase_kickstart_firewall_disabled",
