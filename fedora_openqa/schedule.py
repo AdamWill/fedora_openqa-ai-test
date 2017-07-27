@@ -282,7 +282,25 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     advisory ID, version is the release number, flavors defines which
     update tests should be run (valid values are the 'flavdict' keys).
     force, extraparams and openqa_hostname are as for
-    jobs_from_compose.
+    jobs_from_compose. To explain the HDD_1 and START_AFTER_TEST
+    settings: most tests in the 'update' scenario are shared with the
+    'compose' scenario. Many of them specify START_AFTER_TEST as
+    'install_default_upload' and HDD_1 as the disk image that
+    install_default_upload creates, so that in the 'compose' scenario,
+    these tests run after install_default_upload and use the image it
+    creates. For update testing, there is no install_default_upload
+    test; we instead want to run these tests using the pre-existing
+    createhdds-created base image. So here, we specify the appropriate
+    HDD_1 value, and an empty value for START_AFTER_TEST, so the
+    scheduler will not try to create a dependency on the non-existent
+    install_default_upload test, and the correct disk image will be
+    used. There are a *few* tests where we do *not* want to override
+    these values, however: the tests where there really is a dependency
+    in both scenarios (e.g. the cockpit_basic test has to run after the
+    cockpit_default test and use the disk image it uploads). For these
+    tests, we specify the values in the templates as +START_AFTER_TEST
+    and +HDD_1; the + makes those values win over the ones we pass in
+    here.
     """
     version = str(version)
     build = 'Update-{0}'.format(update)
@@ -310,6 +328,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # https://bugzilla.redhat.com/show_bug.cgi?id=1430043 , should
         # be removed when that is fixed
         'CDMODEL': 'ide-cd',
+        'START_AFTER_TEST': '',
     }
     # mark if release is a development release; the tests need to know
     try:
