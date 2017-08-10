@@ -173,11 +173,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
         'CURRREL': currrel,
         'PREVREL': prevrel,
         'SUBVARIANT': subvariant,
-        'IMAGETYPE': imagetype,
-        # FIXME: this is a workaround for
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1430043 , should
-        # be removed when that is fixed
-        'CDMODEL': 'ide-cd',
+        'IMAGETYPE': imagetype
     }
     if extraparams:
         params.update(extraparams)
@@ -325,10 +321,6 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # this disables the openQA logic that cancels all running jobs
         # with the same DISTRI, VERSION, FLAVOR and ARCH
         '_NOOBSOLETEBUILD': 1,
-        # FIXME: this is a workaround for
-        # https://bugzilla.redhat.com/show_bug.cgi?id=1430043 , should
-        # be removed when that is fixed
-        'CDMODEL': 'ide-cd',
         'START_AFTER_TEST': '',
     }
     # mark if release is a development release; the tests need to know
