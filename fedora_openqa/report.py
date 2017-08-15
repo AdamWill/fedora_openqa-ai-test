@@ -207,11 +207,12 @@ def get_passed_testcases(jobs, client=None):
             # it's wikitcms' job to take a compose ID and figure out
             # what the validation event for it is.
             composeid = job['settings']['BUILD']
-            if composeid.endswith('EXTRA'):
+            if composeid.endswith('EXTRA') or composeid.endswith('NOREPORT'):
                 # this is a 'dirty' test run with extra parameters
-                # (usually a test with an updates.img), we never want
-                # to report results for these
-                logger.debug("Job was run with extra params! Will not report")
+                # (usually a test with an updates.img) or some kind
+                # of throwaway run, we never want to report results
+                # for these
+                logger.debug("Job %d is a NOREPORT job or was run with extra params! Will not report", job['id'])
                 continue
             # find the TESTSUITES entry for the job and parse it to
             # get a list of passed test case names (TESTCASES keys)
@@ -351,6 +352,14 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             version = job['settings']['VERSION']
         except KeyError:
             logger.warning("cannot report job %d because it is missing build/distri/version", job['id'])
+            continue
+
+        if build.endswith('EXTRA') or build.endswith('NOREPORT'):
+            # this is a 'dirty' test run with extra parameters
+            # (usually a test with an updates.img) or some kind
+            # of throwaway run, we never want to report results
+            # for these
+            logger.debug("Job %d is a NOREPORT job or was run with extra params! Will not report", job['id'])
             continue
 
         # sanitize the test name

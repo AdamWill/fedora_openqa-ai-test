@@ -286,6 +286,15 @@ class TestGetPassedTestcases:
         ret = fosreport.get_passed_testcases([jobdict01])
         assert len(ret) == 0
 
+    def test_noreport(self, jobdict01):
+        """Check get_passed_testcases returns nothing when build ends in
+        NOREPORT (intended for use by admins when manually triggering some
+        kind of 'throwaway' test run).
+        """
+        jobdict01['settings']['BUILD'] = 'Fedora-Rawhide-20170207.n.0-NOREPORT'
+        ret = fosreport.get_passed_testcases([jobdict01])
+        assert len(ret) == 0
+
 
 @mock.patch('fedora_openqa.report.get_passed_testcases', return_value=['atest'], autospec=True)
 @pytest.mark.usefixtures("oqaclientmock")
@@ -450,7 +459,7 @@ class TestResultsDBReport:
 
     def test_skips(self, fakeres, oqaclientmock):
         """Check resultsdb_report skips reporting for cloned,
-        cancelled, obsolete and incomplete jobs.
+        cancelled, obsolete, incomplete, EXTRA and NOREPORT jobs.
         """
         jobdict = oqaclientmock[2]
         with mock.patch.dict(jobdict, {'clone_id': 15}):
@@ -475,6 +484,17 @@ class TestResultsDBReport:
             fosreport.resultsdb_report(jobs=[1])
             assert fakeres.call_count == 0
             jobdict['settings'][required] = backup
+
+        fakeres.reset_mock()
+        jobdict['settings']['BUILD'] = 'Fedora-Rawhide-20170207.n.0-EXTRA'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_count == 0
+
+        fakeres.reset_mock()
+        jobdict['settings']['BUILD'] = 'Fedora-Rawhide-20170207.n.0-NOREPORT'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_count == 0
+
 
     def test_note(self, fakeres, oqaclientmock):
         """Check resultsdb_report adds a note for failed modules."""
