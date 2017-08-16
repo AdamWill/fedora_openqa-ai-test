@@ -269,7 +269,8 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     # up while they're running, and prevents it being garbage-collected
     # don't do this for post-release nightlies that are *always*
     # candidates, though
-    if rel.type == 'production' and rel.product == 'Fedora' and jobs:
+    # using getattr as the 'respin' composes don't have these attrs
+    if getattr(rel, 'type', '') == 'production' and getattr(rel, 'product', '') == 'Fedora' and jobs:
         client = OpenQA_Client(openqa_hostname)
         # we expect group 1 to be 'fedora'. I think this is reliable.
         params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
