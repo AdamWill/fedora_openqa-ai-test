@@ -332,7 +332,7 @@ TESTCASES = {
         "env": "$SUBVARIANT$",
         "type": "Base",
     },
-    "QA:Testcase_Services_start": {
+    "QA:Testcase_base_services_start": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT$",
         "type": "Base",
@@ -814,10 +814,10 @@ TESTSUITES = {
         "QA:Testcase_base_selinux",
     ],
     "base_services_start": [
-        "QA:Testcase_Services_start",
+        "QA:Testcase_base_services_start",
     ],
     "base_services_start_arm": [
-        "QA:Testcase_Services_start",
+        "QA:Testcase_base_services_start",
     ],
     "base_service_manipulation": [
         "QA:Testcase_base_service_manipulation",
