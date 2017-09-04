@@ -10,7 +10,9 @@ For general information on openQA in Fedora, including an overview of the system
 Issues
 ------
 
-For the present, issues (and pull requests - 'diffs') are tracked in [Fedora QA Phabricator](https://phab.qa.fedoraproject.org/). You can open issues against the `fedora_openqa` project [here](https://phab.qa.fedoraproject.org/maniphest/task/edit/form/default/?tags=fedora_openqa). See [the QA Phabricator wiki page](https://fedoraproject.org/wiki/QA:Phabricator#issues-diffs) for detailed instructions on filing issues and diffs. Note that this repository does not use the 'gitflow' system, so the main development branch is `master`: please branch from `master` and submit diffs against it. Running the unit tests is not yet integrated into the diff process, so you do not have to follow the instructions regarding `virtualenv`, but please do run the tests manually to check any diffs you submit if possible.
+[Issues](https://pagure.io/fedora-qa/fedora_openqa/issues) and [pull requests](https://pagure.io/fedora-qa/fedora_openqa/pull-requests) are tracked in [fedora_openqa Pagure](https://pagure.io/fedora-qa/fedora_openqa). Pagure uses a Github-like pull request workflow, so if you're familiar with that, you can easily submit Pagure pull requests. If not, you can read up in the [Pagure documentation](https://docs.pagure.org/pagure/usage/index.html).
+
+Note that this repository does not use the 'gitflow' system, so the main development branch is `master`: please branch from `master` and submit diffs against it. Running the unit tests is not yet integrated into the diff process, so you do not have to follow the instructions regarding `virtualenv`, but please do run the tests manually to check any diffs you submit if possible.
 
 Requirements
 ------------
