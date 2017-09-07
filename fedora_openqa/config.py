@@ -228,42 +228,6 @@ WANTED = [
             "arch": "x86_64",
         },
     },
-    {
-        "match": {
-            "subvariant": "Server",
-            "type": "boot",
-            "format": "iso",
-            "arch": "ppc64le",
-        },
-        "score": 6,
-    },
-    {
-        "match": {
-            "subvariant": "Server",
-            "type": "dvd",
-            "format": "iso",
-            "arch": "ppc64le",
-        },
-        "score": 10,
-    },
-    {
-        "match": {
-            "subvariant": "Server",
-            "type": "boot",
-            "format": "iso",
-            "arch": "ppc64",
-        },
-        "score": 6,
-    },
-    {
-        "match": {
-            "subvariant": "Server",
-            "type": "dvd",
-            "format": "iso",
-            "arch": "ppc64",
-        },
-        "score": 10,
-    },
 ]
 
 # Whitelist of non-critpath package names to run update tests on.
