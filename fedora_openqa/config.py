@@ -222,7 +222,7 @@ WANTED = [
     },
     {
         "match": {
-            "subvariant": "Workstation",
+            "subvariant": "Workstation Ostree",
             "type": "dvd-ostree",
             "format": "iso",
             "arch": "x86_64",
