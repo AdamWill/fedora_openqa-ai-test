@@ -177,6 +177,14 @@
     },
     {
         "match": {
+            "subvariant": "Atomic",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "ppc64le"
+        }
+    },
+    {
+        "match": {
             "subvariant": "Server",
             "type": "boot",
             "format": "iso",
@@ -192,5 +200,13 @@
             "arch": "ppc64"
         },
         "score": 10
+    },
+    {
+        "match": {
+            "subvariant": "Atomic",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "ppc64"
+        }
     }
 ]
