@@ -443,6 +443,19 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
 
         # FIXME: use overall_url as a group ref_url
 
-        rdb_object.report(rdb_instance)
+        # report result, retrying with a delay on failure
+        tries = 5
+        while tries:
+            try:
+                rdb_object.report(rdb_instance)
+                return
+            except ResultsDBapiException as err:
+                logger.warning("ResultsDB report failed! Retrying...")
+                logger.warning("Response: %s", err.response)
+                logger.warning("Message: %s", err.message)
+                tries -= 1
+                time.sleep(10)
+        logger.error("ResultsDB reporting failed after multiple retries! Giving up.")
+        raise(err)
 
 # vim: set textwidth=120 ts=8 et sw=4:
