@@ -433,10 +433,12 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         rdb_object = rdbpartial(**kwargs)
 
         # Add some more extradata items
+        # for resultsdb purposes we don't want VERSION or TEST in the scenario
+        scenkeys = [key for key in JOB_SCENARIO_WITH_MACHINE_KEYS if key not in ('VERSION', 'TEST')]
         rdb_object.extradata.update({
             'firmware': 'uefi' if 'UEFI' in job['settings'] else 'bios',
             'arch': job['settings']['ARCH'],
-            'scenario': '.'.join(job['settings'][key] for key in JOB_SCENARIO_WITH_MACHINE_KEYS)
+            'scenario': '.'.join(job['settings'][key] for key in scenkeys)
         })
 
         # FIXME: use overall_url as a group ref_url
