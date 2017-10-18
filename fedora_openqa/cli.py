@@ -75,7 +75,7 @@ def command_update(args):
     if args.flavor:
         flavors = [args.flavor]
     jobs = schedule.jobs_from_update(args.update, args.release, flavors=flavors, force=args.force,
-                                     openqa_hostname=args.openqa_hostname)
+                                     openqa_hostname=args.openqa_hostname, arch=args.arch)
     print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
     sys.exit()
 
@@ -170,6 +170,8 @@ def parse_args(args=None):
     parser_update.add_argument(
         "--openqa-hostname", help="openQA host to schedule jobs on (default: client library "
         "default)", metavar='HOSTNAME')
+    parser_update.add_argument(
+        '--arch', '-a', help="Arch to schedule jobs for (default: x86_64)", metavar='ARCH')
     parser_update.add_argument(
         '--force', '-f', help="For each flavor, schedule jobs even if there "
         "are existing, non-cancelled jobs for the update for that flavor", action='store_true')

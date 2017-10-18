@@ -274,7 +274,7 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
 
     return (rel.cid, jobs)
 
-def jobs_from_update(update, version, flavors=None, force=False, extraparams=None, openqa_hostname=None):
+def jobs_from_update(update, version, flavors=None, force=False, extraparams=None, openqa_hostname=None, arch=None):
     """Schedule jobs for a specific Fedora update. update is the
     advisory ID, version is the release number, flavors defines which
     update tests should be run (valid values are the 'flavdict' keys).
@@ -300,22 +300,25 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     here.
     """
     version = str(version)
+    if not arch:
+        # set a default in a way that works neatly with the CLI bits
+        arch = 'x86_64'
     build = 'Update-{0}'.format(update)
     if extraparams:
         build = '{0}-EXTRA'.format(build)
     flavdict = {
         'server': {
-            'HDD_1': 'disk_f{0}_server_3_x86_64.img'.format(version),
+            'HDD_1': 'disk_f{0}_server_3_{1}.img'.format(version, arch),
         },
         'workstation': {
-            'HDD_1': 'disk_f{0}_desktop_3_x86_64.img'.format(version),
+            'HDD_1': 'disk_f{0}_desktop_3_{1}.img'.format(version, arch),
             'DESKTOP': 'gnome',
         },
     }
     baseparams = {
         'DISTRI': 'fedora',
         'VERSION': version,
-        'ARCH': 'x86_64',
+        'ARCH': arch,
         'BUILD': build,
         'ADVISORY': update,
         # this disables the openQA logic that cancels all running jobs
@@ -342,11 +345,11 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         fullflav = 'updates-{0}'.format(flavor)
         if not force:
             # dupe check
-            currjobs = client.openqa_request('GET', 'jobs', params={'build': build})['jobs']
+            currjobs = client.openqa_request('GET', 'jobs', params={'build': build, 'arch': arch})['jobs']
             currjobs = [cjob for cjob in currjobs if cjob['settings']['FLAVOR'] == fullflav]
             if currjobs:
-                logger.info("jobs_from_update: Existing jobs found for update %s flavor %s, and force "
-                            "not set! No jobs scheduled.", update, flavor)
+                logger.info("jobs_from_update: Existing jobs found for update %s flavor %s arch %s, "
+                            "and force not set! No jobs scheduled.", update, flavor, arch)
                 continue
         flavparams = flavdict[flavor]
         flavparams.update(baseparams)

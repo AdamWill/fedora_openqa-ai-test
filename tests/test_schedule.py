@@ -492,4 +492,13 @@ def test_jobs_from_update(fakeclient, fakecurr):
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', openqa_hostname='openqa.example')
     assert fakeclient.call_args[0][0] == 'openqa.example'
 
+    # test arch
+    fakeinst.openqa_request.reset_mock()
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', arch='ppc64le')
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # check parm dict values
+    assert posts[0][0][2]['ARCH'] == 'ppc64le'
+    assert posts[0][0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.img', 'disk_f25_desktop_3_ppc64le.img']
+
 # vim: set textwidth=120 ts=8 et sw=4:
