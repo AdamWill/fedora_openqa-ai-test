@@ -106,6 +106,11 @@ class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
         status = message['body']['msg'].get('status')
         location = message['body']['msg'].get('location')
         compstr = message['body']['msg'].get('compose_id', location)
+        # don't schedule tests on modular composes, for now, as we know
+        # many fail
+        if 'Fedora-Modular' in compstr:
+            self._log('info', "Not scheduling jobs for modular compose %s", compstr)
+            return
 
         if 'FINISHED' in status and location:
             # We have a complete pungi4 compose
