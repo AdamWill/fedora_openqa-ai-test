@@ -109,7 +109,7 @@ class OpenQAScheduler(fedmsg.consumers.FedmsgConsumer):
         # don't schedule tests on modular composes, for now, as we know
         # many fail
         if 'Fedora-Modular' in compstr:
-            self._log('info', "Not scheduling jobs for modular compose %s", compstr)
+            self._log('info', "Not scheduling jobs for modular compose {0}".format(compstr))
             return
 
         if 'FINISHED' in status and location:
