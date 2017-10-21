@@ -415,7 +415,7 @@ def test_jobs_from_update(fakeclient, fakecurr):
             'ADVISORY': 'FEDORA-2017-b07d628952',
             '_NOOBSOLETEBUILD': 1,
             'START_AFTER_TEST': '',
-            'HDD_1': 'disk_f25_desktop_3_x86_64.img',
+            'HDD_1': 'disk_f25_desktop_4_x86_64.img',
             'FLAVOR': 'updates-workstation',
             'DESKTOP': 'gnome',
         }
@@ -499,6 +499,6 @@ def test_jobs_from_update(fakeclient, fakecurr):
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     # check parm dict values
     assert posts[0][0][2]['ARCH'] == 'ppc64le'
-    assert posts[0][0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.img', 'disk_f25_desktop_3_ppc64le.img']
+    assert posts[0][0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.img', 'disk_f25_desktop_4_ppc64le.img']
 
 # vim: set textwidth=120 ts=8 et sw=4:
