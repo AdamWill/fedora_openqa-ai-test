@@ -1,6 +1,6 @@
 # fedora-openqa-schedule (both CLI and module) will read configuration from
-# /etc/fedora-qa/schedule.conf or ~/.config/fedora-qa/schedule.conf (with the
-# latter taking priority if both exist). Most of these settings may be
+# /etc/fedora-openqa/schedule.conf or ~/.config/fedora-openqa/schedule.conf
+# (with the latter taking priority if both exist). Most of these settings may be
 # overridden with CLI arguments, when using the CLI. Values in this sample
 # config indicate the defaults.
 
