@@ -251,6 +251,8 @@ UPDATEWL = {
     'cockpit': ('server',),
     # PostgreSQL is a release-blocking server role
     'postgresql': ('server',),
+    # Obvious...
+    'gnome-software': ('workstation',),
 }
 
 for path in ('/etc/fedora-openqa',
