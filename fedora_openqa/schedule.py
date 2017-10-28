@@ -241,9 +241,14 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
 
     # schedule per-image jobs, keeping track of the highest score
     # per arch along the way
+    release = rel.release
+    # for sanity's sake let's just treat the stupid-ass 'Bikeshed'
+    # version as 'Rawhide' for now
+    if release.lower() == 'bikeshed':
+        release = 'Rawhide'
     for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
         jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
-                                    rel.release, location, force=force, extraparams=extraparams,
+                                    release, location, force=force, extraparams=extraparams,
                                     openqa_hostname=openqa_hostname))
         if score > univs.get(arch, [None, 0])[1]:
             univs[arch] = (param_urls, score, subvariant, imagetype)
@@ -256,7 +261,7 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
             # is ARM and there would be whole lot of other problems if universal tests are run on ARM.
             logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
             jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype,
-                                        rel.cid, rel.release, location, force=force,
+                                        rel.cid, release, location, force=force,
                                         extraparams=extraparams, openqa_hostname=openqa_hostname))
 
     # if we scheduled any jobs, and this is a candidate compose, tag
