@@ -1,0 +1,160 @@
+// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+// all comment lines to be stripped when copied as images.json
+// because not supported by json parser.
+// WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING WARNING
+//
+// fedora-openqa-schedule (both CLI and module) will read configuration from
+// /etc/fedora-openqa/images.json or ~/.config/fedora-openqa/images.json
+// if they exist (with the latter taking priority if both exist).
+//
+// The format is a list of dicts. Each dict represents a single image
+// we want to test. The list is compared against the list of image
+// dicts fedfind returns for the release being tested. One of the items
+// in the image dict is itself a dict called 'match'. This dict
+// determines whether the image "matches": if all the items in this
+// "match" dict match the items in the fedfind image dict, we take that
+// image.
+//
+// The other items in the image dict here are not used for matching,
+// but instead influence the behaviour of the scheduler.
+//
+// The "score" item is used to decide which images to run the universal
+// tests with. For each arch that has universal tests, the found image
+// with the highest score is used. If no image with a score > 0 is
+// found, the universal tests are skipped. If score is not specified
+// the image is considered to have a score of 0.
+//
+// If "dkboot" is set to true, scheduler also downloads kernel and initrd
+// files for specified architecture and then schedules job to run in Direct
+// Kernel Boot mode. Default value (used when dkboot item is not specified)
+// is false.
+
+[
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "boot",
+            "format": "iso",
+            "arch": "x86_64"
+        },
+        "score": 6
+    },
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "dvd",
+            "format": "iso",
+            "arch": "x86_64"
+        },
+        "score": 10
+    },
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "boot",
+            "format": "iso",
+            "arch": "i386"
+        },
+        "score": 6
+    },
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "dvd",
+            "format": "iso",
+            "arch": "i386"
+        },
+        "score": 10
+    },
+    {
+        "match": {
+            "subvariant": "Everything",
+            "type": "boot",
+            "format": "iso",
+            "arch": "x86_64"
+        },
+        "score": 8
+    },
+    {
+        "match": {
+            "subvariant": "Everything",
+            "type": "boot",
+            "format": "iso",
+            "arch": "i386"
+        },
+        "score": 8
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "live",
+            "format": "iso",
+            "arch": "x86_64"
+        }
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "boot",
+            "format": "iso",
+            "arch": "x86_64"
+        }
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "live",
+            "format": "iso",
+            "arch": "i386"
+        }
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "boot",
+            "format": "iso",
+            "arch": "i386"
+        }
+    },
+    {
+        "match": {
+            "subvariant": "KDE",
+            "type": "live",
+            "format": "iso",
+            "arch": "x86_64"
+        }
+    },
+    {
+        "match": {
+            "subvariant": "KDE",
+            "type": "live",
+            "format": "iso",
+            "arch": "i386"
+        }
+    },
+    {
+        "match": {
+            "subvariant": "Minimal",
+            "type": "raw-xz",
+            "format": "raw.xz",
+            "arch": "armhfp"
+        },
+        "dkboot": true
+    },
+    {
+        "match": {
+            "subvariant": "Atomic",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "x86_64"
+        }
+    },
+    {
+        "match": {
+            "subvariant": "Workstation Ostree",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "x86_64"
+        }
+    }
+]

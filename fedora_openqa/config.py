@@ -77,28 +77,7 @@ CONFIG.read('{0}/.config/fedora-openqa/schedule.conf'.format(os.path.expanduser(
 
 # The default set of tested images. This set can be overridden by an
 # 'images.json' file in /etc/fedora-openqa or ~/.config/fedora-openqa.
-
-# The format is a list of dicts. Each dict represents a single image
-# we want to test. The list is compared against the list of image
-# dicts fedfind returns for the release being tested. One of the items
-# in the image dict is itself a dict called 'match'. This dict
-# determines whether the image "matches": if all the items in this
-# "match" dict match the items in the fedfind image dict, we take that
-# image.
-
-# The other items in the image dict here are not used for matching,
-# but instead influence the behaviour of the scheduler.
-
-# The "score" item is used to decide which images to run the universal
-# tests with. For each arch that has universal tests, the found image
-# with the highest score is used. If no image with a score > 0 is
-# found, the universal tests are skipped. If score is not specified
-# the image is considered to have a score of 0.
-
-# If "dkboot" is set to True, scheduler also downloads kernel and initrd
-# files for specified architecture and then schedules job to run in Direct
-# Kernel Boot mode. Default value (used when dkboot item is not specified)
-# is False.
+# Refer to comments in ../images.json.sample
 
 WANTED = [
     {
