@@ -287,9 +287,11 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
         for dupe in dupes:
             tmpl = "already reported result for test %s, env %s! Will not report dupe."
             logger.info(tmpl, dupe.testcase, dupe.env)
+            logger.debug("full ResTuple: %s", dupe)
         for insuff in insuffs:
             tmpl = "insufficient data for test %s, env %s! Will not report."
             logger.info(tmpl, insuff.testcase, insuff.env)
+            logger.debug("full ResTuple: %s", insuff)
         return []
 
     else:
