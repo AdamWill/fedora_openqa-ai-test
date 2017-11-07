@@ -247,6 +247,8 @@ UPDATEWL = {
     'pki-core': ('server',),
     'sssd': ('server',),
     'tomcat': ('server',),
+    'python-ldap': ('server',),
+    'python-pyldap': ('server',),
     # Cockpit-related bits
     'cockpit': ('server',),
     # PostgreSQL is a release-blocking server role
