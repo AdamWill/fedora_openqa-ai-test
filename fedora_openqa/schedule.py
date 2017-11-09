@@ -164,6 +164,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
 
     # starts OpenQA jobs
     params = {
+        '_ONLYOBSOLETESAME': '1',   # only obsolete pending jobs for same BUILD
         'DISTRI': 'fedora',
         'VERSION': version,
         'FLAVOR': flavor,
@@ -333,9 +334,8 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         'ARCH': arch,
         'BUILD': build,
         'ADVISORY': update,
-        # this disables the openQA logic that cancels all running jobs
-        # with the same DISTRI, VERSION, FLAVOR and ARCH
-        '_NOOBSOLETEBUILD': 1,
+        # only obsolete pending jobs for same BUILD (i.e. update)
+        '_ONLYOBSOLETESAME': '1',
         'START_AFTER_TEST': '',
     }
     # mark if release is a development release; the tests need to know
