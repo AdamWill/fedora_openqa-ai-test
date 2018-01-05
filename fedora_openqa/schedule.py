@@ -156,11 +156,14 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     try:
         currrel = str(fedfind.helpers.get_current_release())
         prevrel = str(int(currrel) - 1)
+        rawrel = str(fedfind.helpers.get_current_release(branched=True) + 1)
     except ValueError:
         # we don't really want to bail entirely if fedfind failed for
         # some reason, let's just run the other tests and set a value
         # that shows what went wrong for the upgrade tests
         currrel = prevrel = "FEDFINDERROR"
+        # this *might* work...depends on bugs...
+        rawrel = "rawhide"
 
     # starts OpenQA jobs
     params = {
@@ -173,6 +176,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
         'LOCATION': location,
         'CURRREL': currrel,
         'PREVREL': prevrel,
+        'RAWREL': rawrel,
         'SUBVARIANT': subvariant,
         'IMAGETYPE': imagetype
     }
