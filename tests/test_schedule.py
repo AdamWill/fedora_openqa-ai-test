@@ -278,6 +278,7 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
             'LOCATION': rel.location,
             'CURRREL': '25',
             'PREVREL': '24',
+            'RAWREL': '26',
             'SUBVARIANT': subvariant,
             'IMAGETYPE': imagetype,
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
