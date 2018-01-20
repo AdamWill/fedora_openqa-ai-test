@@ -28,6 +28,11 @@ import logging
 import os.path
 
 # External dependencies
+try:
+    # these are only in fedfind 4+
+    from fedfind.exceptions import UnsupportedComposeError, UrlMatchError, CidMatchError
+except ImportError:
+    UnsupportedComposeError = UrlMatchError = CidMatchError = None
 import fedfind.helpers
 import fedfind.release
 from openqa_client.client import OpenQA_Client
@@ -244,6 +249,13 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         rel = fedfind.release.get_release(url=location)
     except ValueError:
         raise TriggerException("Could not find a release at {0}".format(location))
+    except UrlMatchError as err:
+        # this is fedfind telling us it found a compose, but its URL
+        # didn't match the URL we requested: this is bad
+        raise TriggerException(str(err))
+    except UnsupportedComposeError:
+        # this is fine
+        pass
     logger.debug("Finding images for compose %s in location %s", rel.cid, location)
     images = _get_images(rel, wanted=wanted)
     if len(images) == 0:
