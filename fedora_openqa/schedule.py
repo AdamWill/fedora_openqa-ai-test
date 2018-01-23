@@ -254,9 +254,10 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         # didn't match the URL we requested: this is bad
         raise TriggerException(str(err))
     except UnsupportedComposeError:
-        # this is fine, we don't need to warn, just return
+        # this is fine, we don't need to warn, just return empty
+        # values
         logger.debug("Ignoring unsupported compose at %s", location)
-        return (rel.cid, [])
+        return ('', [])
     logger.debug("Finding images for compose %s in location %s", rel.cid, location)
     images = _get_images(rel, wanted=wanted)
     if len(images) == 0:

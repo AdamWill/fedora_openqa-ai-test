@@ -384,6 +384,13 @@ def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     assert reqargs[0] == ('POST', 'groups/1/comments')
     assert reqargs[1]['params'] == {'text': 'tag:Fedora-25-20161115.n.0:important:candidate'}
 
+def test_jobs_from_compose_unsupported():
+    """Check that we create no jobs for composes fedfind explicitly
+    tells us it does not support (by raising UnsupportedComposeError).
+    """
+    ret = schedule.jobs_from_compose('https://kojipkgs.fedoraproject.org/compose/updates/Fedora-27-updates-testing-20180123.0/compose/')
+    assert ret == ('', [])
+
 @mock.patch('fedfind.helpers.get_current_release', return_value=25)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
 def test_jobs_from_update(fakeclient, fakecurr):
