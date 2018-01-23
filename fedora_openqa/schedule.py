@@ -256,7 +256,7 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     except UnsupportedComposeError:
         # this is fine, we don't need to warn, just return
         logger.debug("Ignoring unsupported compose at %s", location)
-        return
+        return (rel.cid, [])
     logger.debug("Finding images for compose %s in location %s", rel.cid, location)
     images = _get_images(rel, wanted=wanted)
     if len(images) == 0:
