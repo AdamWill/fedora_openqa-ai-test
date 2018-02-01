@@ -427,6 +427,10 @@ TESTCASES = {
         "env": "x86",
         "type": "Server",
     },
+    "QA:Testcase_Server_filesystem_default": {
+        "env": "x86",
+        "type": "Server",
+    },
     "QA:Testcase_FreeIPA_web_ui": {
         "env": "Result",
         "type": "Server",
@@ -875,6 +879,9 @@ TESTSUITES = {
     ],
     "server_cockpit_basic": [
         "QA:Testcase_Server_cockpit_basic",
+    ],
+    "server_filesystem_default": [
+        "QA:Testcase_Server_filesystem_default",
     ],
     "server_role_deploy_database_server": [
         "QA:Testcase_Server_role_deploy",
