@@ -151,7 +151,15 @@
     },
     {
         "match": {
-            "subvariant": "Workstation Ostree",
+            "subvariant": "AtomicHost",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "x86_64"
+        }
+    },
+    {
+        "match": {
+            "subvariant": "AtomicWorkstation",
             "type": "dvd-ostree",
             "format": "iso",
             "arch": "x86_64"
@@ -185,6 +193,14 @@
     },
     {
         "match": {
+            "subvariant": "AtomicHost",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "ppc64le"
+        }
+    },
+    {
+        "match": {
             "subvariant": "Server",
             "type": "boot",
             "format": "iso",
@@ -204,6 +220,14 @@
     {
         "match": {
             "subvariant": "Atomic",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "ppc64"
+        }
+    }
+    {
+        "match": {
+            "subvariant": "AtomicHost",
             "type": "dvd-ostree",
             "format": "iso",
             "arch": "ppc64"
