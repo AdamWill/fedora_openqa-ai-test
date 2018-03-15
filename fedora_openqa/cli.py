@@ -47,9 +47,13 @@ def command_compose(args):
     extraparams = None
     if args.updates:
         extraparams = {'GRUBADD': "inst.updates={0}".format(args.updates)}
+    arches = None
+    if args.arches:
+        arches = args.arches.split(',')
     try:
         (_, jobs) = schedule.jobs_from_compose(
-            args.location, force=args.force, extraparams=extraparams, openqa_hostname=args.openqa_hostname)
+            args.location, force=args.force, extraparams=extraparams,
+            openqa_hostname=args.openqa_hostname, arches=arches)
     except schedule.TriggerException as err:
         logger.warning("No jobs run! %s", err)
         sys.exit(1)
@@ -152,7 +156,7 @@ def parse_args(args=None):
         'location', help="The URL of the compose (for Pungi 4 composes, the /compose directory)",
         metavar="COMPOSE_URL")
     parser_compose.add_argument(
-        "--openqa-hostname", help="openQA host to schedule jobs on (default: client library "
+        '--openqa-hostname', help="openQA host to schedule jobs on (default: client library "
         "default)", metavar='HOSTNAME')
     parser_compose.add_argument(
         '--force', '-f', help="For each ISO/flavor combination, schedule jobs even if there "
@@ -161,6 +165,9 @@ def parse_args(args=None):
         '--updates', '-u', help="URL to an updates image to load for all tests. The tests that "
         "test updates image loading will fail when you use this", metavar='UPDATE_IMAGE_URL')
     parser_compose.set_defaults(func=command_compose)
+    parser_compose.add_argument(
+        "--arches", '-a', help="Comma-separated list of arches to schedule jobs for (if not specified, "
+        "all arches will be scheduled)", metavar='ARCH')
 
     parser_update = subparsers.add_parser('update', description="Schedule jobs for a specific update.")
     parser_update.add_argument('update', help="The update ID (e.g. 'FEDORA-2017-b07d628952')", metavar='UPDATE')

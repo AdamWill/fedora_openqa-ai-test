@@ -53,6 +53,8 @@ class TestCommandCompose:
         assert not excinfo.value.code
         # shouldn't force
         assert fakejfc.call_args[1]['force'] is False
+        # should pass arches as 'None'
+        assert fakejfc.call_args[1]['arches'] is None
 
     def test_force(self, fakejfc):
         """Test with -f (force)."""
@@ -79,6 +81,31 @@ class TestCommandCompose:
         assert not excinfo.value.code
         # should add extra params
         assert fakejfc.call_args[1]['extraparams'] == {'GRUBADD': "inst.updates=https://www.foo.com/updates.img"}
+
+    def test_arch(self, fakejfc):
+        """Test with --arches."""
+        args = cli.parse_args([
+            'compose',
+            'https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-24-20160113.n.1/compose',
+            '--arches=x86_64'
+        ])
+        with pytest.raises(SystemExit) as excinfo:
+            cli.command_compose(args)
+        # should exit 0
+        assert not excinfo.value.code
+        # should specify arch as single-item list
+        assert fakejfc.call_args[1]['arches'] == ['x86_64']
+        args = cli.parse_args([
+            'compose',
+            'https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-24-20160113.n.1/compose',
+            '--arches=i386,armhfp'
+        ])
+        with pytest.raises(SystemExit) as excinfo:
+            cli.command_compose(args)
+        # should exit 0
+        assert not excinfo.value.code
+        # should specify arch as multi-item list
+        assert fakejfc.call_args[1]['arches'] == ['i386', 'armhfp']
 
     def test_nojobs(self, fakejfc):
         """Test exits 1 when no jobs are run."""

@@ -214,7 +214,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     return output["ids"]
 
 
-def jobs_from_compose(location, wanted=None, force=False, extraparams=None, openqa_hostname=None):
+def jobs_from_compose(location, wanted=None, force=False, extraparams=None, openqa_hostname=None, arches=None):
     """Schedule jobs against a specific compose. Returns a 2-tuple
     of the compose ID and the list of job IDs.
 
@@ -242,9 +242,15 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     openqa_hostname is passed through as well. It specifies which
     openQA host to schedule the jobs on. If not set, the client lib
     will choose.
+
+    arches is a list of arches to schedule jobs for; if specified,
+    the image list will be filtered by the arches listed. If not
+    specified, jobs are scheduled for all arches in the image list.
     """
     if not wanted:
         wanted = WANTED
+    if not arches:
+        arches = []
     try:
         rel = fedfind.release.get_release(url=location)
     except ValueError:
@@ -260,6 +266,9 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         return ('', [])
     logger.debug("Finding images for compose %s in location %s", rel.cid, location)
     images = _get_images(rel, wanted=wanted)
+    if arches:
+        logger.debug("Only scheduling jobs for arches %s", ' '.join(arches))
+        images = [img for img in images if img[1] in arches]
     if len(images) == 0:
         raise TriggerException("Compose found, but no available images")
     jobs = []

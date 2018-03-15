@@ -363,6 +363,12 @@ def test_jobs_from_compose(fakerun, ffmock02):
         assert argtup[1]['extraparams'] == {'EXTRA': 'here'}
         assert argtup[1]['openqa_hostname'] == 'somehost'
 
+    # check arches is handled properly
+    fakerun.reset_mock()
+    ret = schedule.jobs_from_compose(COMPURL, arches=['i386', 'armhfp'])
+    # 7 images (6 i386, 1 armhfp), 1 universal arch (i386)
+    assert fakerun.call_count == 8
+
     # check triggerexception is raised when appropriate
     with mock.patch('fedfind.release.get_release', side_effect=ValueError("Oops!")):
         with pytest.raises(schedule.TriggerException):
