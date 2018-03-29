@@ -348,15 +348,15 @@ TESTCASES = {
         "type": "Base",
     },
     "QA:Testcase_kickstart_firewall_disabled": {
-        "env": "x86",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     "QA:Testcase_kickstart_firewall_configured": {
-        "env": "x86",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     "QA:Testcase_Server_role_deploy": {
-        "env": "x86",
+        "env": "$RUNARCH$",
         "type": "Server",
         "name": "$ROLE$",
     },
@@ -416,19 +416,19 @@ TESTCASES = {
         "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
     },
     "QA:Testcase_Server_firewall_default": {
-        "env": "x86",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     "QA:Testcase_Server_cockpit_default": {
-        "env": "x86",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     "QA:Testcase_Server_cockpit_basic": {
-        "env": "x86",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     "QA:Testcase_Server_filesystem_default": {
-        "env": "x86",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     "QA:Testcase_FreeIPA_web_ui": {
