@@ -233,6 +233,7 @@ UPDATEWL = {
     'certmonger': ('server',),
     'ding-libs': ('server',),
     'freeipa': ('server',),
+    'httpd': ('server',),
     'krb5-server': ('server',),
     'pki-core': ('server',),
     'sssd': ('server',),
