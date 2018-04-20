@@ -350,6 +350,8 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         'server': {
             'HDD_1': 'disk_f{0}_server_3_{1}.img'.format(version, arch),
         },
+        'server-upgrade': {
+        },
         'workstation': {
             'HDD_1': 'disk_f{0}_desktop_4_{1}.img'.format(version, arch),
             'DESKTOP': 'gnome',
@@ -364,16 +366,24 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # only obsolete pending jobs for same BUILD (i.e. update)
         '_ONLY_OBSOLETE_SAME_BUILD': '1',
         'START_AFTER_TEST': '',
+        # for upgrade tests run on updates, 'CURRREL' should be the
+        # release before the release the upgrade is for
+        'CURRREL': str(int(version)-1),
     }
     # mark if release is a development release; the tests need to know
+    # also check if release is the oldest current stable, in which
+    # case we don't need to run upgrade tests
     try:
-        curr = int(fedfind.helpers.get_current_release())
+        stables = fedfind.helpers.get_current_stables()
+        curr = max(stables)
+        oldest = min(stables)
         if str(version).lower() == 'rawhide' or int(version) > curr:
             baseparams['DEVELOPMENT'] = 1
     except ValueError:
         # but don't fail to schedule if fedfind fails...
-        logger.warning("jobs_from_update: could not determine current release! Assuming update is "
-                       "for stable release.")
+        logger.warning("jobs_from_update: could not determine current or oldest release! Assuming update is "
+                       "for stable release that is not the oldest stable.")
+        oldest = 0
     client = OpenQA_Client(openqa_hostname)
     jobs = []
 
@@ -381,6 +391,12 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         flavors = flavdict.keys()
 
     for flavor in flavors:
+        if int(version) == oldest and 'upgrade' in flavor:
+            # we don't want to run upgrade tests in this case; we
+            # don't support upgrade from EOL releases, and we don't
+            # keep the necessary base disk images around
+            logger.debug("skipping upgrade tests as release {0} is the oldest stable".format(version))
+            continue
         fullflav = 'updates-{0}'.format(flavor)
         if not force:
             # dupe check

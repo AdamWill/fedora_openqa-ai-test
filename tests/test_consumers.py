@@ -291,10 +291,10 @@ class TestConsumers:
             (EPELCREATE, False),
             (EPELEDIT, False),
             # WLCREATE contains only a 'server'-whitelisted package
-            (WLCREATE, ['server']),
+            (WLCREATE, ['server', 'server-upgrade']),
             # WLEDIT contains both 'server' and 'workstation'-whitelisted
             # packages
-            (WLEDIT, ['server', 'workstation']),
+            (WLEDIT, ['server', 'server-upgrade', 'workstation']),
             # WLALLEDIT contains an 'all flavors'-whitelisted package
             (WLALLEDIT, None),
         ]
