@@ -351,10 +351,18 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
             'HDD_1': 'disk_f{0}_server_3_{1}.img'.format(version, arch),
         },
         'server-upgrade': {
+        # for upgrade tests run on updates, 'CURRREL' should be the
+        # release before the release the upgrade is for
+        'CURRREL': str(int(version)-1),
         },
         'workstation': {
             'HDD_1': 'disk_f{0}_desktop_4_{1}.img'.format(version, arch),
             'DESKTOP': 'gnome',
+        },
+        'workstation-upgrade': {
+        # for upgrade tests run on updates, 'CURRREL' should be the
+        # release before the release the upgrade is for
+        'CURRREL': str(int(version)-1),
         },
     }
     baseparams = {
@@ -366,9 +374,6 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # only obsolete pending jobs for same BUILD (i.e. update)
         '_ONLY_OBSOLETE_SAME_BUILD': '1',
         'START_AFTER_TEST': '',
-        # for upgrade tests run on updates, 'CURRREL' should be the
-        # release before the release the upgrade is for
-        'CURRREL': str(int(version)-1),
     }
     # mark if release is a development release; the tests need to know
     # also check if release is the oldest current stable, in which
