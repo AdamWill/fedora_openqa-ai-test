@@ -191,6 +191,10 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     # mainstream
     if 'Modular' in build:
         params['MODULAR'] = '1'
+    # hack to deal with RHBZ#1518464 being fixed on Rawhide but not
+    # F28: override QEMUVGA in this case
+    if subvariant == 'AtomicHost' and str(version).isdigit() and int(version) < 29:
+        params['QEMUVGA'] = 'virtio'
 
     if extraparams:
         params.update(extraparams)
