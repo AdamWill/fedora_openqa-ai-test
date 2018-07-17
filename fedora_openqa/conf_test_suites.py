@@ -38,7 +38,6 @@ TESTCASES = {
     #   $IMAGETYPE$         - pungi 'type': "boot", "live"... "boot" -> "netinst"
     #   $FS$                - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
     #   $DESKTOP$           - desktop: just the DESKTOP openQA setting
-    #   $ROLE$              - server role, for role_deploy_ tests: "domain_controller", "database_server"
 
     "QA:Testcase_Boot_default_install": {
         "name": "$SUBVARIANT$_$IMAGETYPE$",
@@ -360,10 +359,17 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Server",
     },
-    "QA:Testcase_Server_role_deploy": {
+    "QA:Testcase_freeipa_trust_server_installation": {
         "env": "$RUNARCH$",
         "type": "Server",
-        "name": "$ROLE$",
+    },
+    "QA:Testcase_freeipa_trust_server_uninstallation": {
+        "env": "$RUNARCH$",
+        "type": "Server",
+    },
+    "QA:Testcase_postgresql_server_installation": {
+        "env": "$RUNARCH$",
+        "type": "Server",
     },
     "QA:Testcase_realmd_join_kickstart": {
         # the section name here is pretty funky and I might change it,
@@ -853,7 +859,8 @@ TESTSUITES = {
         "QA:Testcase_kickstart_firewall_configured",
     ],
     "server_role_deploy_domain_controller": [
-        "QA:Testcase_Server_role_deploy",
+        "QA:Testcase_freeipa_trust_server_installation",
+        "QA:Testcase_freeipa_trust_server_uninstallation",
     ],
     "server_realmd_join_kickstart": [
         "QA:Testcase_realmd_join_kickstart",
@@ -898,7 +905,7 @@ TESTSUITES = {
         "QA:Testcase_Server_filesystem_default",
     ],
     "server_role_deploy_database_server": [
-        "QA:Testcase_Server_role_deploy",
+        "QA:Testcase_postgresql_server_installation",
     ],
     "server_database_client": [
         "QA:Testcase_database_server_remote_client",

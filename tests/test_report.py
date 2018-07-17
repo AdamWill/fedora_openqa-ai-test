@@ -51,7 +51,6 @@ def test_uniqueres_replacements(jobdict01):
         "imagetype": "$IMAGETYPE$",
         "fs": "$FS$",
         "desktop": "$DESKTOP$",
-        "role": "$ROLE$",
     }
     origbase = copy.deepcopy(basedict)
     ret = fosreport._uniqueres_replacements(jobdict01, basedict)
@@ -63,7 +62,6 @@ def test_uniqueres_replacements(jobdict01):
     assert ret['imagetype'] == "dvd"
     # shouldn't crash, or anything
     assert ret['desktop'] == ''
-    assert ret['role'] == ''
     # basedict should not be modified
     assert basedict == origbase
 
@@ -81,11 +79,6 @@ def test_uniqueres_replacements(jobdict01):
     with mock.patch.dict(jobdict01['settings'], {'UEFI': '1'}):
         ret = fosreport._uniqueres_replacements(jobdict01, basedict)
     assert ret['bootmethod'] == 'x86_64 UEFI'
-
-    # sensible value for 'role' check
-    with mock.patch.dict(jobdict01, {'test': 'role_deploy_domain_controller'}):
-        ret = fosreport._uniqueres_replacements(jobdict01, basedict)
-    assert ret['role'] == 'domain_controller'
 
     # check Cloud_Base is turned into Cloud for this case
     with mock.patch.dict(jobdict01['settings'], {'SUBVARIANT': 'Cloud_Base'}):

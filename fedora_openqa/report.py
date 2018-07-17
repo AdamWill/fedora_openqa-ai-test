@@ -75,10 +75,6 @@ def _uniqueres_replacements(job, tcdict):
         firmware = 'BIOS'
         bootmethod = 'x86_64 BIOS'
 
-    role = ''
-    if 'role_deploy_' in job['test']:
-        role = job['test'].split('role_deploy_')[1]
-
     # We effectively deep copy the `tcdict` dict here; if we just modified it directly
     # we'd actually be changing it in TESTCASES, so the results for later jobs in this run
     # with the same testcase (but a different environment, section or testname) would read
@@ -93,7 +89,6 @@ def _uniqueres_replacements(job, tcdict):
         value = value.replace('$IMAGETYPE$', imagetype)
         value = value.replace('$DESKTOP$', desktop)
         value = value.replace('$SUBVARIANT_OR_ARM$', subvariant_or_arm)
-        value = value.replace('$ROLE$', role)
         changed[key] = value
 
     return changed
