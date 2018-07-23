@@ -106,24 +106,24 @@ def _get_images(rel, wanted=None):
     return images
 
 
-def _find_duplicate_jobs(client, param_urls, flavor):
+def _find_duplicate_jobs(client, build, param_urls, flavor):
     """Check if we have any existing non-cancelled jobs for this
-    ISO/HDD and flavor (checking flavor is important otherwise we'd
-    bail on doing the per-ISO jobs for the ISO we use for the
+    build, ISO/HDD and flavor (checking flavor is important otherwise
+    we'd bail on doing the per-ISO jobs for the ISO we use for the
     'universal' tests). ISO/HDD are taken from param_urls dict.
     """
     if any([param in param_urls for param in ('ISO_URL', 'HDD_1_DECOMPRESS_URL', 'HDD_1')]):
         if 'ISO_URL' in param_urls:
             assetname = param_urls['ISO_URL'].split('/')[-1]
-            jobs = client.openqa_request('GET', 'jobs', params={'iso': assetname})['jobs']
+            jobs = client.openqa_request('GET', 'jobs', params={'iso': assetname, 'build': build})['jobs']
         elif 'HDD_1_DECOMPRESS_URL' in param_urls:
             # HDDs
             hddname = param_urls['HDD_1_DECOMPRESS_URL'].split('/')[-1]
             assetname = os.path.splitext(hddname)[0]
-            jobs = client.openqa_request('GET', 'jobs', params={'hdd_1': assetname})['jobs']
+            jobs = client.openqa_request('GET', 'jobs', params={'hdd_1': assetname, 'build': build})['jobs']
         else:
             assetname = param_urls['HDD_1'].split('/')[-1]
-            jobs = client.openqa_request('GET', 'jobs', params={'hdd_1': assetname})['jobs']
+            jobs = client.openqa_request('GET', 'jobs', params={'hdd_1': assetname, 'build': build})['jobs']
 
         jobs = [job for job in jobs if job['settings']['FLAVOR'] == flavor]
         jobs = [job for job in jobs if
@@ -206,7 +206,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     client = OpenQA_Client(openqa_hostname)
 
     if not force:
-        duplicates = _find_duplicate_jobs(client, param_urls, flavor)
+        duplicates = _find_duplicate_jobs(client, build, param_urls, flavor)
         if duplicates:
             logger.debug("Existing jobs found: %s", ' '.join(str(dupe['id']) for dupe in duplicates))
             return []

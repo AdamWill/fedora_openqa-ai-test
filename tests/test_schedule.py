@@ -224,31 +224,31 @@ def test_find_duplicate_jobs():
 
     client.openqa_request.return_value = {'jobs': [{'settings': {'FLAVOR': 'someflavor'}, 'state': 'done'}]}
     # check ISO case
-    ret = schedule._find_duplicate_jobs(client, {'ISO_URL': 'https://some.url/some.iso'}, 'someflavor')
+    ret = schedule._find_duplicate_jobs(client, 'build', {'ISO_URL': 'https://some.url/some.iso'}, 'someflavor')
     assert len(ret) == 1
-    assert client.openqa_request.call_args[1]['params'] == {'iso': 'some.iso'}
+    assert client.openqa_request.call_args[1]['params'] == {'iso': 'some.iso', 'build': 'build'}
     # HDD_1 case
-    ret = schedule._find_duplicate_jobs(client, {'HDD_1': 'somefile.img'}, 'someflavor')
+    ret = schedule._find_duplicate_jobs(client, 'build', {'HDD_1': 'somefile.img'}, 'someflavor')
     assert len(ret) == 1
-    assert client.openqa_request.call_args[1]['params'] == {'hdd_1': 'somefile.img'}
+    assert client.openqa_request.call_args[1]['params'] == {'hdd_1': 'somefile.img', 'build': 'build'}
     client.openqa_request.reset_mock()
     # HDD_1_DECOMPRESS_URL case
     ret = schedule._find_duplicate_jobs(
-        client, {'HDD_1_DECOMPRESS_URL': 'https://some.url/somefile.img.gz'}, 'someflavor')
+        client, 'build', {'HDD_1_DECOMPRESS_URL': 'https://some.url/somefile.img.gz'}, 'someflavor')
     assert len(ret) == 1
 
     # shouldn't find any dupes if flavor differs
-    ret = schedule._find_duplicate_jobs(client, {'ISO_URL': 'https://some.url/some.iso'}, 'otherflavor')
+    ret = schedule._find_duplicate_jobs(client, 'build', {'ISO_URL': 'https://some.url/some.iso'}, 'otherflavor')
     assert len(ret) == 0
 
     # job in 'cancelled' state isn't a dupe
     client.openqa_request.return_value = {'jobs': [{'settings': {'FLAVOR': 'someflavor'}, 'state': 'cancelled'}]}
-    ret = schedule._find_duplicate_jobs(client, {'ISO_URL': 'https://some.url/some.iso'}, 'someflavor')
+    ret = schedule._find_duplicate_jobs(client, 'build', {'ISO_URL': 'https://some.url/some.iso'}, 'someflavor')
     assert len(ret) == 0
 
     # user-cancelled job (which is a result not a state?) isn't either
     client.openqa_request.return_value = {'jobs': [{'settings': {'FLAVOR': 'someflavor'}, 'result': 'user_cancelled'}]}
-    ret = schedule._find_duplicate_jobs(client, {'ISO_URL': 'https://some.url/some.iso'}, 'someflavor')
+    ret = schedule._find_duplicate_jobs(client, 'build', {'ISO_URL': 'https://some.url/some.iso'}, 'someflavor')
     assert len(ret) == 0
 
 
