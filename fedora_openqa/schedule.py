@@ -310,11 +310,13 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     # don't do this for post-release nightlies that are *always*
     # candidates, though
     # using getattr as the 'respin' composes don't have these attrs
-    if getattr(rel, 'type', '') == 'production' and getattr(rel, 'product', '') == 'Fedora' and jobs:
-        client = OpenQA_Client(openqa_hostname)
-        # we expect group 1 to be 'fedora'. I think this is reliable.
-        params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
-        client.openqa_request('POST', 'groups/1/comments', params=params)
+    if getattr(rel, 'type', '') == 'production' and getattr(rel, 'product', '') == 'Fedora':
+        # we don't want to tag all updates / updates-testing composes
+        if 'updates' not in getattr(rel, 'milestone', '').lower() and jobs:
+            client = OpenQA_Client(openqa_hostname)
+            # we expect group 1 to be 'fedora'. I think this is reliable.
+            params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
+            client.openqa_request('POST', 'groups/1/comments', params=params)
 
     return (rel.cid, jobs)
 
