@@ -390,11 +390,19 @@ def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     assert reqargs[0] == ('POST', 'groups/1/comments')
     assert reqargs[1]['params'] == {'text': 'tag:Fedora-25-20161115.n.0:important:candidate'}
 
-def test_jobs_from_compose_unsupported():
+@mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
+def test_jobs_from_compose_unsupported(fakerun):
     """Check that we create no jobs for composes fedfind explicitly
     tells us it does not support (by raising UnsupportedComposeError).
     """
-    ret = schedule.jobs_from_compose('https://kojipkgs.fedoraproject.org/compose/updates/Fedora-27-updates-testing-20180123.0/compose/')
+    # note: this is a contrived scenario ATM, as there *are* no real
+    # composes fedfind considers unsupported, as of 2018-07 (updates
+    # composes now contain images and should be tested). So we just
+    # sort of invent an 'Atomic updates-testing' compose, which we
+    # we happen to know fedfind will treat as unsupported. We mock out
+    # run_openqa_jobs just to ensure no jobs are created if the call
+    # somehow actually tries to create them.
+    ret = schedule.jobs_from_compose('https://kojipkgs.fedoraproject.org/compose/updates/Fedora-Atomic-27-updates-testing-20180123.0/compose/')
     assert ret == ('', [])
 
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[24, 25])
