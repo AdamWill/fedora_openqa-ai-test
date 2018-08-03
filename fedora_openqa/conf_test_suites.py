@@ -367,6 +367,10 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Server",
     },
+    "QA:Testcase_freeipa_replication": {
+        "env": "$RUNARCH$",
+        "type": "Server",
+    },
     "QA:Testcase_postgresql_server_installation": {
         "env": "$RUNARCH$",
         "type": "Server",
@@ -926,6 +930,21 @@ TESTSUITES = {
         "QA:Testcase_FreeIPA_realmd_login",
         "QA:Testcase_domain_client_authenticate",
     ],
+    "server_freeipa_replication_master": {
+        "QA:Testcase_freeipa_replication": {
+            "testsuites": ["server_freeipa_replication_replica", "server_freeipa_replication_client"],
+        }
+    },
+    "server_freeipa_replication_replica": {
+        "QA:Testcase_freeipa_replication": {
+            "testsuites": ["server_freeipa_replication_master", "server_freeipa_replication_client"],
+        }
+    },
+    "server_freeipa_replication_client": {
+        "QA:Testcase_freeipa_replication": {
+            "testsuites": ["server_freeipa_replication_master", "server_freeipa_replication_replica"],
+        }
+    },
     "install_iscsi": [
         "QA:Testcase_install_to_iSCSI_no_authentication",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
