@@ -167,6 +167,14 @@
     },
     {
         "match": {
+            "subvariant": "Silverblue",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "x86_64"
+        }
+    },
+    {
+        "match": {
             "subvariant": "Server",
             "type": "boot",
             "format": "iso",

@@ -211,8 +211,18 @@ WANTED = [
         },
     },
     {
+        # This was renamed 'Silverblue' from F29 onward, we can drop
+        # this match probably after F27 goes EOL or something
         "match": {
             "subvariant": "AtomicWorkstation",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Silverblue",
             "type": "dvd-ostree",
             "format": "iso",
             "arch": "x86_64",
