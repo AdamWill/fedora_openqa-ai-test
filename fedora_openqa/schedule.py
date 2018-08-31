@@ -359,7 +359,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         'server-upgrade': {
         # for upgrade tests run on updates, 'CURRREL' should be the
         # release before the release the upgrade is for
-        'CURRREL': str(int(version)-1),
+            'CURRREL': str(int(version)-1),
         },
         'workstation': {
             'HDD_1': 'disk_f{0}_desktop_4_{1}.img'.format(version, arch),
@@ -368,7 +368,10 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         'workstation-upgrade': {
         # for upgrade tests run on updates, 'CURRREL' should be the
         # release before the release the upgrade is for
-        'CURRREL': str(int(version)-1),
+            'CURRREL': str(int(version)-1),
+        },
+        'installer': {
+            'HDD_1': 'disk_f{0}_minimal_2_{1}.img'.format(version, arch),
         },
     }
     baseparams = {
