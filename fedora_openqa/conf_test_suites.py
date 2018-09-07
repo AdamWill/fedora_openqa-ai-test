@@ -454,6 +454,26 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Server",
     },
+    "QA:Testcase_Modularity_module_list": {
+        "section": "Modularity",
+        "env": "Result",
+        "type": "Base",
+    },
+    "QA:Testcase_Modularity_enable-disable_module": {
+        "section": "Modularity",
+        "env": "Result",
+        "type": "Base",
+    },
+    "QA:Testcase_Modularity_install_module": {
+        "section": "Modularity",
+        "env": "Result",
+        "type": "Base",
+    },
+    "QA:Testcase_Modularity_update_without_repos": {
+        "section": "Modularity",
+        "env": "Result",
+        "type": "Base",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -956,6 +976,12 @@ TESTSUITES = {
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_base_initial_setup",
+    ],
+    "modularity_tests": [
+        "QA:Testcase_Modularity_module_list",
+        "QA:Testcase_Modularity_enable-disable_module",
+        "QA:Testcase_Modularity_install_module",
+        "QA:Testcase_Modularity_update_norepos",
     ],
 }
 
