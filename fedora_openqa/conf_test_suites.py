@@ -402,7 +402,7 @@ TESTCASES = {
         "type": "Server",
     },
     "QA:Testcase_database_server_remote_client": {
-        "env": "Result",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     "QA:Testcase_desktop_terminal": {
@@ -447,11 +447,11 @@ TESTCASES = {
         "type": "Server",
     },
     "QA:Testcase_FreeIPA_web_ui": {
-        "env": "Result",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     "QA:Testcase_FreeIPA_password_change": {
-        "env": "Result",
+        "env": "$RUNARCH$",
         "type": "Server",
     },
     #        "": {
