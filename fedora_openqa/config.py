@@ -250,6 +250,9 @@ UPDATEWL = {
     'tomcat': ('server', 'server-upgrade'),
     'python-ldap': ('server', 'server-upgrade'),
     'python-pyldap': ('server', 'server-upgrade'),
+    'softhsm': ('server', 'server-upgrade'),
+    'libldb': ('server', 'server-upgrade'),
+    'samba': ('server', 'server-upgrade'),
     # Cockpit-related bits
     'cockpit': ('server',),
     # PostgreSQL is a release-blocking server role
