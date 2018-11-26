@@ -26,6 +26,23 @@ class PyTest(TestCommand):
 def read(fname):
     return open(os.path.join(os.path.dirname(__file__), fname)).read()
 
+# this is sloppy and wrong, see https://stackoverflow.com/a/4792601
+# discussion, but should be okay for our purposes. the problem here
+# is that if you run 'python3 setup.py install' with all the install
+# requires in place, setuptools installs scripts from several of the
+# deps to /usr/local/bin , overriding the system copies in /usr/bin.
+# This seems to happen when the copy in /usr/bin is for Python 2 not
+# Python 3 - e.g. because /usr/bin/fedmsg-logger is Python 2, if you
+# do 'python3 setup.py install' here, due to the fedmsg dep, you get
+# a /usr/local/bin/fedmsg-logger which is Python 3...we want to be
+# able to avoid this, so hack up a 'no deps'
+if "--nodeps" in sys.argv:
+    installreqs = []
+    sys.argv.remove("--nodeps")
+else:
+    installreqs = ['fedfind>=2.5.0', 'fedmsg', 'openqa-client>=1.1', 'setuptools',
+                   'six', 'resultsdb_api', 'resultsdb_conventions>=2.0.2', 'wikitcms']
+
 setup(
     name = "fedora_openqa",
     version = "3.0.0",
@@ -52,8 +69,7 @@ setup(
     keywords = "fedora openqa test qa",
     url = "https://pagure.io/fedora-qa/fedora_openqa",
     packages = ["fedora_openqa"],
-    install_requires = ['fedfind>=2.5.0', 'fedmsg', 'openqa-client>=1.1', 'setuptools',
-                        'six', 'resultsdb_api', 'resultsdb_conventions>=2.0.2', 'wikitcms'],
+    install_requires = installreqs,
     tests_require=['pytest', 'mock'],
     cmdclass = {'test': PyTest},
     long_description=read('README.md'),
