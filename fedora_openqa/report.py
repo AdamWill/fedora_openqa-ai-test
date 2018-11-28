@@ -80,7 +80,7 @@ def _uniqueres_replacements(job, tcdict):
     # with the same testcase (but a different environment, section or testname) would read
     # the modified values and be messed up
     changed = {}
-    for key, value in tcdict.iteritems():
+    for key, value in tcdict.items():
         value = value.replace('$FIRMWARE$', firmware)
         value = value.replace('$FS$', fs)
         value = value.replace('$RUNARCH$', arch)
