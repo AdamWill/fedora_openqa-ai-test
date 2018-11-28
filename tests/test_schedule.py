@@ -423,8 +423,13 @@ def test_jobs_from_update(fakeclient, fakecurr):
     # four flavors by default, four calls
     assert len(posts) == 4
     parmdicts = [call[0][2] for call in posts]
-    parmdicts.sort()
-    assert parmdicts == [
+    # checking two lists of dicts are equivalent is rather tricky; I
+    # don't think we can technically rely on the order always being
+    # the same, and in Python 3, a list of dicts cannot be sorted.
+    # So we assert the length of the list, and assert that each of the
+    # expected dicts is in the actual list.
+    assert len(parmdicts) == 4
+    checkdicts = [
         {
             'DISTRI': 'fedora',
             'VERSION': '25',
@@ -471,6 +476,8 @@ def test_jobs_from_update(fakeclient, fakecurr):
             'DESKTOP': 'gnome',
         }
     ]
+    for checkdict in checkdicts:
+        assert checkdict in parmdicts
 
     # test DEVELOPMENT var set when release is higher than current
     fakeinst.openqa_request.reset_mock()
@@ -566,8 +573,14 @@ def test_jobs_from_update(fakeclient, fakecurr):
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', arch='ppc64le')
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
-    # check parm dict values
-    assert posts[1][0][2]['ARCH'] == 'ppc64le'
-    assert posts[1][0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.img', 'disk_f25_desktop_4_ppc64le.img']
+    print(posts[0])
+    print(posts[1])
+    print(posts[2])
+    # check parm dict values. They should have correct arch, if they
+    # have HDD_1, it should be one of the expected values
+    for post in posts:
+        assert post[0][2]['ARCH'] == 'ppc64le'
+        if 'HDD_1' in post[0][2]:
+            assert post[0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.img', 'disk_f25_desktop_4_ppc64le.img']
 
 # vim: set textwidth=120 ts=8 et sw=4:
