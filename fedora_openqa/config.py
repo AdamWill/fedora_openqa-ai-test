@@ -253,6 +253,9 @@ UPDATEWL = {
     'softhsm': ('server', 'server-upgrade'),
     'libldb': ('server', 'server-upgrade'),
     'samba': ('server', 'server-upgrade'),
+    # this is involved in FreeIPA and of course regular use too. It
+    # is missing from Bodhi's stale critpath definition
+    'authselect': None,
     # Cockpit-related bits
     'cockpit': ('server',),
     # PostgreSQL is a release-blocking server role
