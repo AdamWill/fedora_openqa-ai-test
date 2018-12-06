@@ -293,6 +293,24 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
         logger.warning("no reporting is done")
         return passed_testcases
 
+def sanitize_tcname(tcname):
+    """Replace non-alphanumeric characters in a test case name with
+    underscores and lower-cases the whole thing. Used for the name as
+    reported to ResultsDB. Split out into a function so it can be
+    shared with check_compose, which needs to take a test case name
+    from a ResultsDB report and find a matching openQA job.
+    """
+    return re.sub(r"\W+", "_", tcname).lower()
+
+def get_scenario_string(job):
+    """Produce a string representation of the job's scenario (omitting
+    keys we don't want to use in our particular situation). Split out
+    into a function for sharing with check_compose, which needs to
+    take a scenario string from a ResultsDB report and find a matching
+    openQA job (with all the corresponding keys).
+    """
+    scenkeys = [key for key in JOB_SCENARIO_WITH_MACHINE_KEYS if key not in ('VERSION', 'TEST')]
+    return '.'.join(job['settings'][key] for key in scenkeys)
 
 def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                      openqa_hostname=None, openqa_baseurl=None):
@@ -334,7 +352,6 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
     # we'll file a bad report due to getting the dict for the clone.
     jobs = client.get_jobs(jobs=jobs, build=build, filter_dupes=False)
 
-    tcname_safeify = re.compile(r"\W+")
     # regex for identifying TEST_TARGET values that suggest an image
     # specific compose test
     image_target_regex = re.compile(r"^(ISO|HDD)(_\d+)?$")
@@ -361,7 +378,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             continue
 
         # sanitize the test name
-        tc_name = tcname_safeify.sub("_", job['test']).lower()
+        tc_name = sanitize_tcname(job['test'])
 
         # figure out the resultsdb_convention result type we want and
         # what the 'item' will be, and create a partial for the Result
@@ -436,7 +453,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         rdb_object.extradata.update({
             'firmware': 'uefi' if 'UEFI' in job['settings'] else 'bios',
             'arch': job['settings']['ARCH'],
-            'scenario': '.'.join(job['settings'][key] for key in scenkeys)
+            'scenario': get_scenario_string(job)
         })
 
         # FIXME: use overall_url as a group ref_url
