@@ -370,9 +370,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # release before the release the upgrade is for
             'CURRREL': str(int(version)-1),
         },
-        'installer': {
-            'HDD_1': 'disk_f{0}_minimal_2_{1}.img'.format(version, arch),
-        },
+        'installer': {},
     }
     baseparams = {
         'DISTRI': 'fedora',
