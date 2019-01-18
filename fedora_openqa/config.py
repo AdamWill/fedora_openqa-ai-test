@@ -262,6 +262,8 @@ UPDATEWL = {
     'postgresql': ('server',),
     # Obvious...
     'gnome-software': ('workstation',),
+    # Another bit of GNOME that's not in critpath
+    'accountsservice': ('workstation', 'workstation-upgrade'),
 }
 
 for path in ('/etc/fedora-openqa',
