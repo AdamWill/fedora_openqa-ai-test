@@ -346,6 +346,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     here.
     """
     version = str(version)
+    currrel = str(fedfind.helpers.get_current_release())
     if not arch:
         # set a default in a way that works neatly with the CLI bits
         arch = 'x86_64'
@@ -370,7 +371,11 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # release before the release the upgrade is for
             'CURRREL': str(int(version)-1),
         },
-        'installer': {},
+        'installer': {
+            # CURRREL should be the real current release here, as the
+            # support server always runs as the current release
+            'CURRREL': currrel,
+        },
     }
     baseparams = {
         'DISTRI': 'fedora',
