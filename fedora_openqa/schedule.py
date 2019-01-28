@@ -218,7 +218,8 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     return output["ids"]
 
 
-def jobs_from_compose(location, wanted=None, force=False, extraparams=None, openqa_hostname=None, arches=None):
+def jobs_from_compose(location, wanted=None, force=False, extraparams=None, openqa_hostname=None, arches=None,
+                      flavors=None):
     """Schedule jobs against a specific compose. Returns a 2-tuple
     of the compose ID and the list of job IDs.
 
@@ -250,6 +251,15 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     arches is a list of arches to schedule jobs for; if specified,
     the image list will be filtered by the arches listed. If not
     specified, jobs are scheduled for all arches in the image list.
+
+    flavors is a list of flavors to schedule jobs for; if specified,
+    the image list will be filtered to images whose flavor is in this
+    list. For convenience, case is ignored.
+
+    Of course arches and flavors are redundant with and less capable
+    than WANTED, but are used to back a convenience feature in the
+    CLI, letting you quickly schedule jobs for specific flavor(s)
+    and/or arch(es) without having to edit a WANTED file.
     """
     if not wanted:
         wanted = WANTED
@@ -270,9 +280,14 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         return ('', [])
     logger.debug("Finding images for compose %s in location %s", rel.cid, location)
     images = _get_images(rel, wanted=wanted)
+    if flavors:
+        flavors = [flavor.lower() for flavor in flavors]
+        logger.debug("Only scheduling jobs for flavors %s", ' '.join(flavors))
+        images = [img for img in images if img[0].lower() in flavors]
     if arches:
         logger.debug("Only scheduling jobs for arches %s", ' '.join(arches))
         images = [img for img in images if img[1] in arches]
+
     if len(images) == 0:
         raise TriggerException("Compose found, but no available images")
     jobs = []
@@ -292,7 +307,10 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         if score > univs.get(arch, [None, 0])[1]:
             univs[arch] = (param_urls, score, subvariant, imagetype)
 
-    # now schedule universal jobs
+    # now schedule universal jobs...unless 'flavors' was passed and
+    # 'universal' wasn't in it
+    if flavors and 'universal' not in flavors:
+        univs = {}
     if univs:
         for (arch, (param_urls, _, subvariant, imagetype)) in univs.items():
             # We are assuming that ISO_URL is present in param_urls. This could create problem when

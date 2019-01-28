@@ -55,6 +55,8 @@ class TestCommandCompose:
         assert fakejfc.call_args[1]['force'] is False
         # should pass arches as 'None'
         assert fakejfc.call_args[1]['arches'] is None
+        # should pass flavors as 'None'
+        assert fakejfc.call_args[1]['flavors'] is None
 
     def test_force(self, fakejfc):
         """Test with -f (force)."""
@@ -82,30 +84,41 @@ class TestCommandCompose:
         # should add extra params
         assert fakejfc.call_args[1]['extraparams'] == {'GRUBADD': "inst.updates=https://www.foo.com/updates.img"}
 
-    def test_arch(self, fakejfc):
-        """Test with --arches."""
+    @pytest.mark.parametrize(
+        ("arg", "values"),
+        [
+            ('arches', ('x86_64', 'i386,armhfp')),
+            ('flavors', ('server-boot-iso', 'workstation-live-iso,universal')),
+        ]
+    )
+    def test_arches_flavors(self, fakejfc, arg, values):
+        """Test with --arches and --flavors, using parametrization.
+        'arg' is the argument name. 'values' is a tuple of two value
+        strings, the first a single appropriate value for the arg, the
+        second a comma-separated list of two appropriate values.
+        """
         args = cli.parse_args([
             'compose',
             'https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-24-20160113.n.1/compose',
-            '--arches=x86_64'
+            '--{0}={1}'.format(arg, values[0])
         ])
         with pytest.raises(SystemExit) as excinfo:
             cli.command_compose(args)
         # should exit 0
         assert not excinfo.value.code
-        # should specify arch as single-item list
-        assert fakejfc.call_args[1]['arches'] == ['x86_64']
+        # should specify arch/flavor as single-item list
+        assert fakejfc.call_args[1][arg] == [values[0]]
         args = cli.parse_args([
             'compose',
             'https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-24-20160113.n.1/compose',
-            '--arches=i386,armhfp'
+            '--{0}={1}'.format(arg, values[1])
         ])
         with pytest.raises(SystemExit) as excinfo:
             cli.command_compose(args)
         # should exit 0
         assert not excinfo.value.code
-        # should specify arch as multi-item list
-        assert fakejfc.call_args[1]['arches'] == ['i386', 'armhfp']
+        # should specify arches/flavors as multi-item list
+        assert fakejfc.call_args[1][arg] == values[1].split(',')
 
     def test_nojobs(self, fakejfc):
         """Test exits 1 when no jobs are run."""

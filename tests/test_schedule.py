@@ -369,6 +369,20 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # 7 images (6 i386, 1 armhfp), 1 universal arch (i386)
     assert fakerun.call_count == 8
 
+    # check flavors is handled properly
+    fakerun.reset_mock()
+    ret = schedule.jobs_from_compose(COMPURL, flavors=['server-boot-iso', 'workstation-live-iso', 'foobar'])
+    # two of those flavors we have images for (2 images each), one we don't;
+    # universal SHOULD NOT be scheduled
+    assert fakerun.call_count == 4
+
+    # check flavors *and* arches is handled properly
+    fakerun.reset_mock()
+    ret = schedule.jobs_from_compose(COMPURL, flavors=['server-boot-iso', 'workstation-live-iso'], arches=['x86_64'])
+    # we have one x86_64 image for each flavor, so 2
+    assert fakerun.call_count == 2
+
+
     # check triggerexception is raised when appropriate
     with mock.patch('fedfind.release.get_release', side_effect=ValueError("Oops!")):
         with pytest.raises(schedule.TriggerException):

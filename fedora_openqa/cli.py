@@ -47,13 +47,16 @@ def command_compose(args):
     extraparams = None
     if args.updates:
         extraparams = {'GRUBADD': "inst.updates={0}".format(args.updates)}
+    flavors = None
+    if args.flavors:
+        flavors = args.flavors.split(',')
     arches = None
     if args.arches:
         arches = args.arches.split(',')
     try:
         (_, jobs) = schedule.jobs_from_compose(
             args.location, force=args.force, extraparams=extraparams,
-            openqa_hostname=args.openqa_hostname, arches=arches)
+            openqa_hostname=args.openqa_hostname, arches=arches, flavors=flavors)
     except schedule.TriggerException as err:
         logger.warning("No jobs run! %s", err)
         sys.exit(1)
@@ -174,7 +177,10 @@ def parse_args(args=None):
     parser_compose.set_defaults(func=command_compose)
     parser_compose.add_argument(
         "--arches", '-a', help="Comma-separated list of arches to schedule jobs for (if not specified, "
-        "all arches will be scheduled)", metavar='ARCH')
+        "all arches will be scheduled)", metavar='ARCHES')
+    parser_compose.add_argument(
+        "--flavors", help="Comma-separated list of flavors to schedule jobs for (if not specified, "
+        "all flavors will be scheduled)", metavar='FLAVORS')
 
     # parser_update and parser_task are nearly the same, so...
     parser_update = subparsers.add_parser('update', description="Schedule jobs for a specific update.")
