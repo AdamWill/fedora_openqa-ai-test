@@ -346,7 +346,14 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     here.
     """
     version = str(version)
-    currrel = str(fedfind.helpers.get_current_release())
+    try:
+        currrel = str(fedfind.helpers.get_current_release())
+    except ValueError:
+        # but don't fail to schedule if fedfind fails...
+        logger.warning("jobs_from_update: could not determine current release! Assuming current "
+                       "release is same as update release. This may cause some tests to fail "
+                       "if that is not true.")
+        currrel = str(version)
     if not arch:
         # set a default in a way that works neatly with the CLI bits
         arch = 'x86_64'

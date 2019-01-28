@@ -406,8 +406,9 @@ def test_jobs_from_compose_unsupported(fakerun):
     assert ret == ('', [])
 
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[24, 25])
+@mock.patch('fedfind.helpers.get_current_release', return_value=25)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-def test_jobs_from_update(fakeclient, fakecurr):
+def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
     """Tests for jobs_from_update."""
     # the OpenQA_Client instance mock
     fakeinst = fakeclient.return_value
@@ -416,19 +417,19 @@ def test_jobs_from_update(fakeclient, fakecurr):
     fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
     # simple case
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25')
-    # should get four jobs (as we schedule for four flavors by default)
-    assert ret == [1, 1, 1, 1]
+    # should get five jobs (as we schedule for five flavors by default)
+    assert ret == [1, 1, 1, 1, 1]
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
-    # four flavors by default, four calls
-    assert len(posts) == 4
+    # five flavors by default, five calls
+    assert len(posts) == 5
     parmdicts = [call[0][2] for call in posts]
     # checking two lists of dicts are equivalent is rather tricky; I
     # don't think we can technically rely on the order always being
     # the same, and in Python 3, a list of dicts cannot be sorted.
     # So we assert the length of the list, and assert that each of the
     # expected dicts is in the actual list.
-    assert len(parmdicts) == 4
+    assert len(parmdicts) == 5
     checkdicts = [
         {
             'DISTRI': 'fedora',
@@ -474,6 +475,17 @@ def test_jobs_from_update(fakeclient, fakecurr):
             'HDD_1': 'disk_f25_desktop_4_x86_64.img',
             'FLAVOR': 'updates-workstation',
             'DESKTOP': 'gnome',
+        },
+        {
+            'DISTRI': 'fedora',
+            'VERSION': '25',
+            'ARCH': 'x86_64',
+            'BUILD': 'Update-FEDORA-2017-b07d628952',
+            'ADVISORY': 'FEDORA-2017-b07d628952',
+            '_ONLY_OBSOLETE_SAME_BUILD': '1',
+            'START_AFTER_TEST': '',
+            'FLAVOR': 'updates-installer',
+            'CURRREL': '25',
         }
     ]
     for checkdict in checkdicts:
@@ -488,19 +500,20 @@ def test_jobs_from_update(fakeclient, fakecurr):
     assert all(parmdict.get('DEVELOPMENT') == 1 for parmdict in parmdicts)
 
     # check we don't crash or fail to schedule if get_current_release
-    # fails
+    # or get_current_stables fail
     fakeinst.openqa_request.reset_mock()
-    fakecurr.side_effect = ValueError("Well, that was unfortunate")
+    fakecurrs.side_effect = ValueError("Well, that was unfortunate")
+    fakecurrr.side_effect = ValueError("Well, that was unfortunate")
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
-    assert ret == [1, 1, 1, 1]
-    fakecurr.side_effect = None
+    assert ret == [1, 1, 1, 1, 1]
+    fakecurrs.side_effect = None
 
     # check we don't schedule upgrade jobs when update is for oldest
     # stable release
     fakeinst.openqa_request.reset_mock()
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '24')
-    # upgrade flavors skipped, so two jobs
-    assert ret == [1, 1]
+    # upgrade flavors skipped, so three jobs
+    assert ret == [1, 1, 1]
 
     # test 'flavors'
     fakeinst.openqa_request.reset_mock()
@@ -516,12 +529,17 @@ def test_jobs_from_update(fakeclient, fakecurr):
 
     # test dupe detection and 'force'
     fakeinst.openqa_request.reset_mock()
-    # this looks like a 'dupe' for the server and upgrade flavors
+    # this looks like a 'dupe' for the server, installer and upgrade flavors
     fakeinst.openqa_request.return_value = {
         'jobs': [
             {
                 'settings': {
                     'FLAVOR': 'updates-server',
+                },
+            },
+            {
+                'settings': {
+                    'FLAVOR': 'updates-installer',
                 },
             },
             {
@@ -539,7 +557,7 @@ def test_jobs_from_update(fakeclient, fakecurr):
     }
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25')
     # should get one job, as we shouldn't POST for server, workstation-upgrade
-    # or server-upgrade
+    # server-upgrade or installer
     assert ret == [1]
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
@@ -550,8 +568,8 @@ def test_jobs_from_update(fakeclient, fakecurr):
     # now try with force=True
     fakeinst.openqa_request.reset_mock()
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', force=True)
-    # should get four jobs this time
-    assert ret == [1, 1, 1, 1]
+    # should get five jobs this time
+    assert ret == [1, 1, 1, 1, 1]
 
     # test extraparams
     fakeinst.openqa_request.reset_mock()
