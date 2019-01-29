@@ -119,15 +119,28 @@ class TestCommandCompose:
         # should exit 1
         assert excinfo.value.code == 1
 
+@pytest.mark.parametrize(
+    "target",
+    # update ID or task ID (to test both paths)
+    ['FEDORA-2017-b07d628952', '32099714']
+)
 @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1, 2], autospec=True)
-def test_command_update(fakejfu, capsys):
-    """Test the command_update function."""
+def test_command_update_task(fakejfu, target, capsys):
+    """Test the command_update_task function."""
+    if target.isdigit():
+        targetarg = 'task'
+    else:
+        targetarg = 'update'
     args = cli.parse_args(
-        ['update', 'FEDORA-2017-b07d628952', '25']
+        [targetarg, target, '25']
     )
     with pytest.raises(SystemExit) as excinfo:
-        cli.command_update(args)
+        cli.command_update_task(args)
     (out, _) = capsys.readouterr()
+    # first arg should be target
+    assert fakejfu.call_args[0][0] == target
+    # second should be release
+    assert fakejfu.call_args[0][1] == 25
     # flavors kwarg should be false-y (not, e.g., [None])
     assert not fakejfu.call_args[1]['flavors']
     # should print out list of scheduled jobs
@@ -139,33 +152,45 @@ def test_command_update(fakejfu, capsys):
 
     # check 'flavor'
     args = cli.parse_args(
-        ['update', 'FEDORA-2017-b07d628952', '25', '--flavor', 'server']
+        ['update', target, '25', '--flavor', 'server']
     )
     with pytest.raises(SystemExit) as excinfo:
-        cli.command_update(args)
+        cli.command_update_task(args)
     # should exit 0
     assert not excinfo.value.code
     assert fakejfu.call_args[1]['flavors'] == ['server']
 
     # check 'force'
     args = cli.parse_args(
-        ['update', 'FEDORA-2017-b07d628952', '25', '--force']
+        ['update', target, '25', '--force']
     )
     with pytest.raises(SystemExit) as excinfo:
-        cli.command_update(args)
+        cli.command_update_task(args)
     # should exit 0
     assert not excinfo.value.code
     assert fakejfu.call_args[1]['force'] is True
 
     # check 'openqa_hostname'
     args = cli.parse_args(
-        ['update', 'FEDORA-2017-b07d628952', '25', '--openqa-hostname', 'openqa.example']
+        ['update', target, '25', '--openqa-hostname', 'openqa.example']
     )
     with pytest.raises(SystemExit) as excinfo:
-        cli.command_update(args)
+        cli.command_update_task(args)
     # should exit 0
     assert not excinfo.value.code
     assert fakejfu.call_args[1]['openqa_hostname'] == 'openqa.example'
+
+# this should not in fact get hit, but just in case we *do* break the code,
+# let's mock it to be safe...
+@mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1, 2], autospec=True)
+def test_command_update_nonint(fakejfu):
+    args = cli.parse_args(
+        ['task', '123abc', '25']
+    )
+    with pytest.raises(SystemExit) as excinfo:
+        cli.command_update_task(args)
+    # should exit 1
+    assert excinfo.value.code == 1
 
 @pytest.mark.parametrize(
     "jobargs,argname,expecteds",

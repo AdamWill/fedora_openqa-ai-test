@@ -321,29 +321,29 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     return (rel.cid, jobs)
 
 def jobs_from_update(update, version, flavors=None, force=False, extraparams=None, openqa_hostname=None, arch=None):
-    """Schedule jobs for a specific Fedora update. update is the
-    advisory ID, version is the release number, flavors defines which
-    update tests should be run (valid values are the 'flavdict' keys).
-    force, extraparams and openqa_hostname are as for
-    jobs_from_compose. To explain the HDD_1 and START_AFTER_TEST
-    settings: most tests in the 'update' scenario are shared with the
-    'compose' scenario. Many of them specify START_AFTER_TEST as
-    'install_default_upload' and HDD_1 as the disk image that
-    install_default_upload creates, so that in the 'compose' scenario,
-    these tests run after install_default_upload and use the image it
-    creates. For update testing, there is no install_default_upload
-    test; we instead want to run these tests using the pre-existing
-    createhdds-created base image. So here, we specify the appropriate
-    HDD_1 value, and an empty value for START_AFTER_TEST, so the
-    scheduler will not try to create a dependency on the non-existent
-    install_default_upload test, and the correct disk image will be
-    used. There are a *few* tests where we do *not* want to override
-    these values, however: the tests where there really is a dependency
-    in both scenarios (e.g. the cockpit_basic test has to run after the
-    cockpit_default test and use the disk image it uploads). For these
-    tests, we specify the values in the templates as +START_AFTER_TEST
-    and +HDD_1; the + makes those values win over the ones we pass in
-    here.
+    """Schedule jobs for a specific Fedora update (or scratch build).
+    update is the advisory ID or task ID, version is the release
+    number, flavors defines which update tests should be run (valid
+    values arethe 'flavdict' keys). force, extraparams and
+    openqa_hostname are as for jobs_from_compose. To explain the HDD_1
+    and START_AFTER_TEST settings: most tests in the 'update' scenario
+    are shared with the 'compose' scenario. Many of them specify
+    START_AFTER_TEST as 'install_default_upload' and HDD_1 as the disk
+    image that install_default_upload creates, so that in the compose
+    scenario, these tests run after install_default_upload and use the
+    image it creates. For update testing, there is no install_default_
+    upload test; we instead want to run these tests using the pre-
+    existing createhdds-created base image. So here, we specify the
+    appropriate HDD_1 value, and an empty value for START_AFTER_TEST,
+    so the scheduler will not try to create a dependency on the non-
+    existent install_default_upload test, and the correct disk image
+    will be used. There are a *few* tests where we do *not* want to
+    override these values, however: the tests where there really is a
+    dependency in both scenarios (e.g. the cockpit_basic test has to
+    run after the cockpit_default test and use the disk image it
+    uploads). For these tests, we specify the values in the templates
+    as +START_AFTER_TEST and +HDD_1; the + makes those values win over
+    the ones we pass in here.
     """
     version = str(version)
     try:
@@ -357,7 +357,12 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     if not arch:
         # set a default in a way that works neatly with the CLI bits
         arch = 'x86_64'
-    build = 'Update-{0}'.format(update)
+    if update.isdigit():
+        # Koji task ID: treat as a non-reported scratch build test
+        build = "Kojitask-{0}-NOREPORT".format(update)
+    else:
+        # normal update case
+        build = 'Update-{0}'.format(update)
     if extraparams:
         build = '{0}-EXTRA'.format(build)
     flavdict = {
@@ -384,12 +389,23 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
             'CURRREL': currrel,
         },
     }
+    # we'll set ADVISORY and ADVISORY_OR_TASK for updates, and KOJITASK and
+    # ADVISORY_OR_TASK for Koji tasks. I'd probably have designed this more
+    # cleanly if doing it from scratch, but we started with updates and added
+    # tasks later and it's a bit messy. We need to have a consistently-named
+    # variable for the distri templates substitution, there's no mechanism to
+    # do 'substitute for this var or this other var depending which exists'
+    if update.isdigit():
+        advkey = 'KOJITASK'
+    else:
+        advkey = 'ADVISORY'
     baseparams = {
         'DISTRI': 'fedora',
         'VERSION': version,
         'ARCH': arch,
         'BUILD': build,
-        'ADVISORY': update,
+        advkey: update,
+        'ADVISORY_OR_TASK': update,
         # only obsolete pending jobs for same BUILD (i.e. update)
         '_ONLY_OBSOLETE_SAME_BUILD': '1',
         'START_AFTER_TEST': '',
@@ -405,7 +421,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
             baseparams['DEVELOPMENT'] = 1
     except ValueError:
         # but don't fail to schedule if fedfind fails...
-        logger.warning("jobs_from_update: could not determine current or oldest release! Assuming update is "
+        logger.warning("jobs_from_update: could not determine current or oldest release! Assuming update/task is "
                        "for stable release that is not the oldest stable.")
         oldest = 0
     client = OpenQA_Client(openqa_hostname)
@@ -427,7 +443,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
             currjobs = client.openqa_request('GET', 'jobs', params={'build': build, 'arch': arch})['jobs']
             currjobs = [cjob for cjob in currjobs if cjob['settings']['FLAVOR'] == fullflav]
             if currjobs:
-                logger.info("jobs_from_update: Existing jobs found for update %s flavor %s arch %s, "
+                logger.info("jobs_from_update: Existing jobs found for update/task %s flavor %s arch %s, "
                             "and force not set! No jobs scheduled.", update, flavor, arch)
                 continue
         flavparams = flavdict[flavor]

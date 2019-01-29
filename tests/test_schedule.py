@@ -437,6 +437,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
             'FLAVOR': 'updates-server-upgrade',
@@ -448,6 +449,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
             'FLAVOR': 'updates-workstation-upgrade',
@@ -459,6 +461,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
             'HDD_1': 'disk_f25_server_3_x86_64.img',
@@ -470,6 +473,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
             'HDD_1': 'disk_f25_desktop_4_x86_64.img',
@@ -482,6 +486,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
             'FLAVOR': 'updates-installer',
@@ -600,5 +605,39 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
         assert post[0][2]['ARCH'] == 'ppc64le'
         if 'HDD_1' in post[0][2]:
             assert post[0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.img', 'disk_f25_desktop_4_ppc64le.img']
+
+@mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])
+@mock.patch('fedfind.helpers.get_current_release', return_value=29)
+@mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
+def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
+    """Test jobs_from_update works as expected when passed a Koji task
+    ID. We don't need to recheck everything, just the differing vars.
+    """
+    # the OpenQA_Client instance mock
+    fakeinst = fakeclient.return_value
+    # for now, return no 'jobs' (for the dupe query), one 'id' (for
+    # the post request)
+    fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
+    # simple case
+    ret = schedule.jobs_from_update('32099714', '28', flavors=['installer'])
+    # should get one job for one flavor
+    assert ret == [1]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # one flavor, one call
+    assert len(posts) == 1
+    parmdict = posts[0][0][2]
+    assert parmdict == {
+        'DISTRI': 'fedora',
+        'VERSION': '28',
+        'ARCH': 'x86_64',
+        'BUILD': 'Kojitask-32099714-NOREPORT',
+        'KOJITASK': '32099714',
+        'ADVISORY_OR_TASK': '32099714',
+        '_ONLY_OBSOLETE_SAME_BUILD': '1',
+        'START_AFTER_TEST': '',
+        'FLAVOR': 'updates-installer',
+        'CURRREL': '29',
+    }
 
 # vim: set textwidth=120 ts=8 et sw=4:

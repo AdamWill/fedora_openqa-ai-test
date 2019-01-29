@@ -73,12 +73,19 @@ def command_compose(args):
     sys.exit()
 
 
-def command_update(args):
-    """Schedule openQA jobs for a specified update."""
+def command_update_task(args):
+    """Schedule openQA jobs for a specified update or task."""
     flavors = []
     if args.flavor:
         flavors = [args.flavor]
-    jobs = schedule.jobs_from_update(args.update, args.release, flavors=flavors, force=args.force,
+    if hasattr(args, 'task'):
+        if not args.task.isdigit():
+            logger.error("Koji task ID must be all digits!")
+            sys.exit(1)
+        buildarg = args.task
+    else:
+        buildarg = args.update
+    jobs = schedule.jobs_from_update(buildarg, args.release, flavors=flavors, force=args.force,
                                      openqa_hostname=args.openqa_hostname, arch=args.arch)
     print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
     sys.exit()
@@ -169,20 +176,30 @@ def parse_args(args=None):
         "--arches", '-a', help="Comma-separated list of arches to schedule jobs for (if not specified, "
         "all arches will be scheduled)", metavar='ARCH')
 
+    # parser_update and parser_task are nearly the same, so...
     parser_update = subparsers.add_parser('update', description="Schedule jobs for a specific update.")
     parser_update.add_argument('update', help="The update ID (e.g. 'FEDORA-2017-b07d628952')", metavar='UPDATE')
-    parser_update.add_argument('release', help="The release the update is for (e.g. '25')", type=int, metavar="NN")
-    parser_update.add_argument('--flavor', help="A single flavor to schedule jobs for (e.g. 'server'), "
-                               "otherwise jobs will be scheduled for all update flavors")
-    parser_update.add_argument(
-        "--openqa-hostname", help="openQA host to schedule jobs on (default: client library "
-        "default)", metavar='HOSTNAME')
-    parser_update.add_argument(
-        '--arch', '-a', help="Arch to schedule jobs for (default: x86_64)", metavar='ARCH')
-    parser_update.add_argument(
-        '--force', '-f', help="For each flavor, schedule jobs even if there "
-        "are existing, non-cancelled jobs for the update for that flavor", action='store_true')
-    parser_update.set_defaults(func=command_update)
+    parser_task = subparsers.add_parser('task', description="Schedule jobs for a specific Koji task.")
+    parser_task.add_argument('task', help="The task ID (e.g. '32099714')", metavar='TASK')
+    for updtaskparser in [parser_update, parser_task]:
+        if updtaskparser is parser_update:
+            targetstr = 'update'
+        else:
+            targetstr = 'task'
+        updtaskparser.add_argument('release', help="The release the {0} is for (e.g. '25')".format(targetstr),
+                                   type=int, metavar="NN")
+        updtaskparser.add_argument('--flavor', help="A single flavor to schedule jobs for (e.g. 'server'), "
+                                   "otherwise jobs will be scheduled for all update flavors")
+        updtaskparser.add_argument(
+            "--openqa-hostname", help="openQA host to schedule jobs on (default: client library "
+            "default)", metavar='HOSTNAME')
+        updtaskparser.add_argument(
+            '--arch', '-a', help="Arch to schedule jobs for (default: x86_64)", metavar='ARCH')
+        updtaskparser.add_argument(
+            '--force', '-f', help="For each flavor, schedule jobs even if there are existing, non-cancelled jobs "
+            "for the {0} for that flavor".format(targetstr), action='store_true')
+    parser_update.set_defaults(func=command_update_task)
+    parser_task.set_defaults(func=command_update_task)
 
     parser_report = subparsers.add_parser(
         'report', description="Map openQA job results to Wikitcms test results and either log them to output or "
