@@ -261,9 +261,9 @@ UPDATEWL = {
     # PostgreSQL is a release-blocking server role
     'postgresql': ('server',),
     # Obvious...
-    'gnome-software': ('workstation',),
+    'gnome-software': ('workstation', 'workstation-live-iso'),
     # Another bit of GNOME that's not in critpath
-    'accountsservice': ('workstation', 'workstation-upgrade'),
+    'accountsservice': ('workstation', 'workstation-upgrade', 'workstation-live-iso'),
 }
 
 for path in ('/etc/fedora-openqa',

@@ -401,10 +401,13 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # release before the release the upgrade is for
             'CURRREL': str(int(version)-1),
         },
-        'installer': {
+        'everything-boot-iso': {
             # CURRREL should be the real current release here, as the
             # support server always runs as the current release
             'CURRREL': currrel,
+        },
+        'workstation-live-iso': {
+            'SUBVARIANT': 'Workstation',
         },
     }
     # we'll set ADVISORY and ADVISORY_OR_TASK for updates, and KOJITASK and
