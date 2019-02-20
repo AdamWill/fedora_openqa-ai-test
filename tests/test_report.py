@@ -452,7 +452,8 @@ class TestResultsDBReport:
 
     def test_skips(self, fakeres, oqaclientmock):
         """Check resultsdb_report skips reporting for cloned,
-        cancelled, obsolete, incomplete, EXTRA and NOREPORT jobs.
+        cancelled, obsolete, incomplete, EXTRA, NOREPORT and Koji task
+        jobs.
         """
         jobdict = oqaclientmock[2]
         with mock.patch.dict(jobdict, {'clone_id': 15}):
@@ -485,6 +486,12 @@ class TestResultsDBReport:
 
         fakeres.reset_mock()
         jobdict['settings']['BUILD'] = 'Fedora-Rawhide-20170207.n.0-NOREPORT'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_count == 0
+
+        fakeres.reset_mock()
+        jobdict['settings']['BUILD'] = 'Fedora-Rawhide-20170207.n.0'
+        jobdict['settings']['KOJITASK'] = '32099714'
         fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_count == 0
 

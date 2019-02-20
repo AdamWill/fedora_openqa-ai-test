@@ -254,7 +254,7 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
     jobs = client.get_jobs(jobs=jobs, build=build, filter_dupes=True)
 
     # cannot do wiki reporting for update jobs
-    jobs = [job for job in jobs if 'ADVISORY' not in job['settings']]
+    jobs = [job for job in jobs if 'ADVISORY' not in job['settings'] and 'KOJITASK' not in job['settings']]
     if not jobs:
         logger.debug("No wiki-reportable jobs: most likely all jobs were update tests")
         return []
@@ -359,6 +359,10 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
     for job in jobs:
         # don't report jobs that have clone or user-cancelled jobs, or were obsoleted
         if job['clone_id'] is not None or job['result'] == "user_cancelled" or job['result'] == 'obsoleted':
+            continue
+        # don't report Koji 'task' tests (usually scratch build tests),
+        # at least for now, we don't have a convention for it
+        if 'KOJITASK' in job['settings']:
             continue
 
         try:
