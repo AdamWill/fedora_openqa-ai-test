@@ -269,7 +269,7 @@ def ffmock(ffmd01, ffimg01):
 @pytest.yield_fixture(scope="function")
 def ffmock02():
     """Alternative fedfind mock using some real metadata files (from
-    the Rawhide 20170208.n.0 compose), for tests that need more
+    the Fedora 25 20161115.n.0 compose), for tests that need more
     complete metadata.
     """
     cifile = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'composeinfo.json')
