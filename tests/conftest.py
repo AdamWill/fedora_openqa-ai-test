@@ -168,6 +168,7 @@ def jobdict02():
         "retry_avbl": 3,
         "settings": {
             "ADVISORY": "FEDORA-2017-376ae2b92c",
+            "ADVISORY_OR_TASK": "FEDORA-2017-376ae2b92c",
             "ARCH": "x86_64",
             "BACKEND": "qemu",
             "BOOTFROM": "c",
