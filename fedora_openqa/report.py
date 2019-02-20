@@ -398,6 +398,10 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             # special case for images decompressed for testing
             if job['settings']['IMAGETYPE'] == 'raw-xz' and imagename.endswith('.raw'):
                 imagename += '.xz'
+            # reverse the hack we use in schedule.py to stuff 'testing-' on
+            # the front of image names in updates-testing composes
+            if imagename.startswith('testing-'):
+                imagename = imagename[8:]
             rdbpartial = partial(FedoraImageResult, imagename, build, tc_name='compose.' + tc_name)
 
         elif ttarget == 'COMPOSE':

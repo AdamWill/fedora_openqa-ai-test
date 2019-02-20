@@ -94,6 +94,13 @@ def _get_images(rel, wanted=None):
             param_urls = {
                 FORMAT_TO_PARAM[foundimg['format']]: url
             }
+            if 'updates-testing' in rel.cid:
+                # image names in 'updates-testing' and 'updates' composes
+                # are the same. we need to set a custom filename for the
+                # image for updates-testing composes to avoid a clash
+                fileparam = FORMAT_TO_PARAM[foundimg['format']].split('_URL')[0]
+                filename = os.path.basename(foundimg['path'])
+                param_urls[fileparam] = 'testing-' + filename
             # if direct kernel boot is specified, we need to download kernel and initrd
             if wantimg.get('dkboot', False):
                 (kernel_url, initrd_url) = _get_dkboot_urls(rel.https_url_generic, arch)
