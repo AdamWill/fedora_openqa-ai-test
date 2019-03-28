@@ -405,6 +405,10 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Server",
     },
+    "QA:Testcase_Remote_Logging": {
+        "env": "$RUNARCH$",
+        "type": "Server",
+    },
     "QA:Testcase_desktop_terminal": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
@@ -933,6 +937,9 @@ TESTSUITES = {
     ],
     "server_database_client": [
         "QA:Testcase_database_server_remote_client",
+    ],
+    "server_remote_logging_server": [
+        "QA:Testcase Remote Logging",
     ],
     "realmd_join_cockpit": {
         "QA:Testcase_realmd_join_cockpit": {},
