@@ -468,6 +468,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
 
         # report result, retrying with a delay on failure
         tries = 5
+        err = None
         while tries:
             try:
                 rdb_object.report(rdb_instance)
