@@ -263,7 +263,7 @@ UPDATEWL = {
     # Bits of GNOME that aren't in critpath
     'gnome-software': ('workstation', 'workstation-live-iso'),
     'accountsservice': ('workstation', 'workstation-upgrade', 'workstation-live-iso'),
-    'gnome-initial-setup': ('workstation-live-iso'),
+    'gnome-initial-setup': ('workstation-live-iso',),
 }
 
 for path in ('/etc/fedora-openqa',
