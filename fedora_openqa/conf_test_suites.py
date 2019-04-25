@@ -965,7 +965,7 @@ TESTSUITES = {
         "QA:Testcase_database_server_remote_client",
     ],
     "server_remote_logging_server": [
-        "QA:Testcase Remote Logging",
+        "QA:Testcase_Remote_Logging",
     ],
     "realmd_join_cockpit": {
         "QA:Testcase_realmd_join_cockpit": {},
