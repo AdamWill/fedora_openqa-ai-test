@@ -40,7 +40,7 @@ if "--nodeps" in sys.argv:
     installreqs = []
     sys.argv.remove("--nodeps")
 else:
-    installreqs = ['fedfind>=2.5.0', 'fedmsg', 'openqa-client>=1.1', 'setuptools',
+    installreqs = ['fedfind>=2.5.0', 'fedora-messaging', 'openqa-client>=1.1', 'setuptools',
                    'six', 'resultsdb_api', 'resultsdb_conventions>=2.0.2', 'wikitcms']
 
 setup(
@@ -49,17 +49,6 @@ setup(
     entry_points = {
         'console_scripts': [
             'fedora-openqa = fedora_openqa.cli:main',
-        ],
-        'moksha.consumer': [
-            'fedora_openqa.scheduler.prod = fedora_openqa.consumer:OpenQAProductionScheduler',
-            'fedora_openqa.scheduler.stg = fedora_openqa.consumer:OpenQAStagingScheduler',
-            'fedora_openqa.scheduler.test = fedora_openqa.consumer:OpenQATestScheduler',
-            'fedora_openqa.wiki.reporter.prod = fedora_openqa.consumer:OpenQAProductionWikiReporter',
-            'fedora_openqa.wiki.reporter.stg = fedora_openqa.consumer:OpenQAStagingWikiReporter',
-            'fedora_openqa.wiki.reporter.test = fedora_openqa.consumer:OpenQATestWikiReporter',
-            'fedora_openqa.resultsdb.reporter.prod = fedora_openqa.consumer:OpenQAProductionResultsDBReporter',
-            'fedora_openqa.resultsdb.reporter.stg = fedora_openqa.consumer:OpenQAStagingResultsDBReporter',
-            'fedora_openqa.resultsdb.reporter.test = fedora_openqa.consumer:OpenQATestResultsDBReporter',
         ],
     },
     author = "Fedora QA devel team",

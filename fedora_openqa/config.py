@@ -45,33 +45,6 @@ CONFIG.set('cli', 'log-level', 'info')
 CONFIG.set('report', 'resultsdb_url', 'http://localhost:5001/api/v2.0/')
 CONFIG.set('report', 'wiki_hostname', 'stg.fedoraproject.org')
 
-# Default URLs and submission settings for the fedmsg consumers. It'd
-# be nice if fedmsg itself provided a config mechanism for consumers,
-# but AFAICS it doesn't
-CONFIG.set('consumers', 'prod_oqa_hostname', 'openqa.fedoraproject.org')
-CONFIG.set('consumers', 'prod_oqa_baseurl', '')
-CONFIG.set('consumers', 'stg_oqa_hostname', 'openqa.stg.fedoraproject.org')
-CONFIG.set('consumers', 'stg_oqa_baseurl', '')
-# this all depends on which instance's messages you replay...
-CONFIG.set('consumers', 'test_oqa_hostname', 'openqa.fedoraproject.org')
-CONFIG.set('consumers', 'test_oqa_baseurl', '')
-# We default to localhost for all of these for safety (and so you can
-# test reporting from 'real' fedmsgs to a test rdb instance), and the
-# infra deployments change in their local configs
-CONFIG.set('consumers', 'prod_rdb_url', 'http://localhost:5001/api/v2.0/')
-CONFIG.set('consumers', 'prod_rdb_report', 'false')
-CONFIG.set('consumers', 'stg_rdb_url', 'http://localhost:5001/api/v2.0/')
-CONFIG.set('consumers', 'stg_rdb_report', 'false')
-CONFIG.set('consumers', 'test_rdb_url', 'http://localhost:5001/api/v2.0/')
-CONFIG.set('consumers', 'test_rdb_report', 'true')
-CONFIG.set('consumers', 'prod_wiki_hostname', 'fedoraproject.org')
-CONFIG.set('consumers', 'prod_wiki_report', 'false')
-CONFIG.set('consumers', 'stg_wiki_hostname', 'stg.fedoraproject.org')
-CONFIG.set('consumers', 'stg_wiki_report', 'false')
-CONFIG.set('consumers', 'test_wiki_hostname', 'stg.fedoraproject.org')
-# As the default location is public staging, keep this as false
-CONFIG.set('consumers', 'test_wiki_report', 'false')
-
 CONFIG.read('/etc/fedora-openqa/schedule.conf')
 CONFIG.read('{0}/.config/fedora-openqa/schedule.conf'.format(os.path.expanduser('~')))
 

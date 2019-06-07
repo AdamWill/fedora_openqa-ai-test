@@ -231,8 +231,8 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     of the compose ID and the list of job IDs.
 
     location is the top level of the compose. Note this value is
-    provided by fedmsg 'pungi.compose.status.change' messages as
-    'location'.
+    provided by fedora-messaging 'pungi.compose.status.change'
+    messages as 'location'.
 
     wanted is a dict defining which images from the compose we should
     schedule tests for. It is passed direct to _get_images(). The
