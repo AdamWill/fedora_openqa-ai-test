@@ -73,7 +73,7 @@ If the openQA server is deployed directly on the same system, openQA API access 
 
 By default the CLI will use the *first* openQA server specified in this config file. You can pass the `--openqa-hostname` argument to override this, but you must have a key and secret specified for the chosen server to create jobs on it (no key or secret are needed for result reporting, as this only requires querying of the openQA server).
 
-If you wish to forward results to [Wikitcms](https://fedoraproject.org/wiki/Wikitcms), you must set up a python-wikitcms credentials file. This file contains a FAS username and password which will be used when reporting results to the wiki. See the `python-wikitcms` documentation for more details on this. Please be careful before doing this, as usually only the official Fedora openQA systems should report results to Wikitcms. Ideally this should be a dedicated account for the purpose of reporting test results.
+If you wish to forward results to [Wikitcms](https://fedoraproject.org/wiki/Wikitcms), you must either authenticate interactively via a browser (which requires a graphical environment) periodically - each time you do this, a token will be kept for around a week, during which time reporting will work non-interactively, until one day you'll be prompted to authenticate again - or request a special non-expiring token from the wiki administrator. Please be careful before doing this, as usually only the official Fedora openQA systems should report results to Wikitcms. Ideally this should be a dedicated account for the purpose of reporting test results.
 
     sudo su
     mkdir /etc/fedora
