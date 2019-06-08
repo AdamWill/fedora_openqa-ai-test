@@ -45,10 +45,13 @@ MODIFIEDWL = copy.deepcopy(UPDATEWL)
 MODIFIEDWL['gnome-terminal'] = ('workstation',)
 MODIFIEDWL['kernel'] = None
 
-# Passed test message
+# Passed test message (ZMQ->AMQP bridge style with whole fedmsg as
+# 'body')
 PASSMSG = Message(
     topic="org.fedoraproject.stg.openqa.job.done",
     body={
+        'msg_id': "2017-f059828d-0969-4545-be7a-db8334f6a71f",
+        'msg': {
             "ARCH": "x86_64",
             "BUILD": "Fedora-Rawhide-20170207.n.0",
             "FLAVOR": "universal",
@@ -59,6 +62,7 @@ PASSMSG = Message(
             "newbuild": None,
             "remaining": 23,
             "result": "passed"
+        }
     }
 )
 
@@ -92,13 +96,17 @@ FINISHEDCOMPOSE = Message(
     }
 )
 
-# Finished incomplete compose message
+# Finished incomplete compose message (ZMQ->AMQP bridge style with
+# whole fedmsg as 'body')
 FINCOMPLETE = Message(
     topic="org.fedoraproject.prod.pungi.compose.status.change",
     body={
-        "compose_id": "Fedora-Rawhide-20170206.n.0",
-        "location": "http://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170206.n.0/compose",
-        "status": "FINISHED_INCOMPLETE"
+        "msg_id": "2017-f059828d-0969-4545-be7a-db8334f6a71f",
+        "msg": {
+            "compose_id": "Fedora-Rawhide-20170206.n.0",
+            "location": "http://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170206.n.0/compose",
+            "status": "FINISHED_INCOMPLETE"
+        }
     }
 )
 

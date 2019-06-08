@@ -33,6 +33,19 @@ from . import schedule
 from . import report
 
 
+def _find_true_body(message):
+    """Currently the ZMQ->AMQP bridge produces a message with the
+    entire fedmsg as the 'body'. When the publisher is converted to
+    AMQP it will likely only include the 'msg' dict as the 'body'. So
+    let's try and make sure we work either way...
+    https://github.com/fedora-infra/fedmsg-migration-tools/issues/20
+    """
+    body = message.body
+    if 'msg' in body and 'msg_id' in body:
+        # OK, pretty sure this is a translated fedmsg, take 'msg'
+        body = body['msg']
+    return body
+
 # SCHEDULER
 
 
@@ -54,9 +67,10 @@ class OpenQAScheduler(object):
 
     def _consume_compose(self, message):
         """Consume a 'compose' type message."""
-        status = message.body['msg'].get('status')
-        location = message.body['msg'].get('location')
-        compstr = message.body['msg'].get('compose_id', location)
+        body = _find_true_body(message)
+        status = body.get('status')
+        location = body.get('location')
+        compstr = body.get('compose_id', location)
         # don't schedule tests on modular composes, for now, as we know
         # many fail
         if 'Fedora-Modular' in compstr:
@@ -86,7 +100,8 @@ class OpenQAScheduler(object):
 
     def _consume_update(self, message):
         """Consume an 'update' type message."""
-        update = message.body.get('update', {})
+        body = _find_true_body(message)
+        update = body.get('update', {})
         advisory = update.get('alias')
         critpath = update.get('critpath', False)
         version = update.get('release', {}).get('version')
@@ -163,7 +178,8 @@ class OpenQAWikiReporter(object):
 
     def __call__(self, message):
         """Consume incoming message."""
-        job = message.body['msg']['id']
+        body = _find_true_body(message)
+        job = body['id']
         self.logger.info("reporting results for %s", job)
         # pylint: disable=no-member
         results = report.wiki_report(
@@ -191,7 +207,8 @@ class OpenQAResultsDBReporter(object):
 
     def __call__(self, message):
         """Consume incoming message."""
-        job = message.body['msg']['id']
+        body = _find_true_body(message)
+        job = body['id']
         self.logger.info("reporting results for %s", job)
         # pylint: disable=no-member
         report.resultsdb_report(
