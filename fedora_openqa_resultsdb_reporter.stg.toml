@@ -13,7 +13,9 @@ certfile = "/etc/fedora-messaging/fedora.stg-cert.pem"
 
 
 [client_properties]
-app = "Fedora openQA"
+app = "Fedora openQA ResultsDB reporter"
+app_url = "https://pagure.io/fedora-qa/fedora_openqa"
+app_contacts_email = ["qa-devel@lists.fedoraproject.org"]
 
 [exchanges."amq.topic"]
 type = "topic"
