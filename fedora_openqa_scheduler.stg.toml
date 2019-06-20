@@ -47,6 +47,14 @@ exchange = "amq.topic"
 routing_keys = ["org.fedoraproject.prod.pungi.compose.status.change",
                 "org.fedoraproject.prod.bodhi.update.request.testing",
                 "org.fedoraproject.prod.bodhi.update.edit"]
+# need this to receive messages from ZMQ->AMQP bridge
+[[bindings]]
+queue = "00000000-0000-0000-0000-000000000000"
+exchange = "zmq.topic"
+# we subscribe to prod not staging keys here as per above.
+routing_keys = ["org.fedoraproject.prod.pungi.compose.status.change",
+                "org.fedoraproject.prod.bodhi.update.request.testing",
+                "org.fedoraproject.prod.bodhi.update.edit"]
 
 [consumer_config]
 openqa_hostname = "openqa.stg.fedoraproject.org"

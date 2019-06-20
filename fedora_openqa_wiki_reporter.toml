@@ -40,6 +40,11 @@ arguments = {}
 queue = "00000000-0000-0000-0000-000000000000"
 exchange = "amq.topic"
 routing_keys = ["org.fedoraproject.prod.openqa.job.done"]
+# need this to receive messages from ZMQ->AMQP bridge
+[[bindings]]
+queue = "00000000-0000-0000-0000-000000000000"
+exchange = "zmq.topic"
+routing_keys = ["org.fedoraproject.prod.openqa.job.done"]
 
 [consumer_config]
 openqa_hostname = "openqa.fedoraproject.org"
