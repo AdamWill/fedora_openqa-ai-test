@@ -164,17 +164,6 @@ WANTED = [
         },
         "dkboot": True,
     },
-    # 'Atomic' subvariant was renamed to 'AtomicHost' from F28 onward,
-    # when there are no more F28 images being produced, we can drop
-    # this here and elsewhere
-    {
-        "match": {
-            "subvariant": "Atomic",
-            "type": "dvd-ostree",
-            "format": "iso",
-            "arch": "x86_64",
-        },
-    },
     {
         "match": {
             "subvariant": "AtomicHost",
