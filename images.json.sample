@@ -175,6 +175,14 @@
     },
     {
         "match": {
+            "subvariant": "Silverblue",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "ppc64le"
+        }
+    },
+    {
+        "match": {
             "subvariant": "Server",
             "type": "boot",
             "format": "iso",
