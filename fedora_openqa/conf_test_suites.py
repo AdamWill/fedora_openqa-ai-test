@@ -39,6 +39,14 @@ TESTCASES = {
     #   $FS$                - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
     #   $DESKTOP$           - desktop: just the DESKTOP openQA setting
 
+    "QA:Testcase_Mediakit_Repoclosure": {
+        "env": "$SUBVARIANT$",
+        "type": "Installation",
+    },
+    "QA:Testcase_Mediakit_FileConflicts": {
+        "env": "$SUBVARIANT$",
+        "type": "Installation",
+    },
     "QA:Testcase_Boot_default_install": {
         "name": "$SUBVARIANT$_$IMAGETYPE$",
         "section": 'Default boot and install ($RUNARCH$)',
@@ -562,6 +570,12 @@ TESTSUITES = {
     # QA:Testcase_FreeIPA_web_ui ; if that module passes we want to
     # report a pass for that test case, if the job passes but that
     # module fails we do *not* want to report a pass.
+    "mediakit_repoclosure": [
+        "QA:Testcase_Mediakit_Repoclosure",
+    ]
+    "mediakit_fileconflicts": [
+        "QA:Testcase_Mediakit_FileConflicts",
+    ]
     "install_default": [
         "QA:Testcase_Boot_default_install",
         "QA:Testcase_install_to_VirtIO",
