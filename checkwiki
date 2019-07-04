@@ -177,7 +177,7 @@ def templates_suites_match(templates):
     vice versa, except for ones we know are OK (e.g. support_server).
     """
     failed = 0
-    tempwhite = set(('support_server', 'memory_check'))
+    tempwhite = set(('support_server', 'memory_check', 'server_remote_logging_client'))
     tempsuites = [suite['name'] for suite in templates['TestSuites']]
     onlytemp = set(tempsuites) - set(TESTSUITES.keys()) - tempwhite
     for suite in onlytemp:

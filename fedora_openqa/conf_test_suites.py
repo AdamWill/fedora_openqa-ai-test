@@ -981,6 +981,10 @@ TESTSUITES = {
     "server_remote_logging_server": [
         "QA:Testcase_Remote_Logging",
     ],
+    # _server is the key test here: it will only pass if client
+    # passes, and the wiki test is not passed unless both pass, so
+    # need to list anything for _client on its own
+    "server_remote_logging_client": [],
     "realmd_join_cockpit": {
         "QA:Testcase_realmd_join_cockpit": {},
         "QA:Testcase_FreeIPA_realmd_login": {},
@@ -1030,6 +1034,14 @@ TESTSUITES = {
         "QA:Testcase_Modularity_install_module",
         "QA:Testcase_Modularity_update_without_repos",
     ],
+    # this is a support test for other tests
+    "support_server": [],
+    # this is a data test, does not map to any test case
+    "memory_check": [],
+    # this test is a partial check for QA:Testcase_desktop_menus but
+    # we cannot really mark that as passed if this passes as it does
+    # not test *everything* required there
+    "apps_startstop": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
