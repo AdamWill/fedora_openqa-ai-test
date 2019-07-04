@@ -104,6 +104,10 @@ def fake_jobs(templates, modules):
     """
     fakejobs = []
     for jobtemp in templates['JobTemplates']:
+        # we only run i686, x86_64 and arm in prod ATM, and we only care
+        # about result reporting for prod, so ignore other arches for now
+        if jobtemp['product']['arch'] not in ('x86_64', 'i386', 'arm'):
+            continue
         subv = jobtemp['product']['flavor'].split('-')[0]
         try:
             imagetype = jobtemp['product']['flavor'].split('-')[1].replace('_', '-')
