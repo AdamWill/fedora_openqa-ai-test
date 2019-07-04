@@ -1028,7 +1028,7 @@ TESTSUITES = {
         "QA:Testcase_Modularity_module_list",
         "QA:Testcase_Modularity_enable-disable_module",
         "QA:Testcase_Modularity_install_module",
-        "QA:Testcase_Modularity_update_norepos",
+        "QA:Testcase_Modularity_update_without_repos",
     ],
 }
 
