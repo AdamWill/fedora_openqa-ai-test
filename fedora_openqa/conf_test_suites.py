@@ -572,10 +572,10 @@ TESTSUITES = {
     # module fails we do *not* want to report a pass.
     "mediakit_repoclosure": [
         "QA:Testcase_Mediakit_Repoclosure",
-    ]
+    ],
     "mediakit_fileconflicts": [
         "QA:Testcase_Mediakit_FileConflicts",
-    ]
+    ],
     "install_default": [
         "QA:Testcase_Boot_default_install",
         "QA:Testcase_install_to_VirtIO",

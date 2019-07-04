@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/python3
 
 # Copyright (C) 2016 Red Hat
 #
@@ -21,13 +21,10 @@
 conf_test_suites.py.
 """
 
-from __future__ import unicode_literals
-from __future__ import print_function
-
 import glob
 import json
 import os
-import subprocess32 as subprocess
+import subprocess
 import sys
 
 from wikitcms import wiki
