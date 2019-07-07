@@ -108,6 +108,11 @@ def fake_jobs(templates, modules):
         # about result reporting for prod, so ignore other arches for now
         if jobtemp['product']['arch'] not in ('x86_64', 'i386', 'arm'):
             continue
+        # ignore templates whose version is not "*" - these are only for
+        # old releases, so won't be release validation tests, so won't
+        # be reported to wiki
+        if jobtemp['product']['version'] != "*":
+            continue
         subv = jobtemp['product']['flavor'].split('-')[0]
         try:
             imagetype = jobtemp['product']['flavor'].split('-')[1].replace('_', '-')
