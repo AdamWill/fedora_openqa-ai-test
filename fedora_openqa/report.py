@@ -398,7 +398,12 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             # We have a compose test result for a specific image
             # 'build' will be the compose ID, job['settings'][ttarget]
             # will be the filename of the tested image
-            imagename = job['settings'][ttarget]
+            imagename = job['settings'].get(ttarget)
+            if not imagename:
+                # this should never happen, but it *can* if someone
+                # messes up the templates or a job clone. like me.
+                logger.warning("cannot report job %d because variable TEST_TARGET points to is missing", job['id'])
+                continue
             # special case for images decompressed for testing
             if job['settings']['IMAGETYPE'] == 'raw-xz' and imagename.endswith('.raw'):
                 imagename += '.xz'
