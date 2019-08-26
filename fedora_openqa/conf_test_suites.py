@@ -329,6 +329,11 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
+    "QA:Testcase_Boot_Methods_Pxeboot": {
+        "section": "PXE boot",
+        "env": "$RUNARCH$",
+        "type": "Installation",
+    },
     "QA:Testcase_Anaconda_rescue_mode": {
         "section": "Miscellaneous",
         "env": "$BOOTMETHOD$",
@@ -901,6 +906,9 @@ TESTSUITES = {
     ],
     "install_rescue_encrypted": [
         "QA:Testcase_Anaconda_rescue_mode",
+    ],
+    "install_pxeboot": [
+        "QA:Testcase_Boot_Methods_Pxeboot",
     ],
     "base_selinux": [
         "QA:Testcase_base_selinux",
