@@ -183,6 +183,15 @@
     },
     {
         "match": {
+            "subvariant": "Everything",
+            "type": "boot",
+            "format": "iso",
+            "arch": "ppc64le"
+        },
+        "score": 8
+    },
+    {
+        "match": {
             "subvariant": "Server",
             "type": "boot",
             "format": "iso",
