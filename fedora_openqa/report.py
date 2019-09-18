@@ -465,8 +465,8 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             # valid compose ID. I should really make this a custom
             # exception...
             if "valid Pungi 4" in err:
-                logger.warning("resultsdb_report: cannot report for %s,
-                               " not a valid compose ID", build)
+                logger.warning("resultsdb_report: cannot report for "
+                               "%s, not a valid compose ID", build)
                 return
             raise
 
