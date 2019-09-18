@@ -458,7 +458,17 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                 kwargs["note"] = "non-important module {0} failed".format(module["name"])
 
         # create the Result instance
-        rdb_object = rdbpartial(**kwargs)
+        try:
+            rdb_object = rdbpartial(**kwargs)
+        except ValueError as err:
+            # This is fedfind telling us the BUILD value is not a
+            # valid compose ID. I should really make this a custom
+            # exception...
+            if "valid Pungi 4" in err:
+                logger.warning("resultsdb_report: cannot report for %s,
+                               " not a valid compose ID", build)
+                return
+            raise
 
         # Add some more extradata items
         # for resultsdb purposes we don't want VERSION or TEST in the scenario
