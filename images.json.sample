@@ -192,6 +192,14 @@
     },
     {
         "match": {
+            "subvariant": "Workstation",
+            "type": "live",
+            "format": "iso",
+            "arch": "ppc64le"
+        }
+    },
+    {
+        "match": {
             "subvariant": "Server",
             "type": "boot",
             "format": "iso",
