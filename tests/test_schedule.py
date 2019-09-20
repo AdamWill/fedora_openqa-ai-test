@@ -37,6 +37,29 @@ import pytest
 import fedora_openqa.schedule as schedule
 
 COMPURL = 'https://kojipkgs.fedoraproject.org/compose/branched/Fedora-25-20161115.n.0/compose/'
+# trimmed Bodhi response for FEDORA-2017-b07d628952, jobs_from_update
+# uses this to determine the NVRs in the update. This is tweaked from
+# the real output to include *two* builds.
+UPDATEJSON = {
+    'update': {
+        'builds': [
+            {
+                'nvr': 'cockpit-129-1.fc25',
+                'release_id': 15,
+                'signed': True,
+                'type': 'rpm',
+                'epoch': 0
+            },
+            {
+                'nvr': 'systemd-231-7.fc25',
+                'release_id': 15,
+                'signed': True,
+                'type': 'rpm',
+                'epoch': 0
+            },
+        ]
+    }
+}
 
 @pytest.mark.usefixtures("ffmock02")
 class TestGetImages:
@@ -441,10 +464,11 @@ def test_jobs_from_compose_unsupported(fakerun):
     ret = schedule.jobs_from_compose('https://kojipkgs.fedoraproject.org/compose/updates/Fedora-Atomic-27-updates-testing-20180123.0/compose/')
     assert ret == ('', [])
 
+@mock.patch('fedfind.helpers.download_json', return_value=UPDATEJSON)
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[24, 25])
 @mock.patch('fedfind.helpers.get_current_release', return_value=25)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
+def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     """Tests for jobs_from_update."""
     # the OpenQA_Client instance mock
     fakeinst = fakeclient.return_value
@@ -473,6 +497,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
@@ -485,6 +510,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
@@ -497,6 +523,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
@@ -509,6 +536,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
@@ -522,6 +550,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
@@ -534,6 +563,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
+            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',

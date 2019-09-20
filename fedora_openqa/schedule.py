@@ -421,9 +421,20 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     # do 'substitute for this var or this other var depending which exists'
     if update.isdigit():
         advkey = 'KOJITASK'
+        baseparams = {}
     else:
         advkey = 'ADVISORY'
-    baseparams = {
+        # now we retrieve the list of NVRs in the update as of right now and
+        # include it as a variable; the test will download and test those
+        # NVRs. We do this instead of the test just using bodhi CLI to get
+        # whatever's in the update at the time the test runs so we can publish
+        # correct CI Messages:
+        # https://pagure.io/fedora-qa/fedora_openqa/issue/78
+        url = 'https://bodhi.fedoraproject.org/updates/' + update
+        builds = fedfind.helpers.download_json(url)['update']['builds']
+        nvrs = [build['nvr'] for build in builds]
+        baseparams = {'ADVISORY_NVRS': ' '.join(nvrs)}
+    baseparams.update({
         'DISTRI': 'fedora',
         'VERSION': version,
         'ARCH': arch,
@@ -433,7 +444,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # only obsolete pending jobs for same BUILD (i.e. update)
         '_ONLY_OBSOLETE_SAME_BUILD': '1',
         'START_AFTER_TEST': '',
-    }
+    })
     # mark if release is a development release; the tests need to know
     # also check if release is the oldest current stable, in which
     # case we don't need to run upgrade tests
