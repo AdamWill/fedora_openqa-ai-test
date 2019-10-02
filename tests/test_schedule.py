@@ -574,12 +574,25 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     for checkdict in checkdicts:
         assert checkdict in parmdicts
 
-    # test DEVELOPMENT var set when release is higher than current
-    fakeinst.openqa_request.reset_mock()
+    # test we do *not* schedule jobs for release that looks like the
+    # Rawhide release. Note: fakecurrr returns 25 as the 'branched
+    # release' so code thinks 'rawhide release' is 26
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
+    assert ret == []
+
+    # test DEVELOPMENT var set when release is higher than current
+    # stables
+    fakeinst.openqa_request.reset_mock()
+    # we have to bump this here or else we'll hit the 'bail if update
+    # is for rawhide' check (the mock returns the same value whether
+    # branched is True or False...)
+    fakecurrr.return_value = 26
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
+    fakecurrr.return_value = 25
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     parmdicts = [call[0][2] for call in posts]
+    assert parmdicts
     assert all(parmdict.get('DEVELOPMENT') == 1 for parmdict in parmdicts)
 
     # check we don't crash or fail to schedule if get_current_release
