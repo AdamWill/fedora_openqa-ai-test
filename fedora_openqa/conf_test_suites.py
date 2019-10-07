@@ -214,6 +214,11 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
+    "QA:Testcase_Kickstart_File_Path_Ks_Cfg": {
+        "section": "Kickstart",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_Kickstart_Hd_Device_Path_Ks_Cfg": {
         "section": "Kickstart",
         "env": "Result",
@@ -909,6 +914,7 @@ TESTSUITES = {
     ],
     "install_pxeboot": [
         "QA:Testcase_Boot_Methods_Pxeboot",
+        "QA:Testcase_Kickstart_File_Path_Ks_Cfg",
     ],
     "base_selinux": [
         "QA:Testcase_base_selinux",
