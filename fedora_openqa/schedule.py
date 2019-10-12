@@ -466,6 +466,10 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     # case we don't need to run upgrade tests
     try:
         stables = fedfind.helpers.get_current_stables()
+        # FIXME awful hack: when we send out the 'final' fedora-release
+        # near release time, this breaks, need to figure out a better
+        # way to handle this
+        stables.append(31)
         curr = max(stables)
         oldest = min(stables)
         if str(version).lower() == 'rawhide' or int(version) > curr:
