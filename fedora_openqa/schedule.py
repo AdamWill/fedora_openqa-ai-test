@@ -462,13 +462,16 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         'START_AFTER_TEST': '',
     })
     # mark if release is a development release; the tests need to know
-    # also check if release is the oldest current stable, in which
-    # case we don't need to run upgrade tests
+    # also if release is the oldest current stable, in which case we
+    # don't need to run upgrade tests
     try:
         stables = fedfind.helpers.get_current_stables()
         # FIXME awful hack: when we send out the 'final' fedora-release
-        # near release time, this breaks, need to figure out a better
-        # way to handle this
+        # near release time, this breaks because we will now produce a
+        # live image with no pre-release warnings, but the release is
+        # still not 'stable' yet so far as collections is concerned. We
+        # need to figure out a better way to handle this, but for now,
+        # let's just hack the affected release to be 'stable'
         stables.append(31)
         curr = max(stables)
         oldest = min(stables)

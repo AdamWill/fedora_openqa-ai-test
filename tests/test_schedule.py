@@ -583,11 +583,17 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # test DEVELOPMENT var set when release is higher than current
     # stables
     fakeinst.openqa_request.reset_mock()
-    # we have to bump this here or else we'll hit the 'bail if update
-    # is for rawhide' check (the mock returns the same value whether
-    # branched is True or False...)
-    fakecurrr.return_value = 26
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
+
+    # We have to bump the get_current_release mock return value to
+    # be the same as the release we're "scheduling" for or else we'll
+    # hit the 'bail if update is for rawhide' check (the mock returns
+    # the same value whether branched is True or False...)
+    fakecurrr.return_value = 99
+    # we use a very high release number here to avoid the test failing
+    # when we hack a pending Branched release into the 'stables' list
+    # after fedora-release has had its -1 bump (see schedule.py).
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '99')
+    # set it back to where it should be
     fakecurrr.return_value = 25
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
