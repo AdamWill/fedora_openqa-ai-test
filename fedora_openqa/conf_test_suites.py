@@ -565,21 +565,19 @@ TESTSUITES = {
     #
     # The dict may contain a 'modules' key, whose value must be an
     # iterable. If so, the test case will only be considered 'passed'
-    # if the overall openQA job passed *and* each of the individual
-    # openQA test modules named in the iterable were present in the
-    # openQA job and passed. e.g.:
+    # if each of the individual openQA test modules named in the
+    # iterable were present in the openQA job and passed. e.g.:
     #
     # "testsuite_c": {
     #     "testcase_c": {"modules": ["module_1"],},
     # },
     #
-    # In this case, testcase_c would only be considered 'passed' if
-    # both testsuite_c passed *and* it contained a test module named
-    # module_1 and that module passed. This handles test suites like
-    # realmd_join_cockpit, which has an optional module that covers
-    # QA:Testcase_FreeIPA_web_ui ; if that module passes we want to
-    # report a pass for that test case, if the job passes but that
-    # module fails we do *not* want to report a pass.
+    # The overall job result is *disregarded* in this case: so long as
+    # all the listed modules passed, the test case is considered
+    # passed. This handles test suites like realmd_join_cockpit, which
+    # has an optional module that covers QA:Testcase_FreeIPA_web_ui ;
+    # if that module passes we want to report a pass for that test
+    # case, if that module fails we do *not* want to report a pass.
     "mediakit_repoclosure": [
         "QA:Testcase_Mediakit_Repoclosure",
     ],
@@ -997,7 +995,7 @@ TESTSUITES = {
     ],
     # _server is the key test here: it will only pass if client
     # passes, and the wiki test is not passed unless both pass, so
-    # need to list anything for _client on its own
+    # no need to list anything for _client on its own
     "server_remote_logging_client": [],
     "realmd_join_cockpit": {
         "QA:Testcase_realmd_join_cockpit": {},

@@ -98,7 +98,7 @@ class TestGetPassedTcNames:
     def test_list(self, jobdict01):
         """Test the simple list case of _get_passed_tcnames function."""
         # test is server_realmd_join_kickstart
-        ret = fosreport._get_passed_tcnames(jobdict01, 'somecompose')
+        ret = fosreport._get_passed_tcnames(jobdict01, 'passed', 'somecompose')
         assert sorted(ret) == [
             "QA:Testcase_FreeIPA_realmd_login",
             "QA:Testcase_domain_client_authenticate",
@@ -120,7 +120,7 @@ class TestGetPassedTcNames:
                 }
             ]
         }
-        ret = fosreport._get_passed_tcnames(jobdict01, 'somecompose', fakeclient)
+        ret = fosreport._get_passed_tcnames(jobdict01, 'passed', 'somecompose', fakeclient)
         assert sorted(ret) == [
             "QA:Testcase_desktop_error_checks",
             "QA:Testcase_desktop_update_notification",
@@ -135,7 +135,7 @@ class TestGetPassedTcNames:
                 }
             ]
         }
-        ret = fosreport._get_passed_tcnames(jobdict01, 'somecompose', fakeclient)
+        ret = fosreport._get_passed_tcnames(jobdict01, 'passed', 'somecompose', fakeclient)
         assert ret == []
 
         # now try again with the dependent test missing
@@ -147,12 +147,16 @@ class TestGetPassedTcNames:
                 }
             ]
         }
-        ret = fosreport._get_passed_tcnames(jobdict01, 'somecompose', fakeclient)
+        ret = fosreport._get_passed_tcnames(jobdict01, 'passed', 'somecompose', fakeclient)
         assert ret == []
 
     def test_modules(self, jobdict01):
         """Test the dict case of _get_passed_tcnames where test modules
-        must be passed.
+        must be passed. We test behaviour both with overall job result
+        'passed' (where the passed module test case and the test cases
+        related to the overall job result should be returned) and with
+        overall job result 'failed' (where only the passed module test
+        case should be returned).
         """
         jobdict01['test'] = 'realmd_join_cockpit'
         # say one of the required modules passed, one failed
@@ -166,12 +170,19 @@ class TestGetPassedTcNames:
                 'result': 'failed',
             },
         ]
-        ret = fosreport._get_passed_tcnames(jobdict01, 'somecompose')
+        # with overall job result 'passed'...
+        ret = fosreport._get_passed_tcnames(jobdict01, 'passed', 'somecompose')
         assert sorted(ret) == [
             "QA:Testcase_FreeIPA_realmd_login",
             "QA:Testcase_FreeIPA_web_ui",
             "QA:Testcase_domain_client_authenticate",
             "QA:Testcase_realmd_join_cockpit",
+        ]
+        # now with overall job result 'failed'
+        ret = fosreport._get_passed_tcnames(jobdict01, 'failed', 'somecompose')
+        assert sorted(ret) == [
+            # only the case that has a module conditional
+            "QA:Testcase_FreeIPA_web_ui",
         ]
 
     def test_module_missing(self, jobdict01):
@@ -183,7 +194,7 @@ class TestGetPassedTcNames:
         jobdict01['modules'] = []
         # shouldn't crash or do anything weird, just not report the
         # module dependent tests as passed
-        ret = fosreport._get_passed_tcnames(jobdict01, 'somecompose')
+        ret = fosreport._get_passed_tcnames(jobdict01, 'passed', 'somecompose')
         assert sorted(ret) == [
             "QA:Testcase_FreeIPA_realmd_login",
             "QA:Testcase_domain_client_authenticate",
@@ -194,7 +205,7 @@ class TestGetPassedTcNames:
         """Check _get_passed_tcnames returns if testcase name isn't in
         TESTSUITES.
         """
-        ret = fosreport._get_passed_tcnames({'test': 'nonexistenttest'}, 'somecompose')
+        ret = fosreport._get_passed_tcnames({'test': 'nonexistenttest'}, 'passed', 'somecompose')
         assert ret == []
 
 

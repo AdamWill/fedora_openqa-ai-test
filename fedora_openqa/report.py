@@ -94,11 +94,15 @@ def _uniqueres_replacements(job, tcdict):
     return changed
 
 
-def _get_passed_tcnames(job, composeid, client=None):
+def _get_passed_tcnames(job, result, composeid, client=None):
     """Given a job dict, find the corresponding entry from TESTSUITES
     and return the test case names that are considered to have passed.
     This is splitting out a chunk of logic from the middle of
-    get_passed_testcases to make it shorter and more readable.
+    get_passed_testcases to make it shorter and more readable. result
+    is the overall result of the job: usually only pass or softfail
+    jobs will generate any passed test cases, but one special case of
+    the 'modules' condition allows even an overall-failed job to
+    generate passed test cases if a particular module passed.
     composeid is the compose ID, passed in from get_passed_testcases.
     client can be an OpenQA_Client instance (to save us instantiating
     a new one, and also so checkwiki can use a fake one); it's used
@@ -133,12 +137,15 @@ def _get_passed_tcnames(job, composeid, client=None):
         for (testcase, conds) in testsuite.items():
             if not conds:
                 # life is easy!
-                passed.append(testcase)
+                if result in ('passed', 'softfailed'):
+                    passed.append(testcase)
                 continue
 
             # otherwise, handle the conditions...
-            # modules: the test case is only 'passed' if all listed openQA job modules
-            # are present in the job and passed
+            # modules: the test case is 'passed' if all listed openQA job modules
+            # are present in the job and passed, the overall job result *is not
+            # considered*. we allow this to be combined with a 'testsuites'
+            # conditional by altering 'result' here.
             if 'modules' in conds:
                 tcpass = True
                 for modname in conds['modules']:
@@ -155,8 +162,12 @@ def _get_passed_tcnames(job, composeid, client=None):
                         tcpass = False
                         logger.warning("Did not find module %s in job data!", modname)
                         break
-                if not tcpass:
-                    # skip to next testsuite item
+                if tcpass:
+                    # overwrite overall job result with 'passed'
+                    result = 'passed'
+                else:
+                    # we cannot possibly get a pass now, so skip to next
+                    # testsuite item
                     continue
 
             # test suites: the test case is only 'passed' if there are jobs for all listed
@@ -180,10 +191,15 @@ def _get_passed_tcnames(job, composeid, client=None):
                 if any(_job['result'] not in ('passed', 'softfailed') for _job in _jobs):
                     continue
 
-            # we only get here if all the conditions are satisfied
-            passed.append(testcase)
+            # we only get here if all the conditions are satisfied,
+            # now we check result, which is either the overall job
+            # result that we were passed or 'passed' if a 'modules'
+            # condition was present and satisfied
+            if result in ('passed', 'softfailed'):
+                passed.append(testcase)
 
-    else:  # isdict - this is the simple list case.
+    # other side of 'isdict' condition - this is the simple list case.
+    elif result in ('passed', 'softfailed'):
         passed = testsuite
 
     return passed
@@ -199,37 +215,36 @@ def get_passed_testcases(jobs, client=None):
     """
     passed_testcases = set()
     for job in jobs:
-        if job['result'] in ('passed', 'softfailed'):
-            # it's wikitcms' job to take a compose ID and figure out
-            # what the validation event for it is.
-            composeid = job['settings']['BUILD']
-            if composeid.endswith('EXTRA') or composeid.endswith('NOREPORT'):
-                # this is a 'dirty' test run with extra parameters
-                # (usually a test with an updates.img) or some kind
-                # of throwaway run, we never want to report results
-                # for these
-                logger.debug("Job %d is a NOREPORT job or was run with extra params! Will not report", job['id'])
+        # it's wikitcms' job to take a compose ID and figure out
+        # what the validation event for it is.
+        composeid = job['settings']['BUILD']
+        if composeid.endswith('EXTRA') or composeid.endswith('NOREPORT'):
+            # this is a 'dirty' test run with extra parameters
+            # (usually a test with an updates.img) or some kind
+            # of throwaway run, we never want to report results
+            # for these
+            logger.debug("Job %d is a NOREPORT job or was run with extra params! Will not report", job['id'])
+            continue
+        # find the TESTSUITES entry for the job and parse it to
+        # get a list of passed test case names (TESTCASES keys)
+        passed = _get_passed_tcnames(job, job['result'], composeid, client)
+        for testcase in passed:
+            # skip with warning if testcase is not in TESTCASES
+            if testcase not in conf_test_suites.TESTCASES:
+                logger.warning("No TESTCASES entry found for %s!", testcase)
                 continue
-            # find the TESTSUITES entry for the job and parse it to
-            # get a list of passed test case names (TESTCASES keys)
-            passed = _get_passed_tcnames(job, composeid, client)
-            for testcase in passed:
-                # skip with warning if testcase is not in TESTCASES
-                if testcase not in conf_test_suites.TESTCASES:
-                    logger.warning("No TESTCASES entry found for %s!", testcase)
-                    continue
-                # Each testcase name now in the `passed` list is the name of a dict in the
-                # TESTCASES dict-of-dicts which more precisely identifies the 'test instance' (when
-                # there is more than one for a testcase) and environment for which the result
-                # should be filed.
+            # Each testcase name now in the `passed` list is the name of a dict in the
+            # TESTCASES dict-of-dicts which more precisely identifies the 'test instance' (when
+            # there is more than one for a testcase) and environment for which the result
+            # should be filed.
 
-                # create new dict based on the testcase dict with $FOO$ values replaced
-                uniqueres = _uniqueres_replacements(job, conf_test_suites.TESTCASES[testcase])
-                result = ResTuple(
-                    testtype=uniqueres['type'], testcase=testcase,
-                    section=uniqueres.get('section'), testname=uniqueres.get('name', ''),
-                    env=uniqueres.get('env', ''), status='pass', bot=True, cid=composeid)
-                passed_testcases.add(result)
+            # create new dict based on the testcase dict with $FOO$ values replaced
+            uniqueres = _uniqueres_replacements(job, conf_test_suites.TESTCASES[testcase])
+            result = ResTuple(
+                testtype=uniqueres['type'], testcase=testcase,
+                section=uniqueres.get('section'), testname=uniqueres.get('name', ''),
+                env=uniqueres.get('env', ''), status='pass', bot=True, cid=composeid)
+            passed_testcases.add(result)
 
     return sorted(list(passed_testcases), key=attrgetter('testcase'))
 
