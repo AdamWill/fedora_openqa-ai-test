@@ -462,6 +462,11 @@ TESTCASES = {
         "type": "Desktop",
         "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
     },
+    "QA:Testcase_workstation_core_applications": {
+        "env": "$SUBVARIANT$",
+        "type": "Desktop",
+        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+    },
     "QA:Testcase_Server_firewall_default": {
         "env": "$RUNARCH$",
         "type": "Server",
@@ -972,6 +977,14 @@ TESTSUITES = {
             "testsuites": ["desktop_notifications_live"],
         },
     },
+    # this test is also a partial check for QA:Testcase_desktop_menus
+    # but we cannot really mark that as passed if this passes as it
+    # does not test *everything* required there
+    "apps_startstop": {
+        "QA:Testcase_workstation_core_applications": {
+            "modules": ["workstation_core_applications"],
+        },
+    },
     "server_firewall_default": [
         "QA:Testcase_Server_firewall_default",
     ],
@@ -1053,7 +1066,6 @@ TESTSUITES = {
     # this test is a partial check for QA:Testcase_desktop_menus but
     # we cannot really mark that as passed if this passes as it does
     # not test *everything* required there
-    "apps_startstop": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
