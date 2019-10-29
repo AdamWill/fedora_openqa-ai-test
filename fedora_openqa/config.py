@@ -196,6 +196,7 @@ UPDATEWL = {
     'ding-libs': ('server', 'server-upgrade'),
     'freeipa': ('server', 'server-upgrade'),
     'httpd': ('server', 'server-upgrade'),
+    'jss': ('server', 'server-upgrade'),
     'krb5-server': ('server', 'server-upgrade'),
     'pki-core': ('server', 'server-upgrade'),
     'sssd': ('server', 'server-upgrade'),
