@@ -483,6 +483,13 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                 logger.warning("resultsdb_report: cannot report for "
                                "%s, not a valid compose ID", build)
                 return
+            # We didn't find *any* images in the compose, which is
+            # odd, but can happen if we try to report a very old
+            # result for a compose which has been garbage-collected
+            if "Can't find image" in str(err):
+                logger.error("fedfind could not find image %s in compose %s",
+                             imagename, build)
+                return
             raise
 
         # Add some more extradata items
