@@ -79,6 +79,11 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
+    "QA:Testcase_Anaconda_User_Interface_VNC": {
+        "section": "User interface",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_Anaconda_user_creation": {
         "section": "Miscellaneous",
         "env": "x86_64",
@@ -943,6 +948,13 @@ TESTSUITES = {
     "install_kickstart_firewall_configured": [
         "QA:Testcase_kickstart_firewall_configured",
     ],
+    "install_vnc_server": [
+        "QA:Testcase_Anaconda_User_Interface_VNC",
+    ],
+    # _server is the key test here: it will only pass if client
+    # passes, and the wiki test is not passed unless both pass, so
+    # no need to list anything for _client on its own
+    "install_vnc_client": [],
     "server_role_deploy_domain_controller": [
         "QA:Testcase_freeipa_trust_server_installation",
         "QA:Testcase_freeipa_trust_server_uninstallation",
