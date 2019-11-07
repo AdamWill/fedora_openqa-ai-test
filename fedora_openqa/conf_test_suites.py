@@ -84,6 +84,11 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
+    "QA:Testcase_Anaconda_User_Interface_VNC_Vncconnect": {
+        "section": "User interface",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_Anaconda_user_creation": {
         "section": "Miscellaneous",
         "env": "x86_64",
@@ -955,6 +960,13 @@ TESTSUITES = {
     # passes, and the wiki test is not passed unless both pass, so
     # no need to list anything for _client on its own
     "install_vnc_client": [],
+    "install_vncconnect_server": [
+        "QA:Testcase_Anaconda_User_Interface_VNC_Vncconnect",
+    ],
+    # _server is the key test here: it will only pass if client
+    # passes, and the wiki test is not passed unless both pass, so
+    # no need to list anything for _client on its own
+    "install_vncconnect_client": [],
     "server_role_deploy_domain_controller": [
         "QA:Testcase_freeipa_trust_server_installation",
         "QA:Testcase_freeipa_trust_server_uninstallation",
