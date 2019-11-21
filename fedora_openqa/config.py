@@ -180,6 +180,14 @@ WANTED = [
             "arch": "x86_64",
         },
     },
+    {
+        "match": {
+            "subvariant": "Cloud_Base",
+            "type": "qcow2",
+            "format": "qcow2",
+            "arch": "x86_64",
+        },
+    },
 ]
 
 # Whitelist of non-critpath package names to run update tests on.

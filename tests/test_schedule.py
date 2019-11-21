@@ -207,6 +207,17 @@ class TestGetImages:
                 },
                 "Minimal",
                 "raw-xz"
+            ),
+            (
+                "Cloud_Base-qcow2-qcow2",
+                "x86_64",
+                0,
+                {
+                    # pylint: disable=line-too-long
+                    "HDD_1_URL": COMPURL + "CloudImages/x86_64/images/Fedora-Cloud-Base-25-20161115.n.0.x86_64.qcow2",
+                },
+                "Cloud_Base",
+                "qcow2"
             )
         ]
 
@@ -383,12 +394,12 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # simple case
     ret = schedule.jobs_from_compose(COMPURL)
 
-    # 13 images, 2 universal arches
-    assert fakerun.call_count == 15
+    # 14 images, 2 universal arches
+    assert fakerun.call_count == 16
 
     # the list of job ids should be 15 1s, as each fakerun call
     # returns [1]
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(15)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(16)])
 
     for argtup in fakerun.call_args_list:
         # check rel identification bits got passed properly
@@ -444,7 +455,7 @@ def test_jobs_from_compose(fakerun, ffmock02):
 def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     """Check that we tag candidate composes as 'important'."""
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(15)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(16)])
     # find the args that openqa_request was last called with
     reqargs = fakeclient.return_value.openqa_request.call_args
     assert reqargs[0] == ('POST', 'groups/1/comments')

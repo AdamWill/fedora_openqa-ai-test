@@ -30,14 +30,16 @@ TESTCASES = {
     #
     #   special value       replacement
     #
-    #   $RUNARCH$           - "i386", "x86_64", "arm"
-    #   $BOOTMETHOD$        - "x86_64 BIOS", "x86_64 UEFI"
-    #   $FIRMWARE$          - "BIOS", "UEFI"
-    #   $SUBVARIANT$        - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
-    #   $SUBVARIANT_OR_ARM$ - productmd 'subvariant' as above, or "ARM" when running on ARM architecture
-    #   $IMAGETYPE$         - pungi 'type': "boot", "live"... "boot" -> "netinst"
-    #   $FS$                - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
-    #   $DESKTOP$           - desktop: just the DESKTOP openQA setting
+    #   $RUNARCH$             - "i386", "x86_64", "arm"
+    #   $BOOTMETHOD$          - "x86_64 BIOS", "x86_64 UEFI"
+    #   $FIRMWARE$            - "BIOS", "UEFI"
+    #   $SUBVARIANT$          - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
+    #   $SUBVARIANT_OR_ARM$   - productmd 'subvariant' as above, or "ARM" when running on ARM architecture
+    #   $SUBVARIANT_OR_LOCAL$ - productmd 'subvariant' as above, or "Local" when subvariant contains "Cloud"
+    #   $CLOUD_OR_BASE$ -     - 'Cloud' when subvariant contains 'Cloud', 'Base' otherwise
+    #   $IMAGETYPE$           - pungi 'type': "boot", "live"... "boot" -> "netinst"
+    #   $FS$                  - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
+    #   $DESKTOP$             - desktop: just the DESKTOP openQA setting
 
     "QA:Testcase_Mediakit_Repoclosure": {
         "env": "$SUBVARIANT$",
@@ -366,28 +368,28 @@ TESTCASES = {
     },
     "QA:Testcase_base_startup": {
         "section": "$RUNARCH$",
-        "env": "$SUBVARIANT$",
-        "type": "Base",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
     },
     "QA:Testcase_base_selinux": {
         "section": "$RUNARCH$",
-        "env": "$SUBVARIANT$",
-        "type": "Base",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
     },
     "QA:Testcase_base_system_logging": {
         "section": "$RUNARCH$",
-        "env": "$SUBVARIANT$",
-        "type": "Base",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
     },
     "QA:Testcase_base_services_start": {
         "section": "$RUNARCH$",
-        "env": "$SUBVARIANT$",
-        "type": "Base",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
     },
     "QA:Testcase_base_service_manipulation": {
         "section": "$RUNARCH$",
-        "env": "$SUBVARIANT$",
-        "type": "Base",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
     },
     "QA:Testcase_base_update_cli": {
         "section": "$RUNARCH$",
@@ -1090,6 +1092,13 @@ TESTSUITES = {
         "QA:Testcase_Modularity_enable-disable_module",
         "QA:Testcase_Modularity_install_module",
         "QA:Testcase_Modularity_update_without_repos",
+    ],
+    "cloud_autocloud": [
+        "QA:Testcase_base_startup",
+        "QA:Testcase_base_system_logging",
+        "QA:Testcase_base_services_start",
+        "QA:Testcase_base_selinux",
+        "QA:Testcase_base_service_manipulation",
     ],
     # this is a support test for other tests
     "support_server": [],
