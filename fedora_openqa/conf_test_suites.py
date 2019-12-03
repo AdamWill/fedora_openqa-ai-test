@@ -231,6 +231,36 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
+    "QA:Testcase_partitioning_blivet_software_RAID": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_blivet_btrfs": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_blivet_lvmthin": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_blivet_standard_partition_ext3": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_blivet_standard_partition_xfs": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_blivet_no_swap": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
     "QA:Testcase_Kickstart_File_Path_Ks_Cfg": {
         "section": "Kickstart",
         "env": "Result",
@@ -758,6 +788,13 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
+    "install_blivet_software_raid": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_software_RAID",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
     "install_kickstart_hdd": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_Anaconda_user_creation",
@@ -853,6 +890,34 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
+    "install_blivet_btrfs": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_btrfs",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_blivet_lvmthin": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_lvmthin",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_blivet_ext3": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_standard_partition_ext3",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_blivet_no_swap": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_no_swap",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
     "install_shrink_ext4": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_shrink",
@@ -906,6 +971,13 @@ TESTSUITES = {
     "install_xfs": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_standard_partition_xfs",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_blivet_xfs": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_standard_partition_xfs",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
