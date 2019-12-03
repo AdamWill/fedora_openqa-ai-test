@@ -94,41 +94,11 @@ class TestGetImages:
                 "dvd"
             ),
             (
-                "Server-boot-iso",
-                "i386",
-                6,
-                {
-                    "ISO_URL": COMPURL + "Server/i386/iso/Fedora-Server-netinst-i386-25-20161115.n.0.iso"
-                },
-                "Server",
-                "boot"
-            ),
-            (
-                "Server-dvd-iso",
-                "i386",
-                10,
-                {
-                    "ISO_URL": COMPURL + "Server/i386/iso/Fedora-Server-dvd-i386-25-20161115.n.0.iso"
-                },
-                "Server",
-                "dvd"
-            ),
-            (
                 "Everything-boot-iso",
                 "x86_64",
                 8,
                 {
                     "ISO_URL": COMPURL + "Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-25-20161115.n.0.iso"
-                },
-                "Everything",
-                "boot"
-            ),
-            (
-                "Everything-boot-iso",
-                "i386",
-                8,
-                {
-                    "ISO_URL": COMPURL + "Everything/i386/iso/Fedora-Everything-netinst-i386-25-20161115.n.0.iso"
                 },
                 "Everything",
                 "boot"
@@ -144,51 +114,11 @@ class TestGetImages:
                 "live"
             ),
             (
-                "Workstation-boot-iso",
-                "x86_64",
-                0,
-                {
-                    "ISO_URL": COMPURL + "Workstation/x86_64/iso/Fedora-Workstation-netinst-x86_64-25-20161115.n.0.iso"
-                },
-                "Workstation",
-                "boot"
-            ),
-            (
-                "Workstation-live-iso",
-                "i386",
-                0,
-                {
-                    "ISO_URL": COMPURL + "Workstation/i386/iso/Fedora-Workstation-Live-i386-25-20161115.n.0.iso"
-                },
-                "Workstation",
-                "live"
-            ),
-            (
-                "Workstation-boot-iso",
-                "i386",
-                0,
-                {
-                    "ISO_URL": COMPURL + "Workstation/i386/iso/Fedora-Workstation-netinst-i386-25-20161115.n.0.iso"
-                },
-                "Workstation",
-                "boot"
-            ),
-            (
                 "KDE-live-iso",
                 "x86_64",
                 0,
                 {
                     "ISO_URL": COMPURL + "Spins/x86_64/iso/Fedora-KDE-Live-x86_64-25-20161115.n.0.iso"
-                },
-                "KDE",
-                "live"
-            ),
-            (
-                "KDE-live-iso",
-                "i386",
-                0,
-                {
-                    "ISO_URL": COMPURL + "Spins/i386/iso/Fedora-KDE-Live-i386-25-20161115.n.0.iso"
                 },
                 "KDE",
                 "live"
@@ -394,12 +324,12 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # simple case
     ret = schedule.jobs_from_compose(COMPURL)
 
-    # 14 images, 2 universal arches
-    assert fakerun.call_count == 16
+    # 7 images, 1 universal arch
+    assert fakerun.call_count == 8
 
     # the list of job ids should be 15 1s, as each fakerun call
     # returns [1]
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(16)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
 
     for argtup in fakerun.call_args_list:
         # check rel identification bits got passed properly
@@ -408,7 +338,6 @@ def test_jobs_from_compose(fakerun, ffmock02):
     univs = [argtup[0][0]['ISO_URL'] for argtup in fakerun.call_args_list if argtup[0][1] == 'universal']
     assert univs == [
         COMPURL + 'Server/x86_64/iso/Fedora-Server-dvd-x86_64-25-20161115.n.0.iso',
-        COMPURL + 'Server/i386/iso/Fedora-Server-dvd-i386-25-20161115.n.0.iso'
     ]
 
     # check force, extraparams and openqa_hostname are passed through
@@ -423,15 +352,18 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # check arches is handled properly
     fakerun.reset_mock()
     ret = schedule.jobs_from_compose(COMPURL, arches=['i386', 'armhfp'])
-    # 7 images (6 i386, 1 armhfp), 1 universal arch (i386)
-    assert fakerun.call_count == 8
+    # FIXME: we used to test this with i386 and it was a good test,
+    # now i386 is gone we need to tweak this to be better, for now
+    # just check we got one job for one ARM image
+    assert fakerun.call_count == 1
 
     # check flavors is handled properly
     fakerun.reset_mock()
     ret = schedule.jobs_from_compose(COMPURL, flavors=['server-boot-iso', 'workstation-live-iso', 'foobar'])
-    # two of those flavors we have images for (2 images each), one we don't;
-    # universal SHOULD NOT be scheduled
-    assert fakerun.call_count == 4
+    # two of those flavors we have images for (1 image each), one we don't;
+    # universal SHOULD NOT be scheduled. FIXME we need another arch
+    # here too...
+    assert fakerun.call_count == 2
 
     # check flavors *and* arches is handled properly
     fakerun.reset_mock()
@@ -455,7 +387,7 @@ def test_jobs_from_compose(fakerun, ffmock02):
 def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     """Check that we tag candidate composes as 'important'."""
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(16)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
     # find the args that openqa_request was last called with
     reqargs = fakeclient.return_value.openqa_request.call_args
     assert reqargs[0] == ('POST', 'groups/1/comments')
