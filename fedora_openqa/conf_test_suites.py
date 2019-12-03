@@ -827,10 +827,6 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_current_kde",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
-    "upgrade_desktop_32bit": [
-        "QA:Testcase_upgrade_dnf_current_workstation",
-        "QA:Testcase_upgrade_dnf_current_any",
-    ],
     "upgrade_2_minimal_64bit": [
         "QA:Testcase_upgrade_dnf_previous_minimal",
         "QA:Testcase_upgrade_dnf_previous_any",
@@ -849,10 +845,6 @@ TESTSUITES = {
     ],
     "upgrade_2_kde_64bit": [
         "QA:Testcase_upgrade_dnf_previous_kde",
-        "QA:Testcase_upgrade_dnf_previous_any",
-    ],
-    "upgrade_2_desktop_32bit": [
-        "QA:Testcase_upgrade_dnf_previous_workstation",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
     "install_btrfs": [
