@@ -484,6 +484,16 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Server",
     },
+    "QA:Testcase_upgrade_dnf_current_server_domain_controller": {
+        "section": "Upgrade tests",
+        "env": "$RUNARCH$",
+        "type": "Server",
+    },
+    "QA:Testcase_upgrade_dnf_previous_server_domain_controller": {
+        "section": "Upgrade tests",
+        "env": "$RUNARCH$",
+        "type": "Server",
+    },
     "QA:Testcase_desktop_terminal": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
@@ -855,6 +865,14 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_previous_kde",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
+    "upgrade_server_domain_controller": [
+        "QA:Testcase_upgrade_dnf_current_server_domain_controller",
+    ],
+    "upgrade_realmd_client": [],
+    "upgrade_2_server_domain_controller": [
+        "QA:Testcase_upgrade_dnf_previous_server_domain_controller",
+    ],
+    "upgrade_2_realmd_client": [],
     "install_btrfs": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_btrfs",
