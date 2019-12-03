@@ -118,23 +118,7 @@ WANTED = [
     {
         "match": {
             "subvariant": "Workstation",
-            "type": "boot",
-            "format": "iso",
-            "arch": "x86_64",
-        },
-    },
-    {
-        "match": {
-            "subvariant": "Workstation",
             "type": "live",
-            "format": "iso",
-            "arch": "i386",
-        },
-    },
-    {
-        "match": {
-            "subvariant": "Workstation",
-            "type": "boot",
             "format": "iso",
             "arch": "i386",
         },
