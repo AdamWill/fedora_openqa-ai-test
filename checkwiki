@@ -104,10 +104,8 @@ def fake_jobs(templates, modules):
     """
     fakejobs = []
     for jobtemp in templates['JobTemplates']:
-        # we only run i686, x86_64 and arm in prod ATM, and we only care
+        # we only run x86_64 and arm in prod ATM, and we only care
         # about result reporting for prod, so ignore other arches for now
-        # also ignore ix86 because it's retired as on F31 and not in the
-        # matrices any more
         if jobtemp['product']['arch'] not in ('x86_64', 'arm'):
             continue
         # ignore templates whose version is not "*" - these are only for
@@ -140,7 +138,7 @@ def fake_jobs(templates, modules):
             # are used for individual module->result mapping; this is
             # harmless for the cases where it's a lie, as get_passed_testcases
             # will entirely ignore it except for the TESTSUITES that specify
-            # the modules
+            # the modules.
             'modules': [{'name': module, 'result': 'passed'} for module in modules]
         }
         # find the desktop by finding the relevant Product and getting it
@@ -149,6 +147,14 @@ def fake_jobs(templates, modules):
                         prod['flavor'] == jobtemp['product']['flavor']][0]['settings']:
             if setting['key'] == 'DESKTOP':
                 job['settings']['DESKTOP'] = setting['value']
+        # Special exception: we must not include the
+        # workstation_core_applications module in the KDE apps_startstop
+        # test as this will cause a spurious 'No ResultRow found' - in
+        # reality that module is not scheduled for the KDE test
+        if jobtemp['test_suite']['name'] == 'apps_startstop':
+            if job['settings']['DESKTOP'] == 'kde':
+                job['modules'] = [item for item in job['modules']
+                                  if item['name'] != 'workstation_core_applications']
         fakejobs.append(job)
     return fakejobs
 
