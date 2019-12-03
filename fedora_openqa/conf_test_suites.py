@@ -1100,6 +1100,10 @@ TESTSUITES = {
     "server_cockpit_basic": [
         "QA:Testcase_Server_cockpit_basic",
     ],
+    # there isn't a wiki test case or release criterion that matches
+    # this test
+    "server_cockpit_updates": [
+    ],
     "server_filesystem_default": [
         "QA:Testcase_Server_filesystem_default",
     ],
