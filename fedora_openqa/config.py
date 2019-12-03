@@ -73,37 +73,10 @@ WANTED = [
     },
     {
         "match": {
-            "subvariant": "Server",
-            "type": "boot",
-            "format": "iso",
-            "arch": "i386",
-        },
-        "score": 6,
-    },
-    {
-        "match": {
-            "subvariant": "Server",
-            "type": "dvd",
-            "format": "iso",
-            "arch": "i386",
-        },
-        "score": 10,
-    },
-    {
-        "match": {
             "subvariant": "Everything",
             "type": "boot",
             "format": "iso",
             "arch": "x86_64",
-        },
-        "score": 8,
-    },
-    {
-        "match": {
-            "subvariant": "Everything",
-            "type": "boot",
-            "format": "iso",
-            "arch": "i386",
         },
         "score": 8,
     },
@@ -117,26 +90,10 @@ WANTED = [
     },
     {
         "match": {
-            "subvariant": "Workstation",
-            "type": "live",
-            "format": "iso",
-            "arch": "i386",
-        },
-    },
-    {
-        "match": {
             "subvariant": "KDE",
             "type": "live",
             "format": "iso",
             "arch": "x86_64",
-        },
-    },
-    {
-        "match": {
-            "subvariant": "KDE",
-            "type": "live",
-            "format": "iso",
-            "arch": "i386",
         },
     },
     {
