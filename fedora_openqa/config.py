@@ -150,14 +150,6 @@ WANTED = [
     },
     {
         "match": {
-            "subvariant": "AtomicHost",
-            "type": "dvd-ostree",
-            "format": "iso",
-            "arch": "x86_64",
-        },
-    },
-    {
-        "match": {
             "subvariant": "Silverblue",
             "type": "dvd-ostree",
             "format": "iso",
