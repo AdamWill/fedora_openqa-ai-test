@@ -811,6 +811,10 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_current_minimal",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
+    "upgrade_minimal_uefi": [
+        "QA:Testcase_upgrade_dnf_current_minimal",
+        "QA:Testcase_upgrade_dnf_current_any",
+    ],
     "upgrade_desktop_64bit": [
         "QA:Testcase_upgrade_dnf_current_workstation",
         "QA:Testcase_upgrade_dnf_current_any",
@@ -828,6 +832,10 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_current_any",
     ],
     "upgrade_2_minimal_64bit": [
+        "QA:Testcase_upgrade_dnf_previous_minimal",
+        "QA:Testcase_upgrade_dnf_previous_any",
+    ],
+    "upgrade_2_minimal_uefi": [
         "QA:Testcase_upgrade_dnf_previous_minimal",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
