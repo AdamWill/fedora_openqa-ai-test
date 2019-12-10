@@ -413,6 +413,10 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # release before the release the upgrade is for
             'CURRREL': str(int(version)-1),
         },
+        'kde': {
+            'HDD_1': 'disk_f{0}_kde_4_{1}.img'.format(version, arch),
+            'DESKTOP': 'kde',
+        },
         'workstation': {
             'HDD_1': 'disk_f{0}_desktop_4_{1}.img'.format(version, arch),
             'DESKTOP': 'gnome',
