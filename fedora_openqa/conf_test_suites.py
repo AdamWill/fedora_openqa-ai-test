@@ -529,6 +529,12 @@ TESTCASES = {
         "type": "Desktop",
         "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
     },
+    "QA:Testcase_Printing_New_Printer": {
+        "env": "$SUBVARIANT$",
+        "type": "Desktop",
+        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "name": "virtual printer",
+    },
     "QA:Testcase_Server_firewall_default": {
         "env": "$RUNARCH$",
         "type": "Server",
@@ -1109,6 +1115,9 @@ TESTSUITES = {
             "testsuites": ["desktop_notifications_live"],
         },
     },
+    "desktop_printing": [
+        "QA:Testcase_Printing_New_Printer",
+    ],
     # this does not fully satisfy QA:Testcase_base_artwork_release_identification
     # (not even together with release_identification), it only *partly*
     # covers it, so we cannot report any results from it
