@@ -314,7 +314,7 @@ class TestWikiReport:
         (mockclass, mockinst) = wikimock
         fosreport.wiki_report(jobs=[1])
         # check we respected config default hostname
-        assert mockclass.call_args[0][0][1] == CONFIG.get('report', 'wiki_hostname')
+        assert mockclass.call_args[0][0] == CONFIG.get('report', 'wiki_hostname')
         # check our fake get_passed_testcases result was passed to
         # report_validation_results
         assert mockinst.report_validation_results.call_args[0][0] == ['atest']
@@ -323,7 +323,7 @@ class TestWikiReport:
         """Check wiki hostname is passed through."""
         (mockclass, mockinst) = wikimock
         fosreport.wiki_report(wiki_hostname='foo.bar', jobs=[1])
-        assert mockclass.call_args[0][0][1] == 'foo.bar'
+        assert mockclass.call_args[0][0] == 'foo.bar'
         # check results still happened
         assert mockinst.report_validation_results.call_args[0][0] == ['atest']
 
