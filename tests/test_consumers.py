@@ -200,6 +200,7 @@ PRODCONF = {
         'openqa_baseurl':'https://openqa.fedoraproject.org',
         'wiki_hostname':'fedoraproject.org',
         'resultsdb_url':'http://resultsdb01.qa.fedoraproject.org/resultsdb_api/api/v2.0/',
+        'update_arches':["x86_64"]
     }
 }
 STGCONF = {
@@ -209,6 +210,7 @@ STGCONF = {
         'openqa_baseurl':'https://openqa.stg.fedoraproject.org',
         'wiki_hostname':'stg.fedoraproject.org',
         'resultsdb_url':'http://resultsdb-stg01.qa.fedoraproject.org/resultsdb_api/api/v2.0/',
+        'update_arches':["x86_64", "ppc64le"]
     }
 }
 TESTCONF = {
@@ -218,6 +220,7 @@ TESTCONF = {
         'openqa_baseurl':'https://localhost',
         'wiki_hostname':'stg.fedoraproject.org',
         'resultsdb_url':'http://localhost:5001/api/v2.0/',
+        'update_arches':["x86_64", "ppc64le"]
     }
 }
 
@@ -297,7 +300,13 @@ class TestConsumers:
         if flavors is False:
             assert fake_schedule.call_count + fake_update.call_count == 0
         else:
-            assert fake_schedule.call_count + fake_update.call_count == 1
+            archcount = len(consumer.update_arches)
+            compcalls = fake_schedule.call_count
+            updcalls = fake_update.call_count
+            # for a compose test on any consumer, the method should be
+            # hit once. for an update test, the method should be hit
+            # as many times as the consumer has arches configured
+            assert (compcalls == 1 and updcalls == 0) or (compcalls == 0 and updcalls == archcount)
             if fake_schedule.call_count == 1:
                 assert fake_schedule.call_args[1]['openqa_hostname'] == oqah
             else:

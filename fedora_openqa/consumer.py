@@ -56,6 +56,7 @@ class OpenQAScheduler(object):
 
     def __init__(self):
         self.openqa_hostname = fedora_messaging.config.conf["consumer_config"]["openqa_hostname"]
+        self.update_arches = fedora_messaging.config.conf["consumer_config"]["update_arches"]
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def __call__(self, message):
@@ -147,9 +148,12 @@ class OpenQAScheduler(object):
         # Finally, now we've decided on flavors, run the jobs. flavors
         # being None here results in our desired behaviour (jobs will
         # be created for *all* flavors)
+        jobs = []
         # pylint: disable=no-member
-        jobs = schedule.jobs_from_update(
-            advisory, version, flavors=flavors, openqa_hostname=self.openqa_hostname, force=True)
+        for arch in self.update_arches:
+            jobs.extend(schedule.jobs_from_update(
+                advisory, version, flavors=flavors,
+                openqa_hostname=self.openqa_hostname, force=True, arch=arch))
         if jobs:
             self.logger.info("openQA jobs run on update %s: "
                       "%s", advisory, ' '.join(str(job) for job in jobs))

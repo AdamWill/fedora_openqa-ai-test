@@ -51,7 +51,10 @@ routing_keys = ["org.fedoraproject.prod.pungi.compose.status.change",
                 "org.fedoraproject.prod.bodhi.update.edit"]
 
 [consumer_config]
+# host to schedule tests on
 openqa_hostname = "openqa.fedoraproject.org"
+# arches to schedule update tests for
+update_arches = ["x86_64"]
 
 [qos]
 prefetch_size = 0
