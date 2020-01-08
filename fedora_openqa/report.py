@@ -288,7 +288,7 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
 
     if do_report:
         logger.info("reporting test passes to %s", wiki_hostname)
-        wiki = Wiki(('https', wiki_hostname), '/w/')
+        wiki = Wiki(wiki_hostname, max_retries=40)
         if not wiki.logged_in:
             # This seems to occasionally throw bogus WrongPass errors
             try:
@@ -511,18 +511,21 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         # FIXME: use overall_url as a group ref_url
 
         # report result, retrying with a delay on failure
-        tries = 5
+        tries = 40
         err = None
         while tries:
             try:
                 rdb_object.report(rdb_instance)
                 return
-            except ResultsDBapiException as err:
+            except Exception as err:
                 logger.warning("ResultsDB report failed! Retrying...")
-                logger.warning("Response: %s", err.response)
-                logger.warning("Message: %s", err.message)
+                try:
+                    logger.warning("Response: %s", err.response)
+                    logger.warning("Message: %s", err.message)
+                except AttributeError:
+                    logger.warning("Error: %s", str(err))
                 tries -= 1
-                time.sleep(10)
+                time.sleep(30)
         logger.error("ResultsDB reporting failed after multiple retries! Giving up.")
         raise(err)
 
