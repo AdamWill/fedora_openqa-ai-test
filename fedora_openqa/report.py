@@ -527,6 +527,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                 tries -= 1
                 time.sleep(30)
         logger.error("ResultsDB reporting failed after multiple retries! Giving up.")
-        raise(err)
+        if err:
+            raise err
 
 # vim: set textwidth=120 ts=8 et sw=4:
