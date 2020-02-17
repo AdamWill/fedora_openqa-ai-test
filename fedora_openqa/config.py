@@ -121,6 +121,14 @@ WANTED = [
             "arch": "x86_64",
         },
     },
+    {
+        "match": {
+            "subvariant": "IoT",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
 ]
 
 # Whitelist of non-critpath package names to run update tests on.

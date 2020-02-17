@@ -115,6 +115,11 @@ def fake_jobs(templates, modules):
         # be reported to wiki
         if jobtemp['version'] != "*":
             continue
+        # skip IoT for now - we won't be just adding IoT into the
+        # existing matrices, we will probably need to make it its own
+        # thing, and we haven't done that work yet
+        if jobtemp['flavor'].lower().startswith('iot'):
+            continue
         subv = jobtemp['flavor'].split('-')[0]
         try:
             imagetype = jobtemp['flavor'].split('-')[1].replace('_', '-')
