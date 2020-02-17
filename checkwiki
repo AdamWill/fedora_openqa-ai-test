@@ -26,6 +26,7 @@ import json
 import os
 import subprocess
 import sys
+import tempfile
 
 from wikitcms import wiki
 from wikitcms.exceptions import NotFoundError, TooManyError
@@ -66,19 +67,20 @@ class FakeClient(object):
 
 def read_templates(distripath):
     """Read in the openQA templates from distripath."""
-    # Locate template file, check it exists
-    tempfile = os.path.join(distripath, 'templates')
-    if not os.path.isfile(tempfile):
-        sys.exit("Could not find templates file at {0}".format(tempfile))
+    # Locate FIF template loader, check it exists
+    loader = os.path.join(distripath, 'fifloader.py')
+    if not os.path.isfile(loader):
+        sys.exit("Could not find template loader at {0}".format(loader))
+    # Locate expected templates file
+    tmppath = os.path.join(distripath, 'templates.fif.json')
 
-    # Use a perl one-liner to convert the templates to JSON. hold onto
-    # your hats, folks, this be ugly. also note this executes the
-    # template file as perl, so make sure you trust it
-    perl = "use JSON; my $data = do '{0}'; print encode_json($data);".format(tempfile)
-    cmd = ['perl', '-e', perl]
-    tempjson = subprocess.check_output(cmd, universal_newlines=True)
-    # Read the JSON and return it
-    return json.loads(tempjson)
+    # Write upstream format templates to a temp file
+    with tempfile.NamedTemporaryFile() as tempfh:
+        cmd = [loader, '-w', '--filename', tempfh.name, tmppath]
+        ret = subprocess.run(cmd)
+        ret.check_returncode()
+        # Read the JSON and return it
+        return json.load(tempfh)
 
 def get_page(testtype):
     """Get the page if we didn't yet, cache it, and return from cache."""
@@ -106,34 +108,34 @@ def fake_jobs(templates, modules):
     for jobtemp in templates['JobTemplates']:
         # we only run x86_64 and arm in prod ATM, and we only care
         # about result reporting for prod, so ignore other arches for now
-        if jobtemp['product']['arch'] not in ('x86_64', 'arm'):
+        if jobtemp['arch'] not in ('x86_64', 'arm'):
             continue
         # ignore templates whose version is not "*" - these are only for
         # old releases, so won't be release validation tests, so won't
         # be reported to wiki
-        if jobtemp['product']['version'] != "*":
+        if jobtemp['version'] != "*":
             continue
-        subv = jobtemp['product']['flavor'].split('-')[0]
+        subv = jobtemp['flavor'].split('-')[0]
         try:
-            imagetype = jobtemp['product']['flavor'].split('-')[1].replace('_', '-')
+            imagetype = jobtemp['flavor'].split('-')[1].replace('_', '-')
         except IndexError:
             # universal
             imagetype = "universal"
         job = {
             'settings': {
-                'ARCH': jobtemp['product']['arch'],
-                'FLAVOR': jobtemp['product']['flavor'],
+                'ARCH': jobtemp['arch'],
+                'FLAVOR': jobtemp['flavor'],
                 'SUBVARIANT': subv,
                 'IMAGETYPE': imagetype,
-                'TEST': jobtemp['test_suite']['name'],
-                'MACHINE': jobtemp['machine']['name'],
+                'TEST': jobtemp['test_suite_name'],
+                'MACHINE': jobtemp['machine_name'],
                 # we don't need the BUILD value; we're just going to use
                 # the current validation pages
                 'BUILD': 'FAKE',
             },
             'result': 'passed',
             # we use both settings['TEST'] and test, we probably shouldn't...
-            'test': jobtemp['test_suite']['name'],
+            'test': jobtemp['test_suite_name'],
             # we just pretend every single job had all the modules that
             # are used for individual module->result mapping; this is
             # harmless for the cases where it's a lie, as get_passed_testcases
@@ -144,14 +146,14 @@ def fake_jobs(templates, modules):
         # find the desktop by finding the relevant Product and getting it
         # from its settings
         for setting in [prod for prod in templates['Products'] if
-                        prod['flavor'] == jobtemp['product']['flavor']][0]['settings']:
+                        prod['flavor'] == jobtemp['flavor']][0]['settings']:
             if setting['key'] == 'DESKTOP':
                 job['settings']['DESKTOP'] = setting['value']
         # Special exception: we must not include the
         # workstation_core_applications module in the KDE apps_startstop
         # test as this will cause a spurious 'No ResultRow found' - in
         # reality that module is not scheduled for the KDE test
-        if jobtemp['test_suite']['name'] == 'apps_startstop':
+        if jobtemp['test_suite_name'] == 'apps_startstop':
             if job['settings']['DESKTOP'] == 'kde':
                 job['modules'] = [item for item in job['modules']
                                   if item['name'] != 'workstation_core_applications']
