@@ -6,6 +6,8 @@ build/
 dist/
 fedora_openqa.egg-info/
 .cache/
+.tox/
+coverage.xml
 .coverage
 .eggs/
 # so you can keep symlinks to checkouts if you like

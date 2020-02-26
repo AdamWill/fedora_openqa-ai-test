@@ -1,0 +1,8 @@
+fedfind>=2.5.0
+fedora-messaging
+openqa-client>=1.1
+setuptools
+six
+resultsdb_api
+resultsdb_conventions>=2.0.2
+wikitcms

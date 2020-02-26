@@ -37,30 +37,29 @@ def read(fname):
 # a /usr/local/bin/fedmsg-logger which is Python 3...we want to be
 # able to avoid this, so hack up a 'no deps'
 if "--nodeps" in sys.argv:
-    installreqs = []
+    INSTALLREQS = []
     sys.argv.remove("--nodeps")
 else:
-    installreqs = ['fedfind>=2.5.0', 'fedora-messaging', 'openqa-client>=1.1', 'setuptools',
-                   'six', 'resultsdb_api', 'resultsdb_conventions>=2.0.2', 'wikitcms']
+    INSTALLREQS = open('install.requires').read().splitlines()
 
 setup(
-    name = "fedora_openqa",
-    version = "3.0.0",
-    entry_points = {
+    name="fedora_openqa",
+    version="3.0.0",
+    entry_points={
         'console_scripts': [
             'fedora-openqa = fedora_openqa.cli:main',
         ],
     },
-    author = "Fedora QA devel team",
-    author_email = "qa-devel@lists.fedoraproject.org",
-    description = "Fedora openQA job scheduler and result forwarders",
-    license = "GPLv3+",
-    keywords = "fedora openqa test qa",
-    url = "https://pagure.io/fedora-qa/fedora_openqa",
-    packages = ["fedora_openqa"],
-    install_requires = installreqs,
-    tests_require=['pytest', 'mock'],
-    cmdclass = {'test': PyTest},
+    author="Fedora QA devel team",
+    author_email="qa-devel@lists.fedoraproject.org",
+    description="Fedora openQA job scheduler and result forwarders",
+    license="GPLv3+",
+    keywords="fedora openqa test qa",
+    url="https://pagure.io/fedora-qa/fedora_openqa",
+    packages=["fedora_openqa"],
+    install_requires=INSTALLREQS,
+    tests_require=open('tests.requires').read().splitlines(),
+    cmdclass={'test': PyTest},
     long_description=read('README.md'),
     classifiers=[
         "Development Status :: 5 - Production/Stable",
