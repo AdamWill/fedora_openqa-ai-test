@@ -80,15 +80,15 @@ If you wish to forward results to [Wikitcms](https://fedoraproject.org/wiki/Wiki
     echo "fas_username fas_password" > /etc/fedora/credentials
     chmod 0600 /etc/fedora/credentials
 
-This tool has its own configuration file which can be installed to `/etc/fedora-openqa/schedule.conf` or `~/.config/fedora-openqa/schedule.conf`. In this config file you can specify the locations of the wiki and ResultsDB instance that will be used when reporting results with `fedora-openqa report`; by default, results will be reported to the [staging wiki](https://stg.fedoraproject.org/wiki/) and to a ResultsDB instance running on localhost port 5001 (which is what you get if you follow the instructions to do a local deployment of ResultsDB for testing). A sample config file is provided as `schedule.conf.sample`, which you can copy into place and modify.
+This tool has its own configuration file which can be installed to `/etc/fedora-openqa/schedule.conf` or `~/.config/fedora-openqa/schedule.conf`. In this config file you can specify the locations of the wiki and ResultsDB instance that will be used when reporting results with `fedora-openqa report`; by default, results will be reported to the [staging wiki](https://stg.fedoraproject.org/wiki/) and to a ResultsDB instance running on localhost port 5001 (which is what you get if you follow the instructions to do a local deployment of ResultsDB for testing). A sample config file is provided as `sample-configs/schedule.conf.sample`, which you can copy into place and modify.
 
-You can configure the set of images from each compose which will be downloaded and tested. For more details on this, see the comments in `images.json.sample`.
+You can configure the set of images from each compose which will be downloaded and tested. For more details on this, see the comments in `sample-configs/images.json.sample`.
 
 To run openQA jobs whenever a compose completes, and to report results to a ResultsDB instance and/or a wiki, you can use the fedora-messaging systemd service pattern.
 
 **PLEASE NOTE** that there should never be more than one Fedora production Wiki or ResultsDB reporter enabled in the world, and both of these are run in the Fedora infrastructure, so please don't enable these on your own deployments. Reporting to your own wiki or ResultsDB instance for testing is of course fine.
 
-First, you need to install one or more consumer configuration files to `/etc/fedora-messaging`. There are sample files provided in this directory for Fedora production and staging configurations for the job scheduler, ResultsDB reporter and Wiki reporter:
+First, you need to install one or more consumer configuration files to `/etc/fedora-messaging`. There are sample files provided in `sample-configs/` for Fedora production and staging configurations for the job scheduler, ResultsDB reporter and Wiki reporter:
 
     fedora_openqa_resultsdb_reporter.stg.toml
     fedora_openqa_resultsdb_reporter.toml
