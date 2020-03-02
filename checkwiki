@@ -31,6 +31,9 @@ import tempfile
 from wikitcms import wiki
 from wikitcms.exceptions import NotFoundError, TooManyError
 
+# add src subdirectory directory to module import path
+sys.path.append(os.path.join(os.path.dirname(os.path.realpath(__file__)), 'src'))
+
 from fedora_openqa.conf_test_suites import (TESTCASES, TESTSUITES)
 import fedora_openqa.report as report
 

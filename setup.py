@@ -57,6 +57,7 @@ setup(
     keywords="fedora openqa test qa",
     url="https://pagure.io/fedora-qa/fedora_openqa",
     packages=["fedora_openqa"],
+    package_dir={"": "src"},
     install_requires=INSTALLREQS,
     tests_require=open('tests.requires').read().splitlines(),
     cmdclass={'test': PyTest},

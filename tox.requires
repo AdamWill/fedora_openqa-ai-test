@@ -1,4 +1,3 @@
 coverage
 diff-cover
 pylint
-pytest-cov
