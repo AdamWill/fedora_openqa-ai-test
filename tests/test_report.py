@@ -27,9 +27,9 @@ from __future__ import print_function
 
 # stdlib imports
 import copy
+from unittest import mock
 
 # external imports
-import mock
 import openqa_client.client
 import pytest
 import resultsdb_api

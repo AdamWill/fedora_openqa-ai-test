@@ -26,11 +26,11 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 # stdlib imports
+from unittest import mock
 
 # external imports
 import fedfind.release
 import openqa_client
-import mock
 import pytest
 
 # 'internal' imports

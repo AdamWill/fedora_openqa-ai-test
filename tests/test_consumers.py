@@ -27,10 +27,10 @@ from __future__ import print_function
 
 # stdlib imports
 import copy
+from unittest import mock
 
 # external imports
 from fedora_messaging.api import Message
-import mock
 import pytest
 
 # 'internal' imports

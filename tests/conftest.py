@@ -25,10 +25,10 @@ from __future__ import print_function
 # stdlib imports
 import json
 import os
+from unittest import mock
 
 # external imports
 import fedfind.release
-import mock
 import pytest
 
 
