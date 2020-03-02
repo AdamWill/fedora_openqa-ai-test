@@ -1,0 +1,4 @@
+exclude .gitignore
+exclude MANIFEST.in
+exclude .zuul.yaml
+recursive-exclude ci *
