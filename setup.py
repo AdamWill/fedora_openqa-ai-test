@@ -9,7 +9,7 @@ with open(path.join(HERE, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name="fedora_openqa",
-    version="3.0.0",
+    version="3.1.0",
     entry_points={
         'console_scripts': [
             'fedora-openqa = fedora_openqa.cli:main',
