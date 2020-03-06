@@ -167,6 +167,8 @@ UPDATEWL = {
     'gnome-software': ('workstation', 'workstation-live-iso'),
     'accountsservice': ('workstation', 'workstation-upgrade', 'workstation-live-iso'),
     'gnome-initial-setup': ('workstation-live-iso',),
+    # Since we have background tests, makes sense to do these
+    'desktop-backgrounds': ('kde', 'workstation'),
 }
 
 for path in ('/etc/fedora-openqa',
