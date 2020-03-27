@@ -406,6 +406,11 @@ TESTCASES = {
         "env": "$SUBVARIANT_OR_LOCAL$",
         "type": "$CLOUD_OR_BASE$",
     },
+    "QA:Testcase_base_reboot_unmount": {
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
+    },
     "QA:Testcase_base_system_logging": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT_OR_LOCAL$",
@@ -1051,6 +1056,9 @@ TESTSUITES = {
     ],
     "base_update_cli": [
         "QA:Testcase_base_update_cli",
+    ],
+    "base_reboot_unmount": [
+        "QA:Testcase_base_reboot_unmount",
     ],
     "base_system_logging": [
         "QA:Testcase_base_system_logging",
