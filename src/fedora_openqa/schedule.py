@@ -479,7 +479,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # still not 'stable' yet so far as collections is concerned. We
         # need to figure out a better way to handle this, but for now,
         # let's just hack the affected release to be 'stable'
-        stables.append(31)
+        stables.append(32)
         curr = max(stables)
         oldest = min(stables)
         if str(version).lower() == 'rawhide' or int(version) > curr:
