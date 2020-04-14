@@ -98,15 +98,6 @@ WANTED = [
     },
     {
         "match": {
-            "subvariant": "Minimal",
-            "type": "raw-xz",
-            "format": "raw.xz",
-            "arch": "armhfp",
-        },
-        "dkboot": True,
-    },
-    {
-        "match": {
             "subvariant": "Silverblue",
             "type": "dvd-ostree",
             "format": "iso",
