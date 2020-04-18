@@ -514,6 +514,11 @@ TESTCASES = {
         "type": "Desktop",
         "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
     },
+    "QA:Testcase_desktop_login": {
+        "env": "$SUBVARIANT$",
+        "type": "Desktop",
+        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+    },
     "QA:Testcase_desktop_update_graphical": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
@@ -1103,6 +1108,9 @@ TESTSUITES = {
     ],
     "desktop_browser": [
         "QA:Testcase_desktop_browser",
+    ],
+    "desktop_login": [
+        "QA:Testcase_desktop_login",
     ],
     "desktop_update_graphical": [
         "QA:Testcase_desktop_update_graphical",
