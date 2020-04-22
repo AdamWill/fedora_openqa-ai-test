@@ -124,21 +124,6 @@ class TestGetImages:
                 "live"
             ),
             (
-                "Minimal-raw_xz-raw.xz",
-                "armhfp",
-                0,
-                {
-                    "KERNEL": "Fedora-25-20161115.n.0.armhfp.vmlinuz",
-                    "INITRD": "Fedora-25-20161115.n.0.armhfp.initrd.img",
-                    "INITRD_URL": COMPURL + "Everything/armhfp/os/images/pxeboot/initrd.img",
-                    # pylint: disable=line-too-long
-                    "HDD_2_DECOMPRESS_URL": COMPURL + "Spins/armhfp/images/Fedora-Minimal-armhfp-25-20161115.n.0-sda.raw.xz",
-                    "KERNEL_URL": COMPURL + "Everything/armhfp/os/images/pxeboot/vmlinuz"
-                },
-                "Minimal",
-                "raw-xz"
-            ),
-            (
                 "Cloud_Base-qcow2-qcow2",
                 "x86_64",
                 0,
@@ -152,30 +137,38 @@ class TestGetImages:
         ]
 
     def test_wanted_arg(self):
-        """Test custom WANTED passed by arg is respected."""
+        """Test custom WANTED passed by arg is respected. Also tests
+        the stuff specific to ARM images, since we don't have those in
+        default WANTED any more.
+        """
         wanted = [
             {
                 "match": {
-                    "subvariant": "Server",
-                    "type": "boot",
-                    "format": "iso",
-                    "arch": "x86_64",
+                    "subvariant": "Minimal",
+                    "type": "raw-xz",
+                    "format": "raw.xz",
+                    "arch": "armhfp",
                 },
-                "score": 7,
+                "dkboot": True,
             },
         ]
         rel = fedfind.release.get_release(cid='Fedora-25-20161115.n.0')
         ret = schedule._get_images(rel, wanted)
         assert ret == [
             (
-                "Server-boot-iso",
-                "x86_64",
-                7,
+                "Minimal-raw_xz-raw.xz",
+                "armhfp",
+                0,
                 {
-                    "ISO_URL": COMPURL + "Server/x86_64/iso/Fedora-Server-netinst-x86_64-25-20161115.n.0.iso"
+                    "KERNEL": "Fedora-25-20161115.n.0.armhfp.vmlinuz",
+                    "INITRD": "Fedora-25-20161115.n.0.armhfp.initrd.img",
+                    "INITRD_URL": COMPURL + "Everything/armhfp/os/images/pxeboot/initrd.img",
+                    # pylint: disable=line-too-long
+                    "HDD_2_DECOMPRESS_URL": COMPURL + "Spins/armhfp/images/Fedora-Minimal-armhfp-25-20161115.n.0-sda.raw.xz",
+                    "KERNEL_URL": COMPURL + "Everything/armhfp/os/images/pxeboot/vmlinuz"
                 },
-                "Server",
-                "boot"
+                "Minimal",
+                "raw-xz"
             ),
         ]
 
@@ -324,12 +317,12 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # simple case
     ret = schedule.jobs_from_compose(COMPURL)
 
-    # 7 images, 1 universal arch
-    assert fakerun.call_count == 8
+    # 6 images, 1 universal arch
+    assert fakerun.call_count == 7
 
     # the list of job ids should be 15 1s, as each fakerun call
     # returns [1]
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(7)])
 
     for argtup in fakerun.call_args_list:
         # check rel identification bits got passed properly
@@ -351,11 +344,45 @@ def test_jobs_from_compose(fakerun, ffmock02):
 
     # check arches is handled properly
     fakerun.reset_mock()
-    ret = schedule.jobs_from_compose(COMPURL, arches=['i386', 'armhfp'])
-    # FIXME: we used to test this with i386 and it was a good test,
-    # now i386 is gone we need to tweak this to be better, for now
-    # just check we got one job for one ARM image
-    assert fakerun.call_count == 1
+    # set up a custom WANTED with multiple arches that are present in
+    # our mock data
+    wanted = [
+        {
+            "match": {
+                "subvariant": "Server",
+                "type": "boot",
+                "format": "iso",
+                "arch": "x86_64",
+            },
+            "score": 6,
+        },
+        {
+            "match": {
+                "subvariant": "Server",
+                "type": "boot",
+                "format": "iso",
+                "arch": "i386",
+            },
+            "score": 6,
+        },
+        {
+            "match": {
+                "subvariant": "Minimal",
+                "type": "raw-xz",
+                "format": "raw.xz",
+                "arch": "armhfp",
+            },
+            "dkboot": True,
+        },
+    ]
+    # first check we get 5 runs (one for each image plus two universal
+    # runs) with no arches arg and this WANTED
+    ret = schedule.jobs_from_compose(COMPURL, wanted=wanted)
+    assert fakerun.call_count == 5
+    # now check we get only 3 if we limit the arches
+    fakerun.reset_mock()
+    ret = schedule.jobs_from_compose(COMPURL, wanted=wanted, arches=['i386', 'armhfp'])
+    assert fakerun.call_count == 3
 
     # check flavors is handled properly
     fakerun.reset_mock()
@@ -387,7 +414,7 @@ def test_jobs_from_compose(fakerun, ffmock02):
 def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     """Check that we tag candidate composes as 'important'."""
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(7)])
     # find the args that openqa_request was last called with
     reqargs = fakeclient.return_value.openqa_request.call_args
     assert reqargs[0] == ('POST', 'groups/1/comments')
