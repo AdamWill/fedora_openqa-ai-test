@@ -555,4 +555,19 @@ class TestResultsDBReport:
             fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_args[1]['note'] == 'non-important module _next_step failed'
 
+    @mock.patch("time.sleep", autospec=True)
+    def test_retries(self, fakesleep, fakeres, jobdict01):
+        """Test the retry handling stuff."""
+        # if we always hit an error, we should eventually raise it
+        fakeres.side_effect = ValueError("foo")
+        with pytest.raises(ValueError) as err:
+            fosreport.resultsdb_report(jobs=[1])
+            assert isinstance(err, ValueError)
+            assert str(err) == "foo"
+        # if the error only happens a few times, we should retry and
+        # get past it
+        fakeres.side_effect = [ValueError("foo"), ValueError("bar"), None]
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['item'] == 'Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso'
+
 # vim: set textwidth=120 ts=8 et sw=4:

@@ -523,13 +523,14 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             try:
                 rdb_object.report(rdb_instance)
                 return
-            except Exception as err:
+            except Exception as newerr:
+                err = newerr
                 logger.warning("ResultsDB report failed! Retrying...")
                 try:
-                    logger.warning("Response: %s", err.response)
-                    logger.warning("Message: %s", err.message)
+                    logger.warning("Response: %s", newerr.response)
+                    logger.warning("Message: %s", newerr.message)
                 except AttributeError:
-                    logger.warning("Error: %s", str(err))
+                    logger.warning("Error: %s", str(newerr))
                 tries -= 1
                 time.sleep(30)
         logger.error("ResultsDB reporting failed after multiple retries! Giving up.")
