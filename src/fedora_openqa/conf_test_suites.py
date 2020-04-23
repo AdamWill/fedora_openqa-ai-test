@@ -504,10 +504,14 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Server",
     },
-    "QA:Testcase_desktop_terminal": {
+    "QA:Testcase_desktop_app_basic": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
         "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        # FIXME: this is just hard-coded for now as we do not test
+        # any other applications, but we should really use a sub to
+        # derive this 'intelligently'
+        "name": "terminal",
     },
     "QA:Testcase_desktop_browser": {
         "env": "$SUBVARIANT$",
@@ -1104,7 +1108,7 @@ TESTSUITES = {
         "QA:Testcase_domain_client_authenticate",
     ],
     "desktop_terminal": [
-        "QA:Testcase_desktop_terminal",
+        "QA:Testcase_desktop_app_basic",
     ],
     "desktop_browser": [
         "QA:Testcase_desktop_browser",
