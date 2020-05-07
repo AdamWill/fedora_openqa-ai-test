@@ -143,8 +143,52 @@ def _find_duplicate_jobs(client, build, param_urls, flavor):
     return []
 
 
+def _get_releases(release):
+    """Get current, previous, rawhide and upgrade release params.
+    Shared by compose and update paths. release is the release number
+    or "Rawhide".
+    """
+    # find current and previous releases; these are used to determine
+    # the hard disk image file names for the upgrade tests
+    try:
+        currrel = str(fedfind.helpers.get_current_release())
+        prevrel = str(int(currrel) - 1)
+        rawrel = str(fedfind.helpers.get_current_release(branched=True) + 1)
+    except ValueError:
+        # we don't really want to bail entirely if fedfind failed for
+        # some reason, let's just run the other tests and set a value
+        # that shows what went wrong for the upgrade tests
+        currrel = prevrel = "FEDFINDERROR"
+        # this *might* work...depends on bugs...
+        rawrel = "rawhide"
+    if str(release).isdigit():
+        relnum = int(release)
+    elif rawrel.isdigit():
+        # assume it's Rawhide
+        relnum = int(rawrel)
+    else:
+        # we're stuck
+        relnum = None
+    if relnum:
+        # we want upgrade tests to test upgrade from one release
+        # before the release under test, and upgrade_2 tests, upgrade
+        # from two releases before
+        up1rel = str(relnum - 1)
+        up2rel = str(relnum - 2)
+    else:
+        up1rel = "FEDFINDERROR"
+        up2rel = "FEDFINDERROR"
+
+    return {
+        "CURRREL": currrel,
+        "UP1REL": up1rel,
+        "PREVREL": prevrel,
+        "UP2REL": up2rel,
+        "RAWREL": rawrel,
+    }
+
 def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, version,
-                    location, force=False, extraparams=None, openqa_hostname=None):
+                    location, force=False, extraparams=None, openqa_hostname=None, label=""):
     """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with
     given URLs, flavor, arch, subvariant, imagetype, build identifier,
     and version. **NOTE**: 'build' is passed to openQA as BUILD and is
@@ -164,19 +208,6 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     chosen host.
     """
     logger.info("sending jobs to openQA")
-    # find current and previous releases; these are used to determine
-    # the hard disk image file names for the upgrade tests
-    try:
-        currrel = str(fedfind.helpers.get_current_release())
-        prevrel = str(int(currrel) - 1)
-        rawrel = str(fedfind.helpers.get_current_release(branched=True) + 1)
-    except ValueError:
-        # we don't really want to bail entirely if fedfind failed for
-        # some reason, let's just run the other tests and set a value
-        # that shows what went wrong for the upgrade tests
-        currrel = prevrel = "FEDFINDERROR"
-        # this *might* work...depends on bugs...
-        rawrel = "rawhide"
 
     # starts OpenQA jobs
     params = {
@@ -188,12 +219,12 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
         'ARCH': arch if arch != 'armhfp' else 'arm',  # openQA does something special when `ARCH = arm`
         'BUILD': build,
         'LOCATION': location,
-        'CURRREL': currrel,
-        'PREVREL': prevrel,
-        'RAWREL': rawrel,
         'SUBVARIANT': subvariant,
-        'IMAGETYPE': imagetype
+        'IMAGETYPE': imagetype,
     }
+    if label:
+        params["LABEL"] = label
+    params.update(_get_releases(release=version))
 
     # for now, only images from composes with Modular in the name are
     # modular; we may need to change this in future as modular goes
@@ -308,7 +339,7 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
         jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
                                     release, location, force=force, extraparams=extraparams,
-                                    openqa_hostname=openqa_hostname))
+                                    openqa_hostname=openqa_hostname, label=rel.label))
         if score > univs.get(arch, [None, 0])[1]:
             univs[arch] = (param_urls, score, subvariant, imagetype)
 
@@ -324,7 +355,8 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
             logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
             jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype,
                                         rel.cid, release, location, force=force,
-                                        extraparams=extraparams, openqa_hostname=openqa_hostname))
+                                        extraparams=extraparams, openqa_hostname=openqa_hostname,
+                                        label=rel.label))
 
     # if we scheduled any jobs, and this is a candidate compose, tag
     # this build as 'important'
@@ -369,15 +401,6 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     the ones we pass in here.
     """
     version = str(version)
-    try:
-        currrel = str(fedfind.helpers.get_current_release())
-    except ValueError:
-        # but don't fail to schedule if fedfind fails...
-        logger.warning("jobs_from_update: could not determine current release! Assuming current "
-                       "release is same as update release. This may cause some tests to fail "
-                       "if that is not true.")
-        currrel = str(version)
-
     # Bail if version looks like Rawhide version, because we do
     # not really want to run tests on Rawhide updates yet. There
     # is no mechanism for combining interdependent packages into
@@ -408,11 +431,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         'server': {
             'HDD_1': 'disk_f{0}_server_3_{1}.img'.format(version, arch),
         },
-        'server-upgrade': {
-        # for upgrade tests run on updates, 'CURRREL' should be the
-        # release before the release the upgrade is for
-            'CURRREL': str(int(version)-1),
-        },
+        'server-upgrade': {},
         'kde': {
             'HDD_1': 'disk_f{0}_kde_4_{1}.img'.format(version, arch),
             'DESKTOP': 'kde',
@@ -421,19 +440,11 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
             'HDD_1': 'disk_f{0}_desktop_4_{1}.img'.format(version, arch),
             'DESKTOP': 'gnome',
         },
-        'workstation-upgrade': {
-        # for upgrade tests run on updates, 'CURRREL' should be the
-        # release before the release the upgrade is for
-            'CURRREL': str(int(version)-1),
-        },
-        'everything-boot-iso': {
-            # CURRREL should be the real current release here, as the
-            # support server always runs as the current release
-            'CURRREL': currrel,
-        },
+        'workstation-upgrade': {},
         'workstation-live-iso': {
             'SUBVARIANT': 'Workstation',
         },
+        'everything-boot-iso': {},
     }
     # we'll set ADVISORY and ADVISORY_OR_TASK for updates, and KOJITASK and
     # ADVISORY_OR_TASK for Koji tasks. I'd probably have designed this more
@@ -468,25 +479,23 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         '_ONLY_OBSOLETE_SAME_BUILD': '1',
         'START_AFTER_TEST': '',
     })
-    # mark if release is a development release; the tests need to know
-    # also if release is the oldest current stable, in which case we
-    # don't need to run upgrade tests
+    # get the release params
+    relparams = _get_releases(release=version)
+    if relparams["CURRREL"] == "FEDFINDERROR":
+        # we do something a bit different for updates if fedfind failed
+        logger.warning("jobs_from_update: could not determine current release! Assuming current "
+                       "release is same as update release. This may cause some tests to fail "
+                       "if that is not true.")
+        relparams["CURRREL"] = str(version)
+        relparams["PREVREL"] = str(int(version) - 1)
+
+    # find oldest release
     try:
         stables = fedfind.helpers.get_current_stables()
-        # FIXME awful hack: when we send out the 'final' fedora-release
-        # near release time, this breaks because we will now produce a
-        # live image with no pre-release warnings, but the release is
-        # still not 'stable' yet so far as collections is concerned. We
-        # need to figure out a better way to handle this, but for now,
-        # let's just hack the affected release to be 'stable'
-        stables.append(32)
-        curr = max(stables)
         oldest = min(stables)
-        if str(version).lower() == 'rawhide' or int(version) > curr:
-            baseparams['DEVELOPMENT'] = 1
     except ValueError:
         # but don't fail to schedule if fedfind fails...
-        logger.warning("jobs_from_update: could not determine current or oldest release! Assuming update/task is "
+        logger.warning("jobs_from_update: could not determine oldest release! Assuming update/task is "
                        "for stable release that is not the oldest stable.")
         oldest = 0
     client = OpenQA_Client(openqa_hostname)
@@ -500,7 +509,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
             # we don't want to run upgrade tests in this case; we
             # don't support upgrade from EOL releases, and we don't
             # keep the necessary base disk images around
-            logger.debug("skipping upgrade tests as release {0} is the oldest stable".format(version))
+            logger.debug("skipping upgrade tests as release %s is the oldest stable", version)
             continue
         fullflav = 'updates-{0}'.format(flavor)
         if not force:
@@ -511,12 +520,17 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
                 logger.info("jobs_from_update: Existing jobs found for update/task %s flavor %s arch %s, "
                             "and force not set! No jobs scheduled.", update, flavor, arch)
                 continue
-        flavparams = flavdict[flavor]
-        flavparams.update(baseparams)
-        flavparams['FLAVOR'] = fullflav
+        # we start from the relparams, as we want later-read param
+        # dicts to override them sometimes
+        fullparams = relparams.copy()
+        # add in the per-flavor params
+        fullparams.update(flavdict[flavor])
+        # add in the base params
+        fullparams.update(baseparams)
+        fullparams['FLAVOR'] = fullflav
         if extraparams:
-            flavparams.update(extraparams)
-        output = client.openqa_request('POST', 'isos', flavparams)
+            fullparams.update(extraparams)
+        output = client.openqa_request('POST', 'isos', fullparams)
         logger.debug("jobs_from_update: planned %s jobs: %s", flavor, output["ids"])
         jobs.extend(output["ids"])
 

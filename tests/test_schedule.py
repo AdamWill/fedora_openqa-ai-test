@@ -258,6 +258,8 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
             'CURRREL': '25',
             'PREVREL': '24',
             'RAWREL': '26',
+            'UP1REL': '24',
+            'UP2REL': '23',
             'SUBVARIANT': subvariant,
             'IMAGETYPE': imagetype,
             '_OBSOLETE': '1',
@@ -265,6 +267,15 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
         }
         expdict.update(param_urls)
         assert instance.openqa_request.call_args[0] == ('POST', 'isos', expdict)
+
+    # check we include LABEL when appropriate
+    instance.reset_mock()
+    (flavor, arch, _, param_urls, subvariant, imagetype) = images[0]
+    schedule.run_openqa_jobs(
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location,
+        label="RC-1.5")
+    assert instance.openqa_request.call_count == 1
+    assert instance.openqa_request.call_args[0][2]['LABEL'] == 'RC-1.5'
 
     # check no jobs scheduled when dupes are found
     instance.reset_mock()
@@ -310,6 +321,36 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
         param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location)
     assert instance.openqa_request.call_count == 1
     assert instance.openqa_request.call_args[0][2]['CURRREL'] == 'FEDFINDERROR'
+
+
+@mock.patch('fedfind.helpers.get_current_release', return_value=25)
+@mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
+@mock.patch('fedora_openqa.schedule._find_duplicate_jobs', return_value=[], autospec=True)
+def test_run_openqa_jobs_rawhide_vers(fakedupes, fakeclient, fakecurr, ffmock):
+    """Test the _get_releases stuff with a Rawhide compose."""
+    rel = fedfind.release.get_release(cid="Fedora-Rawhide-20170207.n.0")
+    images = schedule._get_images(rel)
+    # OpenQA_Client mock 'instance' is the class mock return value
+    instance = fakeclient.return_value
+    (flavor, arch, _, param_urls, subvariant, imagetype) = images[0]
+    schedule.run_openqa_jobs(
+        param_urls, flavor, arch, subvariant, imagetype, "Fedora-Rawhide-20170207.n.0", "Rawhide", rel.location)
+    assert instance.openqa_request.call_args[0][2]["CURRREL"] == "25"
+    assert instance.openqa_request.call_args[0][2]["PREVREL"] == "24"
+    assert instance.openqa_request.call_args[0][2]["RAWREL"] == "26"
+    assert instance.openqa_request.call_args[0][2]["UP1REL"] == "25"
+    assert instance.openqa_request.call_args[0][2]["UP2REL"] == "24"
+    # now test outcome if fedfind is busted
+    instance.reset_mock()
+    fakecurr.side_effect = ValueError("Well, that was unfortunate")
+    schedule.run_openqa_jobs(
+        param_urls, flavor, arch, subvariant, imagetype, "Fedora-Rawhide-20170207.n.0", "Rawhide", rel.location)
+    assert instance.openqa_request.call_args[0][2]["CURRREL"] == "FEDFINDERROR"
+    assert instance.openqa_request.call_args[0][2]["PREVREL"] == "FEDFINDERROR"
+    assert instance.openqa_request.call_args[0][2]["RAWREL"] == "rawhide"
+    assert instance.openqa_request.call_args[0][2]["UP1REL"] == "FEDFINDERROR"
+    assert instance.openqa_request.call_args[0][2]["UP2REL"] == "FEDFINDERROR"
+
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
 def test_jobs_from_compose(fakerun, ffmock02):
@@ -421,6 +462,16 @@ def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     assert reqargs[1]['params'] == {'text': 'tag:Fedora-25-20161115.n.0:important:candidate'}
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
+@mock.patch.object(fedfind.release.BranchedNightly, 'label', 'RC-1.5')
+def test_jobs_from_compose_label(fakerun, ffmock02):
+    """Check that we pass compose label through to run_openqa_jobs if
+    if there is one.
+    """
+    ret = schedule.jobs_from_compose(COMPURL)
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(7)])
+    assert fakerun.call_args[1]["label"] == "RC-1.5"
+
+@mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
 def test_jobs_from_compose_unsupported(fakerun):
     """Check that we create no jobs for composes fedfind explicitly
     tells us it does not support (by raising UnsupportedComposeError).
@@ -474,7 +525,11 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
             'FLAVOR': 'updates-server-upgrade',
-            'CURRREL': '24',
+            'CURRREL': '25',
+            'PREVREL': '24',
+            'RAWREL': '26',
+            'UP1REL': '24',
+            'UP2REL': '23',
         },
         {
             'DISTRI': 'fedora',
@@ -488,7 +543,11 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
             'START_AFTER_TEST': '',
             'FLAVOR': 'updates-workstation-upgrade',
-            'CURRREL': '24',
+            'CURRREL': '25',
+            'PREVREL': '24',
+            'RAWREL': '26',
+            'UP1REL': '24',
+            'UP2REL': '23',
         },
         {
             'DISTRI': 'fedora',
@@ -503,6 +562,11 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'START_AFTER_TEST': '',
             'HDD_1': 'disk_f25_server_3_x86_64.img',
             'FLAVOR': 'updates-server',
+            'CURRREL': '25',
+            'PREVREL': '24',
+            'RAWREL': '26',
+            'UP1REL': '24',
+            'UP2REL': '23',
         },
         {
             'DISTRI': 'fedora',
@@ -518,6 +582,11 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'HDD_1': 'disk_f25_kde_4_x86_64.img',
             'FLAVOR': 'updates-kde',
             'DESKTOP': 'kde',
+            'CURRREL': '25',
+            'PREVREL': '24',
+            'RAWREL': '26',
+            'UP1REL': '24',
+            'UP2REL': '23',
         },
         {
             'DISTRI': 'fedora',
@@ -533,6 +602,11 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'HDD_1': 'disk_f25_desktop_4_x86_64.img',
             'FLAVOR': 'updates-workstation',
             'DESKTOP': 'gnome',
+            'CURRREL': '25',
+            'PREVREL': '24',
+            'RAWREL': '26',
+            'UP1REL': '24',
+            'UP2REL': '23',
         },
         {
             'DISTRI': 'fedora',
@@ -547,6 +621,10 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'START_AFTER_TEST': '',
             'FLAVOR': 'updates-everything-boot-iso',
             'CURRREL': '25',
+            'PREVREL': '24',
+            'RAWREL': '26',
+            'UP1REL': '24',
+            'UP2REL': '23',
         },
         {
             'DISTRI': 'fedora',
@@ -561,9 +639,16 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'START_AFTER_TEST': '',
             'FLAVOR': 'updates-workstation-live-iso',
             'SUBVARIANT': 'Workstation',
+            'CURRREL': '25',
+            'PREVREL': '24',
+            'RAWREL': '26',
+            'UP1REL': '24',
+            'UP2REL': '23',
         }
     ]
     for checkdict in checkdicts:
+        print(checkdict)
+        print(parmdicts[1])
         assert checkdict in parmdicts
 
     # test we do *not* schedule jobs for release that looks like the
@@ -571,27 +656,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # release' so code thinks 'rawhide release' is 26
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
     assert ret == []
-
-    # test DEVELOPMENT var set when release is higher than current
-    # stables
-    fakeinst.openqa_request.reset_mock()
-
-    # We have to bump the get_current_release mock return value to
-    # be the same as the release we're "scheduling" for or else we'll
-    # hit the 'bail if update is for rawhide' check (the mock returns
-    # the same value whether branched is True or False...)
-    fakecurrr.return_value = 99
-    # we use a very high release number here to avoid the test failing
-    # when we hack a pending Branched release into the 'stables' list
-    # after fedora-release has had its -1 bump (see schedule.py).
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '99')
-    # set it back to where it should be
-    fakecurrr.return_value = 25
-    # find the POST calls
-    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
-    parmdicts = [call[0][2] for call in posts]
-    assert parmdicts
-    assert all(parmdict.get('DEVELOPMENT') == 1 for parmdict in parmdicts)
 
     # check we don't crash or fail to schedule if get_current_release
     # or get_current_stables fail
@@ -741,6 +805,10 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
         'START_AFTER_TEST': '',
         'FLAVOR': 'updates-everything-boot-iso',
         'CURRREL': '29',
+        'PREVREL': '28',
+        'RAWREL': '30',
+        'UP1REL': '27',
+        'UP2REL': '26',
     }
 
 # vim: set textwidth=120 ts=8 et sw=4:
