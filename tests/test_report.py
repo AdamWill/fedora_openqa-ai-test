@@ -268,6 +268,29 @@ class TestGetPassedTestcases:
             cid='Fedora-Rawhide-20170207.n.0'
         )
 
+    def test_iot(self, jobdict03):
+        """Check get_passed_testcases works correctly for a result
+        from an IoT compose.
+        """
+        ret = fosreport.get_passed_testcases([jobdict03])
+        assert len(ret) == 1
+        assert ret[0] == ResTuple(
+            testtype="General",
+            release="",
+            milestone="",
+            compose="",
+            testcase="QA:Testcase_base_selinux",
+            section="",
+            testname="",
+            env="x86_64",
+            status="pass",
+            user="",
+            bugs="",
+            comment="",
+            bot=True,
+            cid="Fedora-IoT-33-20200513.0"
+        )
+
     def test_fail(self, jobdict01):
         """Check get_passed_testcases returns nothing when job failed."""
         jobdict01['result'] = 'failed'

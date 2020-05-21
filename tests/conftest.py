@@ -199,6 +199,106 @@ def jobdict02():
     }
 
 @pytest.fixture(scope="function")
+def jobdict03():
+    """Another openQA job dict, for an IoT compose test."""
+    return {
+        "assets": {
+            "hdd": [
+                "00597768-disk_IoT-dvd_ostree-iso_64bit.qcow2"
+            ],
+            "iso": [
+                "Fedora-IoT-IoT-ostree-x86_64-33-20200513.0.iso"
+            ]
+        },
+        "assigned_worker_id": 38,
+        "blocked_by_id": None,
+        "children": {
+            "Chained": [],
+            "Directly chained": [],
+            "Parallel": []
+        },
+        "clone_id": None,
+        "group": "fedora",
+        "group_id": 1,
+        "id": 597773,
+        "modules": [
+            {
+                "category": "fedora/tests",
+                "flags": [
+                    "important",
+                    "fatal",
+                    "milestone"
+                ],
+                "name": "_console_wait_login",
+                "result": "passed"
+            },
+            {
+                "category": "fedora/tests",
+                "flags": [
+                    "important",
+                    "fatal"
+                ],
+                "name": "base_selinux",
+                "result": "passed"
+            }
+        ],
+        "name": "fedora-33-IoT-dvd_ostree-iso-x86_64-BuildFedora-IoT-33-20200513.0-base_selinux@64bit",
+        "parents": {
+            "Chained": [
+                597768
+            ],
+            "Directly chained": [],
+            "Parallel": []
+        },
+        "priority": 40,
+        "result": "passed",
+        "settings": {
+            "ARCH": "x86_64",
+            "ARCH_BASE_MACHINE": "64bit",
+            "BACKEND": "qemu",
+            "BOOTFROM": "c",
+            "BUILD": "Fedora-IoT-33-20200513.0",
+            "CANNED": "1",
+            "CURRREL": "32",
+            "DISTRI": "fedora",
+            "FLAVOR": "IoT-dvd_ostree-iso",
+            "HDD_1": "disk_IoT-dvd_ostree-iso_64bit.qcow2",
+            "IMAGETYPE": "dvd-ostree",
+            "ISO": "Fedora-IoT-IoT-ostree-x86_64-33-20200513.0.iso",
+            "ISO_URL": "https://kojipkgs.fedoraproject.org/compose/iot/Fedora-IoT-33-20200513.0/compose/IoT/x86_64/iso/Fedora-IoT-IoT-ostree-x86_64-33-20200513.0.iso",
+            "LABEL": "RC-20200513.0",
+            "LOCATION": "https://kojipkgs.fedoraproject.org/compose/iot/Fedora-IoT-33-20200513.0/compose",
+            "MACHINE": "64bit",
+            "NAME": "00597773-fedora-33-IoT-dvd_ostree-iso-x86_64-BuildFedora-IoT-33-20200513.0-base_selinux@64bit",
+            "PACKAGE_SET": "default",
+            "PART_TABLE_TYPE": "mbr",
+            "POSTINSTALL": "base_selinux",
+            "PREVREL": "31",
+            "QEMUCPU": "Nehalem",
+            "QEMUCPUS": "2",
+            "QEMURAM": "2048",
+            "QEMUVGA": "virtio",
+            "QEMU_VIRTIO_RNG": "1",
+            "RAWREL": "33",
+            "ROOT_PASSWORD": "weakpassword",
+            "START_AFTER_TEST": "install_default_upload",
+            "SUBVARIANT": "IoT",
+            "TEST": "base_selinux",
+            "TEST_SUITE_NAME": "base_selinux",
+            "TEST_TARGET": "ISO",
+            "UP1REL": "32",
+            "UP2REL": "31",
+            "USER_LOGIN": "false",
+            "VERSION": "33",
+            "WORKER_CLASS": "qemu_x86_64"
+        },
+        "state": "done",
+        "t_finished": "2020-05-14T02:50:46",
+        "t_started": "2020-05-14T02:49:27",
+        "test": "base_selinux"
+    }
+
+@pytest.fixture(scope="function")
 def ffimg01():
     """A pre-canned fedfind image dict, for the x86_64 Server DVD from
     the 20170207.n.0 Rawhide nightly.

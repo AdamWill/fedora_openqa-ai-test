@@ -247,6 +247,13 @@ def get_passed_testcases(jobs, client=None):
 
             # create new dict based on the testcase dict with $FOO$ values replaced
             uniqueres = _uniqueres_replacements(job, conf_test_suites.TESTCASES[testcase])
+            # IoT events only have a "General" test type and don't
+            # need to worry about sections, so hardcode that. env
+            # is always the arch
+            if job["settings"]["BUILD"].startswith("Fedora-IoT"):
+                uniqueres["type"] = "General"
+                uniqueres["section"] = ""
+                uniqueres["env"] = job["settings"]["ARCH"]
             result = ResTuple(
                 testtype=uniqueres['type'], testcase=testcase,
                 section=uniqueres.get('section'), testname=uniqueres.get('name', ''),
