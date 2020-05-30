@@ -593,6 +593,15 @@ TESTCASES = {
         "env": "Result",
         "type": "Base",
     },
+    "QA:Testcase_Podman": {
+        "env": "$RUNARCH$",
+        # if we run this on anything but IoT, we may need to change this
+        "type": "General",
+    },
+    "QA:Testcase_Greenboot": {
+        "env": "$RUNARCH$",
+        "type": "General",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -961,6 +970,10 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
+    # FIXME there isn't a test case for this yet, we added it to
+    # openQA in response to F32 blocker bugs, we should probably add
+    # a wiki test case too
+    "install_blivet_resize_lvm": [],
     "install_shrink_ext4": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_shrink",
@@ -975,6 +988,10 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
+    # FIXME there isn't a test case for this yet, we added it to
+    # openQA in response to F32 blocker bugs, we should probably add
+    # a wiki test case too
+    "install_resize_lvm": [],
     "install_european_language": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_guided_empty",
@@ -1234,6 +1251,15 @@ TESTSUITES = {
         "QA:Testcase_base_services_start",
         "QA:Testcase_base_selinux",
         "QA:Testcase_base_service_manipulation",
+    ],
+    # we report the result on podman_client as it does the final
+    # check
+    "podman": [],
+    "podman_client": [
+        "QA:Testcase_Podman",
+    ],
+    "iot_greenboot": [
+        "QA:Testcase_Greenboot",
     ],
     # this is a support test for other tests
     "support_server": [],

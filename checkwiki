@@ -87,8 +87,12 @@ def read_templates(distripath):
 
 def get_page(testtype):
     """Get the page if we didn't yet, cache it, and return from cache."""
+    dist = "Fedora"
+    if testtype == "General":
+        # only IoT events have a General page
+        dist = "Fedora-IoT"
     if not testtype in PAGES:
-        PAGES[testtype] = SITE.get_validation_page(testtype=testtype)
+        PAGES[testtype] = SITE.get_validation_page(testtype=testtype, dist=dist)
     return PAGES[testtype]
 
 def cases_from_suite(suite):
@@ -118,11 +122,6 @@ def fake_jobs(templates, modules):
         # be reported to wiki
         if jobtemp['version'] != "*":
             continue
-        # skip IoT for now - we won't be just adding IoT into the
-        # existing matrices, we will probably need to make it its own
-        # thing, and we haven't done that work yet
-        if jobtemp['flavor'].lower().startswith('iot'):
-            continue
         subv = jobtemp['flavor'].split('-')[0]
         try:
             imagetype = jobtemp['flavor'].split('-')[1].replace('_', '-')
@@ -139,7 +138,7 @@ def fake_jobs(templates, modules):
                 'MACHINE': jobtemp['machine_name'],
                 # we don't need the BUILD value; we're just going to use
                 # the current validation pages
-                'BUILD': 'FAKE',
+                'BUILD': 'Fedora-FAKE',
             },
             'result': 'passed',
             # we use both settings['TEST'] and test, we probably shouldn't...
@@ -151,6 +150,9 @@ def fake_jobs(templates, modules):
             # the modules.
             'modules': [{'name': module, 'result': 'passed'} for module in modules]
         }
+        # need this to trigger the special handling in get_passed_testcases
+        if jobtemp["flavor"].lower().startswith("iot"):
+            job["settings"]["BUILD"] = "Fedora-IoT-FAKE"
         # find the desktop by finding the relevant Product and getting it
         # from its settings
         for setting in [prod for prod in templates['Products'] if
