@@ -602,6 +602,14 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "General",
     },
+    "QA:Testcase_RpmOstree_Rebase": {
+        "env": "$RUNARCH$",
+        "type": "General",
+    },
+    "QA:Testcase_RpmOstree_Package_Layering": {
+        "env": "$RUNARCH$",
+        "type": "General",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -1260,6 +1268,12 @@ TESTSUITES = {
     ],
     "iot_greenboot": [
         "QA:Testcase_Greenboot",
+    ],
+    "iot_rpmostree_rebase": [
+        "QA:Testcase_RpmOstree_Rebase",
+    ],
+    "iot_rpmostree_overlay": [
+        "QA:Testcase_RpmOstree_Package_Layering",
     ],
     # this is a support test for other tests
     "support_server": [],
