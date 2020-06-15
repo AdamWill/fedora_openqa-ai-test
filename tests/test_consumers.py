@@ -35,15 +35,6 @@ import pytest
 
 # 'internal' imports
 import fedora_openqa.consumer
-from fedora_openqa.config import UPDATEWL
-
-# Modified version of the default UPDATEWL for testing purposes
-# we have to do this because we don't have any real-world cases
-# for whitelisting anything but the 'server' tests yet, so we can't
-# fully test the feature with the real default whitelist
-MODIFIEDWL = copy.deepcopy(UPDATEWL)
-MODIFIEDWL['gnome-terminal'] = ('workstation',)
-MODIFIEDWL['kernel'] = None
 
 # Passed test message (ZMQ->AMQP bridge style with whole fedmsg as
 # 'body')
@@ -138,14 +129,14 @@ CRITPATHCREATE = Message(
     }
 )
 
-# Non-critpath, non-whitelisted update creation message
+# Non-critpath, non-listed update creation message
 NONCRITCREATE = copy.deepcopy(CRITPATHCREATE)
 NONCRITCREATE.body['update']['critpath'] = False
 
-# Non-critpath, one-flavor-whitelisted update creation message
-WLCREATE = copy.deepcopy(CRITPATHCREATE)
-WLCREATE.body['update']['critpath'] = False
-WLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "freeipa-4.4.4-1.fc24", "signed": False}]
+# Non-critpath, one-flavor-listed update creation message
+TLCREATE = copy.deepcopy(CRITPATHCREATE)
+TLCREATE.body['update']['critpath'] = False
+TLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "freeipa-4.4.4-1.fc24", "signed": False}]
 
 # Critpath EPEL update creation message
 EPELCREATE = copy.deepcopy(CRITPATHCREATE)
@@ -171,22 +162,22 @@ CRITPATHEDIT = Message(
     }
 )
 
-# Non-critpath, non-whitelisted update edit message
+# Non-critpath, non-listed update edit message
 NONCRITEDIT = copy.deepcopy(CRITPATHEDIT)
 NONCRITEDIT.body['update']['critpath'] = False
 
-# Non-critpath, two-flavors-whitelisted update edit message
-WLEDIT = copy.deepcopy(CRITPATHEDIT)
-WLEDIT.body['update']['critpath'] = False
-WLEDIT.body['update']['builds'] = [
+# Non-critpath, two-flavors-listed update edit message
+TLEDIT = copy.deepcopy(CRITPATHEDIT)
+TLEDIT.body['update']['critpath'] = False
+TLEDIT.body['update']['builds'] = [
     {"epoch": 0, "nvr": "freeipa-4.4.4-1.fc26", "signed": False},
-    {"epoch": 0, "nvr": "gnome-terminal-3.24.1-1.fc24", "signed": False},
+    {"epoch": 0, "nvr": "gnome-initial-setup-3.24.1-1.fc24", "signed": False},
 ]
 
-# Non-critpath, all-flavors-whitelisted update edit message
-WLALLEDIT = copy.deepcopy(CRITPATHEDIT)
-WLALLEDIT.body['update']['critpath'] = False
-WLALLEDIT.body['update']['builds'] = [{"epoch": 0, "nvr": "kernel-4.10.12-100.fc24", "signed": False}]
+# Non-critpath, all-flavors-listed update edit message
+TLALLEDIT = copy.deepcopy(CRITPATHEDIT)
+TLALLEDIT.body['update']['critpath'] = False
+TLALLEDIT.body['update']['builds'] = [{"epoch": 0, "nvr": "authselect-4.10.12-100.fc24", "signed": False}]
 
 # Critpath EPEL update edit message
 EPELEDIT = copy.deepcopy(CRITPATHEDIT)
@@ -247,7 +238,6 @@ TESTS = (TESTWIKI, TESTRDB)
 class TestConsumers:
     """Tests for the consumers."""
 
-    @mock.patch('fedora_openqa.consumer.UPDATEWL', MODIFIEDWL)
     @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=('somecompose', [1]), autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1], autospec=True)
     @pytest.mark.parametrize(
@@ -278,13 +268,13 @@ class TestConsumers:
             (NONCRITEDIT, False),
             (EPELCREATE, False),
             (EPELEDIT, False),
-            # WLCREATE contains only a 'server'-whitelisted package
-            (WLCREATE, ['server', 'server-upgrade']),
-            # WLEDIT contains both 'server' and 'workstation'-whitelisted
+            # TLCREATE contains only a 'server'-listed package
+            (TLCREATE, {'server', 'server-upgrade'}),
+            # TLEDIT contains both 'server' and 'workstation-live-iso'-listed
             # packages
-            (WLEDIT, ['server', 'server-upgrade', 'workstation']),
-            # WLALLEDIT contains an 'all flavors'-whitelisted package
-            (WLALLEDIT, None),
+            (TLEDIT, {'server', 'server-upgrade', 'workstation-live-iso'}),
+            # TLALLEDIT contains an 'all flavors'-listed package
+            (TLALLEDIT, None),
         ]
     )
     def test_scheduler(self, fake_update, fake_schedule, consumer, oqah, message, flavors):

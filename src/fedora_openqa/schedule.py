@@ -379,7 +379,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     """Schedule jobs for a specific Fedora update (or scratch build).
     update is the advisory ID or task ID, version is the release
     number, flavors defines which update tests should be run (valid
-    values arethe 'flavdict' keys). force, extraparams and
+    values are the 'flavdict' keys). force, extraparams and
     openqa_hostname are as for jobs_from_compose. To explain the HDD_1
     and START_AFTER_TEST settings: most tests in the 'update' scenario
     are shared with the 'compose' scenario. Many of them specify

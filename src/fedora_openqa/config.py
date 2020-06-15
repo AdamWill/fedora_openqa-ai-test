@@ -122,11 +122,11 @@ WANTED = [
     },
 ]
 
-# Whitelist of non-critpath package names to run update tests on.
+# List of non-critpath package names to run update tests on.
 # Dict keys are the package names, value is either an iterable of the
 # flavor(s) of update tests to run for that package or can just be
 # None (or anything else false-y) which means "run all the flavors".
-UPDATEWL = {
+UPDATETL = {
     # FreeIPA-related bits
     '389-ds': ('server', 'server-upgrade'),
     '389-ds-base': ('server', 'server-upgrade'),
@@ -179,10 +179,10 @@ for path in ('/etc/fedora-openqa',
         pass
 
     try:
-        # load UPDATEWL override config file
-        fname = '{0}/updatewl.json'.format(path)
+        # load UPDATETL override config file
+        fname = '{0}/updatetl.json'.format(path)
         with open(fname, 'r') as fout:
-            UPDATEWL = json.load(fout)
+            UPDATETL = json.load(fout)
     except IOError:
         # file not found
         pass

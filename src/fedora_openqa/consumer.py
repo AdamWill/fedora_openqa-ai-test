@@ -28,7 +28,7 @@ import logging
 import fedora_messaging.config
 
 # internal imports
-from .config import UPDATEWL
+from .config import UPDATETL
 from . import schedule
 from . import report
 
@@ -117,32 +117,34 @@ class OpenQAScheduler(object):
             self.logger.info("Scheduling openQA jobs for critical path update %s", advisory)
             flavors = None
 
-        # otherwise check the whitelist
+        # otherwise check the list of non-critpath packages we test
         elif advisory and version and idpref == 'FEDORA':
-            self.logger.debug("Checking whitelist for update %s", advisory)
+            self.logger.debug("Checking non-critpath test list for update %s", advisory)
             for build in update.get('builds', []):
                 # get just the package name by splitting the NVR. This
                 # assumes all NVRs actually contain a V and an R.
                 # Happily, RPM rejects dashes in version or release.
                 pkgname = build['nvr'].rsplit('-', 2)[0]
-                # now check the whitelist and adjust flavors
-                if pkgname in UPDATEWL:
-                    if not UPDATEWL[pkgname]:
+                # now check the list and adjust flavors
+                if pkgname in UPDATETL:
+                    if not UPDATETL[pkgname]:
                         # this means *all* flavors, and we can short
-                        self.logger.info("Running ALL openQA tests for whitelisted update %s", advisory)
+                        self.logger.info("Running ALL openQA tests for update %s", advisory)
                         flavors = None
                         break
                     else:
-                        flavors.extend(UPDATEWL[pkgname])
+                        flavors.extend(UPDATETL[pkgname])
 
         if flavors:
+            # let's remove dupes
+            flavors = set(flavors)
             # this means we have a list of flavors, not None indicating
             # *all* flavors, let's log that
-            tmpl = "Running update tests for flavors %s for whitelisted update %s"
+            tmpl = "Running update tests for flavors %s for update %s"
             self.logger.info(tmpl, ', '.join(flavors), advisory)
         elif flavors == []:
             # This means we ain't running nothin'
-            self.logger.debug("Update is not critical path and no packages in whitelist, no jobs scheduled")
+            self.logger.debug("Update is not critical path and no packages in test list, no jobs scheduled")
             return
 
         # Finally, now we've decided on flavors, run the jobs. flavors
