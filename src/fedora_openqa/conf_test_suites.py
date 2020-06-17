@@ -401,11 +401,6 @@ TESTCASES = {
         "env": "$SUBVARIANT_OR_LOCAL$",
         "type": "$CLOUD_OR_BASE$",
     },
-    "QA:Testcase_base_selinux": {
-        "section": "$RUNARCH$",
-        "env": "$SUBVARIANT_OR_LOCAL$",
-        "type": "$CLOUD_OR_BASE$",
-    },
     "QA:Testcase_base_reboot_unmount": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT_OR_LOCAL$",
@@ -416,7 +411,22 @@ TESTCASES = {
         "env": "$SUBVARIANT_OR_LOCAL$",
         "type": "$CLOUD_OR_BASE$",
     },
+    "QA:Testcase_base_update_cli": {
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
+    },
+    "QA:Testcase_base_edition_self_identification": {
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
+    },
     "QA:Testcase_base_services_start": {
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "$CLOUD_OR_BASE$",
+    },
+    "QA:Testcase_base_selinux": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT_OR_LOCAL$",
         "type": "$CLOUD_OR_BASE$",
@@ -425,16 +435,6 @@ TESTCASES = {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT_OR_LOCAL$",
         "type": "$CLOUD_OR_BASE$",
-    },
-    "QA:Testcase_base_update_cli": {
-        "section": "$RUNARCH$",
-        "env": "$SUBVARIANT$",
-        "type": "Base",
-    },
-    "QA:Testcase_base_edition_self_identification": {
-        "section": "$RUNARCH$",
-        "env": "$SUBVARIANT$",
-        "type": "Base",
     },
     "QA:Testcase_kickstart_firewall_disabled": {
         "env": "$RUNARCH$",
