@@ -49,11 +49,12 @@ CLI usage
 
 Simple usages are:
 
-    ./fedora-openqa.py schedule https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170214.n.0/compose/
+    ./fedora-openqa.py compose https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170214.n.0/compose/
+    ./fedora-openqa.py update https://bodhi.fedoraproject.org/updates/FEDORA-2020-424d2b310e 32
     ./fedora-openqa.py report Fedora-Rawhide-20170214.n.0
     ./fedora-openqa.py report 1 2 3 4 5
 
-The first schedules jobs for a particular compose. The second reports results for all jobs for a given compose. The third reports results for the specified job IDs. Note that no actual reporting to Wikitcms or ResultsDB will be done unless `--wiki` or `--resultsdb` is also passed (instead, a list of passed Wikitcms test cases will be printed to the console).
+The first schedules jobs for a particular compose, the second for a particular update. The third reports results for all jobs for a given compose. The third and fourth provides result reporting information for (respectively) a compose or some job IDs (the script will figure out whether you're passing it a compose ID or job ID(s)). Note that no actual reporting to Wikitcms or ResultsDB will be done unless `--wiki` or `--resultsdb` is also passed (instead, a list of passed Wikitcms test cases will be printed to the console).
 
 See the command's help (and the help for the subcommands, `schedule` and `report`) for more details on usage.
 
