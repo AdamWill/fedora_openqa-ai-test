@@ -610,6 +610,10 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "General",
     },
+    "QA:Testcase_Clevis": {
+        "env": "$RUNARCH$",
+        "type": "General",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -1292,6 +1296,9 @@ TESTSUITES = {
     ],
     "iot_rpmostree_overlay": [
         "QA:Testcase_RpmOstree_Package_Layering",
+    ],
+    "iot_clevis": [
+        "QA:Testcase_Clevis",
     ],
     # this is a support test for other tests
     "support_server": [],
