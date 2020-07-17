@@ -221,6 +221,8 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
         'LOCATION': location,
         'SUBVARIANT': subvariant,
         'IMAGETYPE': imagetype,
+        'QEMU_HOST_IP': '172.16.2.2',
+        'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24'
     }
     if label:
         params["LABEL"] = label
