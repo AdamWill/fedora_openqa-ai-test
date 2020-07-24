@@ -481,6 +481,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         '_ONLY_OBSOLETE_SAME_BUILD': '1',
         'START_AFTER_TEST': '',
         'QEMU_HOST_IP': '172.16.2.2',
+        'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
     })
     # get the release params
     relparams = _get_releases(release=version)
