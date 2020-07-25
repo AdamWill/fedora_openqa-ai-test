@@ -614,6 +614,10 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "General",
     },
+    "QA:Testcase_Zezere_Ignition": {
+        "env": "$RUNARCH$",
+        "type": "General",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -1299,6 +1303,11 @@ TESTSUITES = {
     ],
     "iot_clevis": [
         "QA:Testcase_Clevis",
+    ],
+    # server is just support here
+    "iot_zezere_server": [],
+    "iot_zezere_ignition": [
+        "QA:Testcase_Zezere_Ignition",
     ],
     # this is a support test for other tests
     "support_server": [],
