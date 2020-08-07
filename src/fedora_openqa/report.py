@@ -385,7 +385,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
     # specific compose test
     image_target_regex = re.compile(r"^(ISO|HDD)(_\d+)?$")
 
-    for job in jobs:
+    for (idx, job) in enumerate(jobs, start=1):
         # don't report jobs that have clone or user-cancelled jobs, or were obsoleted
         if job['clone_id'] is not None or job['result'] == "user_cancelled" or job['result'] == 'obsoleted':
             continue
@@ -529,7 +529,8 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         while tries:
             try:
                 rdb_object.report(rdb_instance)
-                return
+                err = None
+                break
             except Exception as newerr:
                 err = newerr
                 logger.warning("ResultsDB report failed! Retrying...")
@@ -540,8 +541,11 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                     logger.warning("Error: %s", str(newerr))
                 tries -= 1
                 time.sleep(30)
-        logger.error("ResultsDB reporting failed after multiple retries! Giving up.")
         if err:
-            raise err
+            logger.error("ResultsDB reporting for job %d failed after multiple retries! Giving up.",
+                         job['id'])
+            # if this was the last (or only) job, we can raise the error
+            if idx == len(jobs):
+                raise err
 
 # vim: set textwidth=120 ts=8 et sw=4:
