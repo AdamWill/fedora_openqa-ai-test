@@ -189,7 +189,7 @@ def _get_passed_tcnames(job, result, composeid, client=None):
                     'build': composeid,
                     'machine': job['settings']['MACHINE'],
                     'flavor': job['settings']['FLAVOR'],
-                    'latest': 'true',
+                    'latest': '1',
                 }
                 candjobs = client.openqa_request('GET', 'jobs', params=params)['jobs']
                 _jobs = [_job for _job in candjobs if _job['test'] in conds['testsuites']]
