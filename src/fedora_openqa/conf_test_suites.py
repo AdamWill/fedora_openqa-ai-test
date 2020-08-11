@@ -226,7 +226,7 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
-    "QA:Testcase_partitioning_custom_no_swap": {
+    "QA:Testcase_partitioning_custom_with_swap": {
         "section": "Custom storage configuration",
         "env": "$BOOTMETHOD$",
         "type": "Installation",
@@ -256,7 +256,7 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
-    "QA:Testcase_partitioning_blivet_no_swap": {
+    "QA:Testcase_partitioning_blivet_with_swap": {
         "section": "Advanced custom storage configuration",
         "env": "$BOOTMETHOD$",
         "type": "Installation",
@@ -951,9 +951,9 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
-    "install_no_swap": [
+    "install_with_swap": [
         "QA:Testcase_install_to_VirtIO",
-        "QA:Testcase_partitioning_custom_no_swap",
+        "QA:Testcase_partitioning_custom_with_swap",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
@@ -979,9 +979,9 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
-    "install_blivet_no_swap": [
+    "install_blivet_with_swap": [
         "QA:Testcase_install_to_VirtIO",
-        "QA:Testcase_partitioning_blivet_no_swap",
+        "QA:Testcase_partitioning_blivet_with_swap",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
