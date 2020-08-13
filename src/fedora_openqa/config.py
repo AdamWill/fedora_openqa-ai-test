@@ -137,7 +137,7 @@ UPDATETL = {
     'freeipa': ('server', 'server-upgrade'),
     'httpd': ('server', 'server-upgrade'),
     'jss': ('server', 'server-upgrade'),
-    'krb5-server': ('server', 'server-upgrade'),
+    'krb5': ('server', 'server-upgrade'),
     'pki-core': ('server', 'server-upgrade'),
     'sssd': ('server', 'server-upgrade'),
     'tomcat': ('server', 'server-upgrade'),
