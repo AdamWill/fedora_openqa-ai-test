@@ -299,6 +299,102 @@ def jobdict03():
     }
 
 @pytest.fixture(scope="function")
+def jobdict04():
+    """Another openQA job dict, for a Fedora CoreOS build test."""
+    return {
+        "assets": {
+            "hdd": [
+                "00048191-disk_CoreOS-colive-iso_64bit.qcow2"
+            ],
+            "iso": [
+                "fedora-coreos-32.20200726.3.1-live.x86_64.iso"
+            ]
+        },
+        "assigned_worker_id": 4,
+        "blocked_by_id": None,
+        "children": {
+            "Chained": [],
+            "Directly chained": [],
+            "Parallel": []
+        },
+        "clone_id": None,
+        "group": "fedora",
+        "group_id": 1,
+        "id": 48192,
+        "modules": [
+            {
+                "category": "fedora/tests",
+                "flags": [
+                    "important",
+                    "fatal",
+                    "milestone"
+                ],
+                "name": "_console_wait_login",
+                "result": "passed"
+            },
+            {
+                "category": "fedora/tests",
+                "flags": [
+                    "important",
+                    "fatal"
+                ],
+                "name": "base_services_start",
+                "result": "passed"
+            }
+        ],
+        "name": "fedora-32-CoreOS-colive-iso-x86_64-BuildFedora-CoreOS-32-20200726.3.1-base_services_start@64bit",
+        "parents": {
+            "Chained": [
+                48191
+            ],
+            "Directly chained": [],
+            "Parallel": []
+        },
+        "priority": 40,
+        "result": "passed",
+        "settings": {
+            "ARCH": "x86_64",
+            "ARCH_BASE_MACHINE": "64bit",
+            "BACKEND": "qemu",
+            "BOOTFROM": "c",
+            "BUILD": "Fedora-CoreOS-32-20200726.3.1",
+            "CANNED": "1",
+            "DISTRI": "fedora",
+            "FLAVOR": "CoreOS-colive-iso",
+            "HDD_1": "disk_CoreOS-colive-iso_64bit.qcow2",
+            "IMAGETYPE": "colive",
+            "ISO": "fedora-coreos-32.20200726.3.1-live.x86_64.iso",
+            "LOCATION": "https://kojipkgs.fedoraproject.org/compose/cloud/Fedora-Cloud-32-20200819.0/compose",
+            "MACHINE": "64bit",
+            # pylint: disable=line-too-long
+            "NAME": "00048192-fedora-32-CoreOS-colive-iso-x86_64-BuildFedora-CoreOS-32-20200726.3.1-base_services_start@64bit",
+            "NICTYPE_USER_OPTIONS": "net=172.16.2.0/24",
+            "PART_TABLE_TYPE": "mbr",
+            "POSTINSTALL": "base_services_start",
+            "QEMUCPU": "Nehalem",
+            "QEMUCPUS": "2",
+            "QEMURAM": "2048",
+            "QEMUVGA": "virtio",
+            "QEMU_HOST_IP": "172.16.2.2",
+            "QEMU_VIRTIO_RNG": "1",
+            "ROOT_PASSWORD": "weakpassword",
+            "START_AFTER_TEST": "install_default_upload",
+            "SUBVARIANT": "CoreOS",
+            "TEST": "base_services_start",
+            "TEST_SUITE_NAME": "base_services_start",
+            "TEST_TARGET": "ISO",
+            "USER_LOGIN": "false",
+            "VERSION": "32",
+            "WORKER_CLASS": "qemu_x86_64"
+        },
+        "state": "done",
+        "t_finished": "2020-08-21T23:48:23",
+        "t_started": "2020-08-21T23:47:22",
+        "test": "base_services_start"
+    }
+
+
+@pytest.fixture(scope="function")
 def ffimg01():
     """A pre-canned fedfind image dict, for the x86_64 Server DVD from
     the 20170207.n.0 Rawhide nightly.

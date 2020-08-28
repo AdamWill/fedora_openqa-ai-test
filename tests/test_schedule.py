@@ -60,6 +60,63 @@ UPDATEJSON = {
         ]
     }
 }
+# trimmed CoreOS build metadata JSON, used for scheduling CoreOS jobs
+COREOSJSON = {
+    # pylint: disable=line-too-long
+    "stream": "next",
+    "metadata": {
+        "last-modified": "2020-08-25T19:20:43Z"
+    },
+    "architectures": {
+        "x86_64": {
+            "artifacts": {
+                "metal": {
+                    "release": "32.20200824.1.0",
+                    "formats": {
+                        "4k.raw.xz": {
+                            "disk": {
+                                "location": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-metal4k.x86_64.raw.xz",
+                                "signature": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-metal4k.x86_64.raw.xz.sig",
+                                "sha256": "124b9ef7aa58d4c85c59259a6eae6e55175f1f8aa00f9df4e28f6e1fe77170df"
+                            }
+                        },
+                        "iso": {
+                            "disk": {
+                                "location": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live.x86_64.iso",
+                                "signature": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live.x86_64.iso.sig",
+                                "sha256": "23b979b1675fcd1cc1972f77cce802e585eb123f4ef1770448a6085b574527fb"
+                            }
+                        },
+                        "pxe": {
+                            "kernel": {
+                                "location": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live-kernel-x86_64",
+                                "signature": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live-kernel-x86_64.sig",
+                                "sha256": "249d9f9b59bc96904de096a5b6a15a7892a596bdc109e6b7b123fe69f5969b9c"
+                            },
+                            "initramfs": {
+                                "location": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live-initramfs.x86_64.img",
+                                "signature": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live-initramfs.x86_64.img.sig",
+                                "sha256": "92ef4de1daa0d65c8981a1f5f6e9b80cb3f95ba5a08f25f1621ac0ecb934f9b5"
+                            },
+                            "rootfs": {
+                                "location": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live-rootfs.x86_64.img",
+                                "signature": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live-rootfs.x86_64.img.sig",
+                                "sha256": "8581ac303b9f0465f910229863505a0ca8d937924bfa5ee2f4db61daa29d94da"
+                            }
+                        },
+                        "raw.xz": {
+                            "disk": {
+                                "location": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-metal.x86_64.raw.xz",
+                                "signature": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-metal.x86_64.raw.xz.sig",
+                                "sha256": "8fc5dd1ab58acebd69b90b4d8dc46bc8e7166ace101fdd092e6526941632ece2"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
 
 @pytest.mark.usefixtures("ffmock02")
 class TestGetImages:
@@ -828,5 +885,55 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
         'UP1REL': '27',
         'UP2REL': '26',
     }
+
+@mock.patch("fedfind.helpers.download_json", return_value=COREOSJSON)
+@mock.patch("fedfind.helpers.get_current_stables", return_value=[31, 32])
+@mock.patch("fedfind.helpers.get_current_release", return_value=32)
+@mock.patch("fedora_openqa.schedule.OpenQA_Client", autospec=True)
+def test_jobs_from_fcosbuild(fakeclient, fakecurrr, fakecurrs, fakejson):
+    """Test scheduling jobs from a Fedora CoreOS build."""
+    # the OpenQA_Client instance mock
+    fakeinst = fakeclient.return_value
+    # for now, return no 'jobs' (for the dupe query), one 'id' (for
+    # the post request)
+    fakeinst.openqa_request.return_value = {"jobs": [], "ids": [1]}
+    # simple case, default stream is next
+    ret = schedule.jobs_from_fcosbuild()
+    # should get one job and the build back
+    assert ret == [1]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == "POST"]
+    # one flavor, one call
+    assert len(posts) == 1
+    parmdict = posts[0][0][2]
+    assert parmdict == {
+        "DISTRI": "fedora",
+        "VERSION": "32",
+        "ARCH": "x86_64",
+        "BUILD": "Fedora-CoreOS-32.20200824.1.0",
+        "_OBSOLETE": "1",
+        "_ONLY_OBSOLETE_SAME_BUILD": "1",
+        "QEMU_HOST_IP": "172.16.2.2",
+        "NICTYPE_USER_OPTIONS": "net=172.16.2.0/24",
+        "FLAVOR": "CoreOS-colive-iso",
+        "CURRREL": "32",
+        "PREVREL": "31",
+        "RAWREL": "33",
+        "UP1REL": "31",
+        "UP2REL": "30",
+        "IMAGETYPE": "colive",
+        # pylint: disable=line-too-long
+        "ISO_URL": "https://builds.coreos.fedoraproject.org/prod/streams/next/builds/32.20200824.1.0/x86_64/fedora-coreos-32.20200824.1.0-live.x86_64.iso",
+        "LOCATION": "",
+        "SUBVARIANT": "CoreOS",
+    }
+
+    # test we get no jobs if we specify a non-found flavor
+    ret = schedule.jobs_from_fcosbuild(flavors=["nonexistent"])
+    assert ret == []
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == "POST"]
+    # should still only have one call
+    assert len(posts) == 1
+
 
 # vim: set textwidth=120 ts=8 et sw=4:

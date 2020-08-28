@@ -370,7 +370,7 @@ class TestWikiReport:
         # check results didn't happen
         assert mockinst.report_validation_results.call_args is None
 
-    def  test_update_noreport(self, fake_getpassed, wikimock, oqaclientmock, jobdict02):
+    def test_update_noreport(self, fake_getpassed, wikimock, oqaclientmock, jobdict02):
         """Check we do no reporting (but don't crash or do anything
         else odd) for an update test job.
         """
@@ -382,6 +382,29 @@ class TestWikiReport:
         # check results didn't happen
         assert mockinst.report_validation_results.call_args is None
         assert ret == []
+
+    def test_coreos_noreport(self, fake_getpassed, wikimock, oqaclientmock, jobdict04):
+        """Check we do no reporting for Fedora CoreOS jobs."""
+        # adjust the OpenQA_Client instance mock to return jobdict04
+        instmock = oqaclientmock[1]
+        instmock.get_jobs.return_value = [jobdict04]
+        (_, mockinst) = wikimock
+        ret = fosreport.wiki_report(jobs=[1])
+        # check results didn't happen
+        assert mockinst.report_validation_results.call_args is None
+        assert ret == []
+
+    def test_no_jobs_noreport(self, fake_getpassed, wikimock, oqaclientmock):
+        """Check we do no reporting if we find no jobs."""
+        # adjust the OpenQA_Client instance mock to return nothing
+        instmock = oqaclientmock[1]
+        instmock.get_jobs.return_value = []
+        (_, mockinst) = wikimock
+        ret = fosreport.wiki_report(jobs=[1])
+        # check results didn't happen
+        assert mockinst.report_validation_results.call_args is None
+        assert ret == []
+
 
 @mock.patch.object(resultsdb_api.ResultsDBapi, 'create_result')
 @pytest.mark.usefixtures("ffmock", "oqaclientmock")
@@ -412,6 +435,18 @@ class TestResultsDBReport:
         assert fakeres.call_args[1]['testcase']['name'] == 'update.base_selinux'
         assert fakeres.call_args[1]['firmware'] == 'bios'
         assert fakeres.call_args[1]['outcome'] == 'PASSED'
+
+    def test_coreos(self, fakeres, oqaclientmock, jobdict04):
+        """Check resultsdb_report behaviour with a CoreOS job."""
+        # adjust the OpenQA_Client instance mock to return jobdict04
+        instmock = oqaclientmock[1]
+        instmock.get_jobs.return_value = [jobdict04]
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['item'] == "fedora-coreos-32.20200726.3.1-live.x86_64.iso"
+        assert fakeres.call_args[1]['ref_url'] == "https://some.url/tests/48192"
+        assert fakeres.call_args[1]['testcase']['name'] == "fcosbuild.base_services_start"
+        assert fakeres.call_args[1]['firmware'] == "bios"
+        assert fakeres.call_args[1]['outcome'] == "PASSED"
 
     def test_uefi(self, fakeres, oqaclientmock):
         """Check resultsdb_report with UEFI test."""

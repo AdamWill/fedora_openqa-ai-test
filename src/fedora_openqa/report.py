@@ -36,6 +36,7 @@ from openqa_client.client import OpenQA_Client
 from openqa_client.const import JOB_SCENARIO_WITH_MACHINE_KEYS
 from resultsdb_api import ResultsDBapi, ResultsDBapiException
 from resultsdb_conventions.fedora import FedoraImageResult, FedoraComposeResult, FedoraBodhiResult
+from resultsdb_conventions.fedoracoreos import FedoraCoreOSBuildResult, FedoraCoreOSImageResult
 from wikitcms.wiki import Wiki, ResTuple
 
 # Internal dependencies
@@ -281,11 +282,19 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
     # won't be 'passed'). When the clone completes, the consumer will
     # try again and do the right thing.
     jobs = client.get_jobs(jobs=jobs, build=build, filter_dupes=True)
+    if not jobs:
+        logger.debug("wiki_report: No jobs found!")
+        return []
 
     # cannot do wiki reporting for update jobs
     jobs = [job for job in jobs if 'ADVISORY' not in job['settings'] and 'KOJITASK' not in job['settings']]
     if not jobs:
-        logger.debug("No wiki-reportable jobs: most likely all jobs were update tests")
+        logger.debug("wiki_report: All jobs were update or Koji task jobs, no wiki reporting possible!")
+        return []
+    # there are no CoreOS wiki validation events, currently
+    jobs = [job for job in jobs if "coreos" not in job['settings'].get("SUBVARIANT", "").lower()]
+    if not jobs:
+        logger.debug("wiki_report: All jobs were CoreOS, update or Koji task jobs, no wiki reporting possible!")
         return []
     passed_testcases = get_passed_testcases(jobs, client)
     logger.info("passed testcases: %s", passed_testcases)
@@ -345,9 +354,10 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                      openqa_hostname=None, openqa_baseurl=None):
     """Report results from openQA jobs to ResultsDB. Either jobs (an
     iterable of job IDs) or build (an openQA BUILD string, usually a
-    Fedora compose ID) is required (if neither is specified, the
-    openQA client will raise TypeError). If do_report is false-y, will
-    just print out list of jobs to report for inspection.
+    Fedora compose ID or Fedora CoreOS version) is required (if neither
+    is specified, the openQA client will raise TypeError). If do_report
+    is false-y, will just print out list of jobs to report for
+    inspection.
     openqa_hostname is the host name of the openQA server to connect
     to; if set to None, the client library's default behaviour is used
     (see library for more details). openqa_baseurl is the public base
@@ -410,6 +420,19 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             logger.debug("Job %d is a NOREPORT job or was run with extra params! Will not report", job['id'])
             continue
 
+        # derive some CoreOS-specific values if appropriate
+        if job["settings"].get("SUBVARIANT", "").lower() == "coreos":
+            # FIXME: this is hacky, should do it better
+            form = job["settings"]["FLAVOR"].split("-")[-1]
+            # https://docs.fedoraproject.org/en-US/fedora-coreos/faq/#_what_is_the_format_of_the_version_number
+            # FIXME: maybe pass this in at creation?
+            streams = {
+                "1": "next",
+                "2": "testing",
+                "3": "stable"
+            }
+            stream = streams.get(build.split(".")[2], "unknown")
+
         # sanitize the test name
         tc_name = sanitize_tcname(job['test'])
 
@@ -440,12 +463,27 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             # the front of image names in updates-testing composes
             if imagename.startswith('testing-'):
                 imagename = imagename[8:]
-            rdbpartial = partial(FedoraImageResult, imagename, build, tc_name='compose.' + tc_name)
+            if job["settings"].get("SUBVARIANT", "").lower() == "coreos":
+                rdbpartial = partial(
+                    FedoraCoreOSImageResult,
+                    platform="metal",
+                    filename=imagename,
+                    form=form,
+                    arch=job["settings"]["ARCH"],
+                    build=build,
+                    stream=stream,
+                    tc_name='fcosbuild.' + tc_name
+                )
+            else:
+                rdbpartial = partial(FedoraImageResult, imagename, build, tc_name='compose.' + tc_name)
 
         elif ttarget == 'COMPOSE':
             # We have a non-image-specific compose test result
             # 'build' will be the compose ID
-            rdbpartial = partial(FedoraComposeResult, build, tc_name='compose.' + tc_name)
+            if job["settings"].get("SUBVARIANT", "").lower() == "coreos":
+                rdbpartial = partial(FedoraCoreOSBuildResult, build, stream, tc_name='fcosbuild.' + tc_name)
+            else:
+                rdbpartial = partial(FedoraComposeResult, build, tc_name='compose.' + tc_name)
 
         # don't report TEST_TARGET=NONE, non-update jobs that are
         # missing TEST_TARGET, or TEST_TARGET values we don't grok

@@ -4,5 +4,5 @@ openqa-client>=1.1
 setuptools
 six
 resultsdb_api
-resultsdb_conventions>=2.0.2
+resultsdb_conventions>=2.1.0
 wikitcms

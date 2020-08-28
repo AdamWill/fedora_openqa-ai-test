@@ -75,6 +75,19 @@ def command_compose(args):
     logger.debug("finished")
     sys.exit()
 
+def command_fcosbuild(args):
+    """Schedule openQA jobs for a Fedora CoreOS build (current build
+    from specified stream). Currently assumes x86_64 as that's all
+    Fedora CoreOS builds for.
+    """
+    flavors = None
+    if args.flavors:
+        flavors = args.flavors.split(',')
+
+    jobs = schedule.jobs_from_fcosbuild(stream=args.stream, flavors=flavors, force=args.force,
+                                            openqa_hostname=args.openqa_hostname)
+    print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
+    sys.exit()
 
 def command_update_task(args):
     """Schedule openQA jobs for a specified update or task."""
@@ -174,13 +187,13 @@ def parse_args(args=None):
     parser_compose.add_argument(
         '--updates', '-u', help="URL to an updates image to load for all tests. The tests that "
         "test updates image loading will fail when you use this", metavar='UPDATE_IMAGE_URL')
-    parser_compose.set_defaults(func=command_compose)
     parser_compose.add_argument(
         "--arches", '-a', help="Comma-separated list of arches to schedule jobs for (if not specified, "
         "all arches will be scheduled)", metavar='ARCHES')
     parser_compose.add_argument(
         "--flavors", help="Comma-separated list of flavors to schedule jobs for (if not specified, "
         "all flavors will be scheduled)", metavar='FLAVORS')
+    parser_compose.set_defaults(func=command_compose)
 
     # parser_update and parser_task are nearly the same, so...
     parser_update = subparsers.add_parser('update', description="Schedule jobs for a specific update.")
@@ -207,13 +220,26 @@ def parse_args(args=None):
     parser_update.set_defaults(func=command_update_task)
     parser_task.set_defaults(func=command_update_task)
 
+    parser_fcosbuild = subparsers.add_parser(
+        "fcosbuild", description="Schedule jobs for a Fedora CoreOS build stream."
+    )
+    parser_fcosbuild.add_argument("--stream", "-s", default="next", help="The stream to test the current build "
+                                  "from", metavar="STREAM", choices=("next", "testing", "stable"))
+    parser_fcosbuild.add_argument("--flavors", help="Comma-separated list of flavors to schedule jobs for "
+                                  "(if not specified, all flavors will be scheduled)", metavar="FLAVORS")
+    parser_fcosbuild.add_argument("--openqa-hostname", help="openQA host to schedule jobs on (default: "
+                                  "client library default)", metavar="HOSTNAME")
+    parser_fcosbuild.add_argument("--force", "-f", help="For each ISO/flavor combination, schedule jobs even "
+                                  "if there are existing, non-cancelled jobs for that combination",
+                                  action="store_true")
+    parser_fcosbuild.set_defaults(func=command_fcosbuild)
+
     parser_report = subparsers.add_parser(
         'report', description="Map openQA job results to Wikitcms test results and either log them to output or "
         "submit them to the wiki and/or ResultsDB.")
     parser_report.add_argument(
         'jobs', nargs='+', help="openQA job IDs or builds (e.g. "
         "'Fedora-24-20160113.n.1'). For each build included, the latest jobs will be reported.")
-    parser_report.set_defaults(func=command_report)
     parser_report.add_argument(
         "--openqa-hostname", help="openQA host to query for results (default: client library "
         "default)", metavar='HOSTNAME')
@@ -230,6 +256,7 @@ def parse_args(args=None):
     parser_report.add_argument(
         "--resultsdb-url", help="ResultsDB URL to report to (default: "
         "http://localhost:5001/api/v2.0/)")
+    parser_report.set_defaults(func=command_report)
 
     parser.add_argument(
         '--log-file', '-f', help="If given, log into specified file. When not provided, stdout"
