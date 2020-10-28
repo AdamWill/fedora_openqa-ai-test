@@ -309,6 +309,9 @@ def check_wiki_mapping(templates, modules):
             if restup.env == 'Everything' and restup.testcase == 'QA:Testcase_base_startup':
                 # this is fine. I am OK with the events that are occurring
                 pass
+            elif restup.env == "CoreOS" or restup.testname == "CoreOS_colive":
+                # we don't track coreos results in wiki
+                pass
             else:
                 print("No ResultRow found for {0}".format(restup))
                 failed = 1
