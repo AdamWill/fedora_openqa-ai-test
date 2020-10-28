@@ -34,7 +34,6 @@ TESTCASES = {
     #   $BOOTMETHOD$          - "x86_64 BIOS", "x86_64 UEFI"
     #   $FIRMWARE$            - "BIOS", "UEFI"
     #   $SUBVARIANT$          - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
-    #   $SUBVARIANT_OR_ARM$   - productmd 'subvariant' as above, or "ARM" when running on ARM architecture
     #   $SUBVARIANT_OR_LOCAL$ - productmd 'subvariant' as above, or "Local" when subvariant contains "Cloud"
     #   $CLOUD_OR_BASE$ -     - 'Cloud' when subvariant contains 'Cloud', 'Base' otherwise
     #   $IMAGETYPE$           - pungi 'type': "boot", "live"... "boot" -> "netinst"
@@ -58,7 +57,7 @@ TESTCASES = {
     "QA:Testcase_arm_image_deployment": {
         "name": "$SUBVARIANT$",
         "section": "ARM disk images",
-        "env": "Ext boot",
+        "env": "$RUNARCH$ VM",
         "type": "Installation"
     },
     "QA:Testcase_install_to_VirtIO": {

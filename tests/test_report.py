@@ -47,7 +47,6 @@ def test_uniqueres_replacements(jobdict01):
         "bootmethod": "$BOOTMETHOD$",
         "firmware": "$FIRMWARE$",
         "subvariant": "$SUBVARIANT$",
-        "subvariant_or_arm": "$SUBVARIANT_OR_ARM$",
         "imagetype": "$IMAGETYPE$",
         "fs": "$FS$",
         "desktop": "$DESKTOP$",
@@ -58,7 +57,6 @@ def test_uniqueres_replacements(jobdict01):
     assert ret['bootmethod'] == "x86_64 BIOS"
     assert ret['firmware'] == "BIOS"
     assert ret['subvariant'] == "Server"
-    assert ret['subvariant_or_arm'] == "Server"
     assert ret['imagetype'] == "dvd"
     # shouldn't crash, or anything
     assert ret['desktop'] == ''
@@ -88,7 +86,6 @@ def test_uniqueres_replacements(jobdict01):
     # check ARM stuff
     with mock.patch.dict(jobdict01['settings'], {'ARCH': 'arm'}):
         ret = fosreport._uniqueres_replacements(jobdict01, basedict)
-    assert ret['subvariant_or_arm'] == 'ARM'
     assert ret['firmware'] == 'ARM'
     assert ret['bootmethod'] == 'ARM'
 

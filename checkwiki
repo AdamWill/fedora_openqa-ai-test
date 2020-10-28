@@ -113,9 +113,9 @@ def fake_jobs(templates, modules):
     """
     fakejobs = []
     for jobtemp in templates['JobTemplates']:
-        # we only run x86_64 and arm in prod ATM, and we only care
+        # we only run x86_64 and aarch64 in prod ATM, and we only care
         # about result reporting for prod, so ignore other arches for now
-        if jobtemp['arch'] not in ('x86_64', 'arm'):
+        if jobtemp['arch'] not in ('x86_64', 'aarch64'):
             continue
         # ignore templates whose version is not "*" - these are only for
         # old releases, so won't be release validation tests, so won't

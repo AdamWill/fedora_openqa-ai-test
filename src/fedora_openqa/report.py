@@ -64,7 +64,6 @@ def _uniqueres_replacements(job, tcdict):
     imagetype = job['settings']['IMAGETYPE']
     imagetype = imagetype.replace('boot', 'netinst')
     subvariant = subvariant.replace('_Base', '')
-    subvariant_or_arm = "ARM" if arch == "arm" else subvariant
     subvariant_or_local = "Local" if "Cloud" in subvariant else subvariant
     cloud_or_base = "Cloud" if "Cloud" in subvariant else "Base"
     if arch == "arm":
@@ -90,7 +89,6 @@ def _uniqueres_replacements(job, tcdict):
         value = value.replace('$SUBVARIANT$', subvariant)
         value = value.replace('$IMAGETYPE$', imagetype)
         value = value.replace('$DESKTOP$', desktop)
-        value = value.replace('$SUBVARIANT_OR_ARM$', subvariant_or_arm)
         value = value.replace('$SUBVARIANT_OR_LOCAL$', subvariant_or_local)
         value = value.replace('$CLOUD_OR_BASE$', cloud_or_base)
         changed[key] = value
