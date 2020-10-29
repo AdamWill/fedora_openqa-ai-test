@@ -38,7 +38,7 @@ import fedfind.release
 from openqa_client.client import OpenQA_Client
 
 # Internal dependencies
-from .config import WANTED
+from .config import WANTED, CONFIG
 
 logger = logging.getLogger(__name__)
 
@@ -288,7 +288,9 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
 
     arches is a list of arches to schedule jobs for; if specified,
     the image list will be filtered by the arches listed. If not
-    specified, jobs are scheduled for all arches in the image list.
+    passed here, we check the config file for a value (a comma-
+    separated list) and use it if present, otherwise jobs will be
+    scheduled for all arches in the image list.
 
     flavors is a list of flavors to schedule jobs for; if specified,
     the image list will be filtered to images whose flavor is in this
@@ -302,7 +304,10 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     if not wanted:
         wanted = WANTED
     if not arches:
-        arches = []
+        if CONFIG.get("schedule", "arches"):
+            arches = CONFIG.get("schedule", "arches").split(",")
+        else:
+            arches = []
     try:
         rel = fedfind.release.get_release(url=location)
     except ValueError:

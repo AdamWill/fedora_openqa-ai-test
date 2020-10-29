@@ -17,3 +17,8 @@ resultsdb_url: http://localhost/resultsdb_api/api/v2.0/
 
 # Hostname of Fedora wiki to report to
 wiki_hostname: stg.fedoraproject.org
+
+[schedule]
+# Arches to schedule jobs for (comma-separated list), if not set or
+# empty, jobs will be scheduled for images of all arches in WANTED
+arches: x86_64,aarch64

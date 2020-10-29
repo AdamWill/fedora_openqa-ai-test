@@ -37,7 +37,7 @@ class ConfigError(Exception):
 CONFIG = configparser.ConfigParser()
 CONFIG.add_section('cli')
 CONFIG.add_section('report')
-CONFIG.add_section('consumers')
+CONFIG.add_section('schedule')
 
 CONFIG.set('cli', 'log-file', '')
 CONFIG.set('cli', 'log-level', 'info')
@@ -45,11 +45,15 @@ CONFIG.set('cli', 'log-level', 'info')
 CONFIG.set('report', 'resultsdb_url', 'http://localhost:5001/api/v2.0/')
 CONFIG.set('report', 'wiki_hostname', 'stg.fedoraproject.org')
 
+CONFIG.set('schedule', 'arches', 'x86_64')
+
 CONFIG.read('/etc/fedora-openqa/schedule.conf')
 CONFIG.read('{0}/.config/fedora-openqa/schedule.conf'.format(os.path.expanduser('~')))
 
 # The default set of tested images. This set can be overridden by an
-# 'images.json' file in /etc/fedora-openqa or ~/.config/fedora-openqa.
+# 'images.json' file in /etc/fedora-openqa or ~/.config/fedora-openqa,
+# and filtered by arguments passed to `schedule.jobs_from_compose` or
+# set in the configuration file.
 # Refer to comments in ../images.json.sample
 
 WANTED = [
@@ -106,6 +110,14 @@ WANTED = [
     },
     {
         "match": {
+            "subvariant": "IoT",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
             "subvariant": "Cloud_Base",
             "type": "qcow2",
             "format": "qcow2",
@@ -114,12 +126,121 @@ WANTED = [
     },
     {
         "match": {
+            "subvariant": "Everything",
+            "type": "boot",
+            "format": "iso",
+            "arch": "ppc64le",
+        },
+        "score": 8,
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "live",
+            "format": "iso",
+            "arch": "ppc64le",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "boot",
+            "format": "iso",
+            "arch": "ppc64le",
+        },
+        "score": 6,
+    },
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "dvd",
+            "format": "iso",
+            "arch": "ppc64le",
+        },
+        "score": 10,
+    },
+    {
+        "match": {
+            "subvariant": "Cloud_Base",
+            "type": "qcow2",
+            "format": "qcow2",
+            "arch": "ppc64le",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Silverblue",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "ppc64le",
+        },
+    },
+    {
+        "match": {
             "subvariant": "IoT",
             "type": "dvd-ostree",
             "format": "iso",
-            "arch": "x86_64",
+            "arch": "ppc64le",
         },
     },
+    {
+        "match": {
+            "subvariant": "Minimal",
+            "type": "raw-xz",
+            "format": "raw.xz",
+            "arch": "aarch64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "boot",
+            "format": "iso",
+            "arch": "aarch64",
+        },
+        "score": 6,
+    },
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "dvd",
+            "format": "iso",
+            "arch": "aarch64",
+        },
+        "score": 10,
+    },
+    {
+        "match": {
+            "subvariant": "Server",
+            "type": "raw-xz",
+            "format": "raw.xz",
+            "arch": "aarch64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Workstation",
+            "type": "raw-xz",
+            "format": "raw.xz",
+            "arch": "aarch64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "Cloud_Base",
+            "type": "qcow2",
+            "format": "qcow2",
+            "arch": "aarch64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "IoT",
+            "type": "dvd-ostree",
+            "format": "iso",
+            "arch": "aarch64",
+        },
+    }
 ]
 
 # List of non-critpath package names to run update tests on.

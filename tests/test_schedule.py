@@ -476,13 +476,21 @@ def test_jobs_from_compose(fakerun, ffmock02):
         },
     ]
     # first check we get 5 runs (one for each image plus two universal
-    # runs) with no arches arg and this WANTED
+    # runs) with no arches set by config or arg, and this WANTED
+    schedule.CONFIG.set("schedule", "arches", "")
     ret = schedule.jobs_from_compose(COMPURL, wanted=wanted)
     assert fakerun.call_count == 5
     # now check we get only 3 if we limit the arches
     fakerun.reset_mock()
     ret = schedule.jobs_from_compose(COMPURL, wanted=wanted, arches=['i386', 'armhfp'])
     assert fakerun.call_count == 3
+    # also if we get an arch setting from config file
+    schedule.CONFIG.set("schedule", "arches", "i386,armhfp")
+    fakerun.reset_mock()
+    ret = schedule.jobs_from_compose(COMPURL, wanted=wanted)
+    assert fakerun.call_count == 3
+    # set config setting back to default
+    schedule.CONFIG.set("schedule", "arches", "x86_64")
 
     # check flavors is handled properly
     fakerun.reset_mock()
