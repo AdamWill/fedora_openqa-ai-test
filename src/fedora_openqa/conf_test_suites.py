@@ -1086,40 +1086,19 @@ TESTSUITES = {
     "base_selinux": [
         "QA:Testcase_base_selinux",
     ],
-    "base_selinux_cloud": [
-        "QA:Testcase_base_selinux",
-    ],
     "base_services_start": [
-        "QA:Testcase_base_services_start",
-    ],
-    "base_services_start_arm": [
-        "QA:Testcase_base_services_start",
-    ],
-    "base_services_start_cloud": [
         "QA:Testcase_base_services_start",
     ],
     "base_service_manipulation": [
         "QA:Testcase_base_service_manipulation",
     ],
-    "base_service_manipulation_cloud": [
-        "QA:Testcase_base_service_manipulation",
-    ],
     "base_update_cli": [
-        "QA:Testcase_base_update_cli",
-    ],
-    "base_update_cli_cloud": [
         "QA:Testcase_base_update_cli",
     ],
     "base_reboot_unmount": [
         "QA:Testcase_base_reboot_unmount",
     ],
-    "base_reboot_unmount_cloud": [
-        "QA:Testcase_base_reboot_unmount",
-    ],
     "base_system_logging": [
-        "QA:Testcase_base_system_logging",
-    ],
-    "base_system_logging_cloud": [
         "QA:Testcase_base_system_logging",
     ],
     "release_identification": [
