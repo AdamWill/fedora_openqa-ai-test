@@ -714,6 +714,7 @@ TESTSUITES = {
     "install_arm_image_deployment_upload": [
         "QA:Testcase_arm_image_deployment",
         "QA:Testcase_base_initial_setup",
+        "QA:Testcase_base_startup",
     ],
     "install_package_set_minimal": [
         "QA:Testcase_partitioning_guided_empty",
