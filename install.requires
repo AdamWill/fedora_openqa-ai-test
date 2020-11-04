@@ -1,4 +1,4 @@
-fedfind>=2.5.0
+fedfind>=3.3.0
 fedora-messaging
 openqa-client>=1.1
 setuptools

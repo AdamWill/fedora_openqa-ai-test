@@ -415,6 +415,10 @@ def ffimg01():
         "size": 3001024512,
         "subvariant": "Server",
         "type": "dvd",
+        # pylint: disable=line-too-long
+        "url": "https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170207.n.0/compose/Server/x86_64/iso/Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso",
+        # pylint: disable=line-too-long
+        "direct_url": "https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170207.n.0/compose/Server/x86_64/iso/Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso",
         "volume_id": "Fedora-S-dvd-x86_64-rawh"
     }
 
