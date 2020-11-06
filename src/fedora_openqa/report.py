@@ -69,6 +69,9 @@ def _uniqueres_replacements(job, tcdict):
     if arch == "arm":
         bootmethod = 'ARM'
         firmware = 'ARM'
+    elif arch == "aarch64":
+        bootmethod = "aarch64"
+        firmware = "UEFI"
     elif 'UEFI' in job['settings']:
         firmware = 'UEFI'
         bootmethod = 'x86_64 UEFI'

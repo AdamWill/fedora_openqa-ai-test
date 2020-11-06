@@ -31,7 +31,7 @@ TESTCASES = {
     #   special value       replacement
     #
     #   $RUNARCH$             - "i386", "x86_64", "arm"
-    #   $BOOTMETHOD$          - "x86_64 BIOS", "x86_64 UEFI"
+    #   $BOOTMETHOD$          - "x86_64 BIOS", "x86_64 UEFI", "ARM", "aarch64"
     #   $FIRMWARE$            - "BIOS", "UEFI"
     #   $SUBVARIANT$          - productmd 'subvariant': "Server", "KDE"... "_Base" is stripped
     #   $SUBVARIANT_OR_LOCAL$ - productmd 'subvariant' as above, or "Local" when subvariant contains "Cloud"
