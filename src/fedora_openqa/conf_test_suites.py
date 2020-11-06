@@ -62,7 +62,7 @@ TESTCASES = {
     },
     "QA:Testcase_install_to_VirtIO": {
         "section": "Storage devices",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_partitioning_guided_empty": {
@@ -97,17 +97,17 @@ TESTCASES = {
     },
     "QA:Testcase_Anaconda_user_creation": {
         "section": "Miscellaneous",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_install_to_PATA": {
         "section": "Storage devices",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_install_to_SATA": {
         "section": "Storage devices",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_partitioning_guided_delete_all": {
@@ -122,7 +122,7 @@ TESTCASES = {
     },
     "QA:Testcase_install_to_SCSI": {
         "section": "Storage devices",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_Anaconda_updates.img_via_URL": {
@@ -267,27 +267,27 @@ TESTCASES = {
     },
     "QA:Testcase_upgrade_dnf_current_minimal": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_current_workstation": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_current_workstation_encrypted": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_current_server": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_current_kde": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_current_any": {
@@ -297,27 +297,27 @@ TESTCASES = {
     },
     "QA:Testcase_upgrade_dnf_previous_minimal": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_workstation": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_workstation_encrypted": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_server": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_kde": {
         "section": "Upgrade",
-        "env": "x86_64",
+        "env": "$RUNARCH$",
         "type": "Installation",
     },
     "QA:Testcase_upgrade_dnf_previous_any": {
@@ -496,7 +496,7 @@ TESTCASES = {
     "QA:Testcase_desktop_app_basic": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "section": "$RUNARCH$",
         # FIXME: this is just hard-coded for now as we do not test
         # any other applications, but we should really use a sub to
         # derive this 'intelligently'
@@ -505,37 +505,37 @@ TESTCASES = {
     "QA:Testcase_desktop_browser": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "section": "$RUNARCH$",
     },
     "QA:Testcase_desktop_login": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "section": "$RUNARCH$",
     },
     "QA:Testcase_desktop_update_graphical": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "section": "$RUNARCH$",
     },
     "QA:Testcase_desktop_update_notification": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "section": "$RUNARCH$",
     },
     "QA:Testcase_desktop_error_checks": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "section": "$RUNARCH$",
     },
     "QA:Testcase_workstation_core_applications": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "section": "$RUNARCH$",
     },
     "QA:Testcase_Printing_New_Printer": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
-        "section": "Release-blocking desktops: <b>x86 / x86_64</b>",
+        "section": "$RUNARCH$",
         "name": "virtual printer",
     },
     "QA:Testcase_Server_firewall_default": {
