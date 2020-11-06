@@ -215,11 +215,6 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
-    "QA:Testcase_partitioning_custom_standard_partition_ext3": {
-        "section": "Custom storage configuration",
-        "env": "$BOOTMETHOD$",
-        "type": "Installation",
-    },
     "QA:Testcase_partitioning_custom_standard_partition_xfs": {
         "section": "Custom storage configuration",
         "env": "$BOOTMETHOD$",
@@ -241,11 +236,6 @@ TESTCASES = {
         "type": "Installation",
     },
     "QA:Testcase_partitioning_blivet_lvmthin": {
-        "section": "Advanced custom storage configuration",
-        "env": "$BOOTMETHOD$",
-        "type": "Installation",
-    },
-    "QA:Testcase_partitioning_blivet_standard_partition_ext3": {
         "section": "Advanced custom storage configuration",
         "env": "$BOOTMETHOD$",
         "type": "Installation",
@@ -937,13 +927,6 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
-    "install_ext3": [
-        "QA:Testcase_install_to_VirtIO",
-        "QA:Testcase_partitioning_custom_standard_partition_ext3",
-        "QA:Testcase_Anaconda_User_Interface_Graphical",
-        "QA:Testcase_Anaconda_user_creation",
-        "QA:Testcase_Package_Sets_Minimal_Package_Install",
-    ],
     "install_updates_img_local": [
         "QA:Testcase_Anaconda_updates.img_via_local_media",
         "QA:Testcase_install_to_VirtIO",
@@ -968,13 +951,6 @@ TESTSUITES = {
     "install_blivet_lvmthin": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_blivet_lvmthin",
-        "QA:Testcase_Anaconda_User_Interface_Graphical",
-        "QA:Testcase_Anaconda_user_creation",
-        "QA:Testcase_Package_Sets_Minimal_Package_Install",
-    ],
-    "install_blivet_ext3": [
-        "QA:Testcase_install_to_VirtIO",
-        "QA:Testcase_partitioning_blivet_standard_partition_ext3",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
