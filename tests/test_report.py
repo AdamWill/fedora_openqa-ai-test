@@ -89,6 +89,12 @@ def test_uniqueres_replacements(jobdict01):
     assert ret['firmware'] == 'ARM'
     assert ret['bootmethod'] == 'ARM'
 
+    # and aarch64
+    with mock.patch.dict(jobdict01['settings'], {'ARCH': 'aarch64'}):
+        ret = fosreport._uniqueres_replacements(jobdict01, basedict)
+    assert ret['firmware'] == 'UEFI'
+    assert ret['bootmethod'] == 'aarch64'
+
 class TestGetPassedTcNames:
     """Tests for _get_passed_tcnames."""
 
