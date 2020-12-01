@@ -210,6 +210,16 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
+    "QA:Testcase_partitioning_custom_standard_partition_ext4": {
+        "section": "Custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_custom_lvm_ext4": {
+        "section": "Custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
     "QA:Testcase_partitioning_custom_lvmthin": {
         "section": "Custom storage configuration",
         "env": "$BOOTMETHOD$",
@@ -920,9 +930,23 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
+    "install_lvm_ext4": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_lvm_ext4",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
     "install_lvmthin": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_lvmthin",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_standard_partition_ext4": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_standard_partition_ext4",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
