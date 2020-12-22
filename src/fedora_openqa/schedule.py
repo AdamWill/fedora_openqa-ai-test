@@ -379,7 +379,8 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
 
 def jobs_from_fcosbuild(stream="next", flavors=None, force=False, extraparams=None, openqa_hostname=None):
     """Schedule jobs for the current artifacts from the given Fedora
-    CoreOS stream (valid streams are "next", "testing", "stable").
+    CoreOS stream (valid streams are "rawhide", "next", "testing",
+    "stable").
     flavors can be an iterable of flavors to schedule, otherwise all
     known CoreOS flavors will be scheduled. If force is False, we
     will not create jobs if some already exist for the same version

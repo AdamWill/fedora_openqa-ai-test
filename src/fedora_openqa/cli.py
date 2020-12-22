@@ -224,7 +224,7 @@ def parse_args(args=None):
         "fcosbuild", description="Schedule jobs for a Fedora CoreOS build stream."
     )
     parser_fcosbuild.add_argument("--stream", "-s", default="next", help="The stream to test the current build "
-                                  "from", metavar="STREAM", choices=("next", "testing", "stable"))
+                                  "from", metavar="STREAM", choices=("rawhide", "next", "testing", "stable"))
     parser_fcosbuild.add_argument("--flavors", help="Comma-separated list of flavors to schedule jobs for "
                                   "(if not specified, all flavors will be scheduled)", metavar="FLAVORS")
     parser_fcosbuild.add_argument("--openqa-hostname", help="openQA host to schedule jobs on (default: "
