@@ -245,6 +245,16 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
+    "QA:Testcase_partitioning_blivet_btrfs_preserve_home": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_custom_btrfs_preserve_home": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
     "QA:Testcase_partitioning_blivet_lvmthin": {
         "section": "Advanced custom storage configuration",
         "env": "$BOOTMETHOD$",
@@ -965,9 +975,23 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
+    "install_btrfs_preserve_home": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_custom_btrfs_preserve_home",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
     "install_blivet_btrfs": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_blivet_btrfs",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_blivet_btrfs_preserve_home": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_btrfs_preserve_home",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
