@@ -50,7 +50,7 @@ TESTCASES = {
     },
     "QA:Testcase_Boot_default_install": {
         "name": "$SUBVARIANT$_$IMAGETYPE$",
-        "section": 'Default boot and install',
+        "section": 'Default boot and install ($RUNARCH$)',
         "env": "VM $FIRMWARE$",
         "type": "Installation",
     },
