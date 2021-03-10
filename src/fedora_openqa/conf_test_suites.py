@@ -270,6 +270,16 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
+    "QA:Testcase_partitioning_blivet_lvm_ext4": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_blivet_standard_partition_ext4": {
+        "section": "Advanced custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
     "QA:Testcase_Kickstart_File_Path_Ks_Cfg": {
         "section": "Kickstart",
         "env": "Result",
@@ -996,9 +1006,30 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
+    "install_blivet_btrfs_preserve_home_uefi": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_btrfs_preserve_home",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
     "install_blivet_lvmthin": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_blivet_lvmthin",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_blivet_lvm_ext4": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_lvm_ext4",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_blivet_standard_partition_ext4": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_blivet_standard_partition_ext4",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
