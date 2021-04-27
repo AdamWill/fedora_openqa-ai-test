@@ -561,6 +561,11 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
             # keep the necessary base disk images around
             logger.debug("skipping upgrade tests as release %s is the oldest stable", version)
             continue
+        if int(version) == 32 and flavor == "kde-live-iso":
+            # KDE live image build for F32 just hangs in the middle of
+            # nss, and F32 will be EOL soon, so let's just skip it
+            logger.debug("skipping kde-live-iso for F32 due to known bug")
+            continue
         fullflav = 'updates-{0}'.format(flavor)
         if not force:
             # dupe check
