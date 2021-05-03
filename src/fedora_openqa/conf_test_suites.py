@@ -1347,9 +1347,8 @@ TESTSUITES = {
     "support_server": [],
     # this is a data test, does not map to any test case
     "memory_check": [],
-    # this test is a partial check for QA:Testcase_desktop_menus but
-    # we cannot really mark that as passed if this passes as it does
-    # not test *everything* required there
+    # doesn't map to a wiki test case, was requested by desktop team
+    "unwanted_packages": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
