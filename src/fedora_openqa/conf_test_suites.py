@@ -435,7 +435,7 @@ TESTCASES = {
         "env": "$SUBVARIANT_OR_LOCAL$",
         "type": "$CLOUD_OR_BASE$",
     },
-    "QA:Testcase_base_package_install_remove": {
+    "QA:Testcase_package_install_remove": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT_OR_LOCAL$",
         "type": "$CLOUD_OR_BASE$",
@@ -1170,7 +1170,7 @@ TESTSUITES = {
         "QA:Testcase_base_system_logging",
     ],
     "base_package_install_remove": [
-        "QA:Testcase_base_package_install_remove",
+        "QA:Testcase_package_install_remove",
     ],
     "release_identification": [
         "QA:Testcase_base_edition_self_identification",
