@@ -46,7 +46,7 @@ FORMAT_TO_PARAM = {
     "iso": "ISO_URL",
     # let's connect it as second HDD - we can then use NUMDISKS=1 when we don't need it connected
     "raw.xz": "HDD_2_DECOMPRESS_URL",
-    "qcow2": "HDD_1_URL",
+    "qcow2": "HDD_2_URL",
 }
 
 
@@ -114,7 +114,7 @@ def _find_duplicate_jobs(client, build, param_urls, flavor):
     we'd bail on doing the per-ISO jobs for the ISO we use for the
     'universal' tests). ISO/HDD are taken from param_urls dict.
     """
-    if any([param in param_urls for param in ('ISO_URL', 'HDD_1_DECOMPRESS_URL', 'HDD_1')]):
+    if any(par in param_urls for par in ('ISO_URL', 'HDD_1_DECOMPRESS_URL', 'HDD_1', 'HDD_2_DECOMPRESS_URL', 'HDD_2')):
         if 'ISO_URL' in param_urls:
             assetname = param_urls['ISO_URL'].split('/')[-1]
             jobs = client.openqa_request('GET', 'jobs', params={'iso': assetname, 'build': build})['jobs']
@@ -123,9 +123,17 @@ def _find_duplicate_jobs(client, build, param_urls, flavor):
             hddname = param_urls['HDD_1_DECOMPRESS_URL'].split('/')[-1]
             assetname = os.path.splitext(hddname)[0]
             jobs = client.openqa_request('GET', 'jobs', params={'hdd_1': assetname, 'build': build})['jobs']
-        else:
+        elif 'HDD_2_DECOMPRESS_URL' in param_urls:
+            # HDDs
+            hddname = param_urls['HDD_2_DECOMPRESS_URL'].split('/')[-1]
+            assetname = os.path.splitext(hddname)[0]
+            jobs = client.openqa_request('GET', 'jobs', params={'hdd_2': assetname, 'build': build})['jobs']
+        elif 'HDD_1' in param_urls:
             assetname = param_urls['HDD_1'].split('/')[-1]
             jobs = client.openqa_request('GET', 'jobs', params={'hdd_1': assetname, 'build': build})['jobs']
+        else:
+            assetname = param_urls['HDD_2'].split('/')[-1]
+            jobs = client.openqa_request('GET', 'jobs', params={'hdd_2': assetname, 'build': build})['jobs']
 
         jobs = [job for job in jobs if job['settings']['FLAVOR'] == flavor]
         jobs = [job for job in jobs if

@@ -186,7 +186,7 @@ class TestGetImages:
                 0,
                 {
                     # pylint: disable=line-too-long
-                    "HDD_1_URL": COMPURL + "CloudImages/x86_64/images/Fedora-Cloud-Base-25-20161115.n.0.x86_64.qcow2",
+                    "HDD_2_URL": COMPURL + "CloudImages/x86_64/images/Fedora-Cloud-Base-25-20161115.n.0.x86_64.qcow2",
                 },
                 "Cloud_Base",
                 "qcow2"
@@ -267,10 +267,18 @@ def test_find_duplicate_jobs():
     ret = schedule._find_duplicate_jobs(client, 'build', {'HDD_1': 'somefile.img'}, 'someflavor')
     assert len(ret) == 1
     assert client.openqa_request.call_args[1]['params'] == {'hdd_1': 'somefile.img', 'build': 'build'}
+    # HDD_2 case
+    ret = schedule._find_duplicate_jobs(client, 'build', {'HDD_2': 'somefile.img'}, 'someflavor')
+    assert len(ret) == 1
+    assert client.openqa_request.call_args[1]['params'] == {'hdd_2': 'somefile.img', 'build': 'build'}
     client.openqa_request.reset_mock()
     # HDD_1_DECOMPRESS_URL case
     ret = schedule._find_duplicate_jobs(
         client, 'build', {'HDD_1_DECOMPRESS_URL': 'https://some.url/somefile.img.gz'}, 'someflavor')
+    assert len(ret) == 1
+    # HDD_2_DECOMPRESS_URL case
+    ret = schedule._find_duplicate_jobs(
+        client, 'build', {'HDD_2_DECOMPRESS_URL': 'https://some.url/somefile.img.gz'}, 'someflavor')
     assert len(ret) == 1
 
     # shouldn't find any dupes if flavor differs
