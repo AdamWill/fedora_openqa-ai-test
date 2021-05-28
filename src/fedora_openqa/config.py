@@ -281,6 +281,9 @@ UPDATETL = {
     'gnome-initial-setup': ('workstation-live-iso',),
     # Since we have background tests, makes sense to do these
     'desktop-backgrounds': ('kde', 'workstation'),
+    # printing related stuff (printing tests are gating)
+    'cups': ('kde', 'workstation'),
+    'ghostscript': ('kde', 'workstation'),
 }
 
 for path in ('/etc/fedora-openqa',
