@@ -1,4 +1,4 @@
-# Copyright (C) 2016 John Dulaney, Red Hat Inc.
+# Copyright Red Hat, John Dulaney
 #
 # This file is part of fedora-openqa-schedule.
 #

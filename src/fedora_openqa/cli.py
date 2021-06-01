@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright (C) Red Hat Inc.
+# Copyright Red Hat
 #
 # This file is part of fedora-openqa-schedule.
 #

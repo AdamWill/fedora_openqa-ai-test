@@ -1,4 +1,4 @@
-# Copyright (C) 2015 Red Hat Inc.
+# Copyright Red Hat
 #
 # This file is part of fedora-openqa-schedule.
 #
