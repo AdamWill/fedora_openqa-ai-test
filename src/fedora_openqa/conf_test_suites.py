@@ -125,6 +125,12 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Installation",
     },
+    "QA:Testcase_Anaconda_save_traceback_to_bugzilla": {
+        "name": "text",
+        "section": "Miscellaneous",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_Anaconda_updates.img_via_URL": {
         "section": "Miscellaneous",
         "env": "Result",
@@ -411,6 +417,11 @@ TESTCASES = {
         "type": "Installation",
     },
     "QA:Testcase_Anaconda_rescue_mode": {
+        "section": "Miscellaneous",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_Memtest86": {
         "section": "Miscellaneous",
         "env": "$BOOTMETHOD$",
         "type": "Installation",
@@ -779,6 +790,9 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_anaconda_text_save_traceback_bugzilla": [
+        "QA:Testcase_Anaconda_save_traceback_to_bugzilla",
     ],
     "install_kickstart_user_creation": [
         "QA:Testcase_install_to_VirtIO",
@@ -1151,6 +1165,9 @@ TESTSUITES = {
     ],
     "install_rescue_encrypted": [
         "QA:Testcase_Anaconda_rescue_mode",
+    ],
+    "memtest": [
+        "QA:Testcase_Memtest86",
     ],
     "install_pxeboot": [
         "QA:Testcase_Boot_Methods_Pxeboot",
