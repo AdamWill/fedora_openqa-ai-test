@@ -583,15 +583,15 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     assert ret == [1 for i in range(numflavors)]
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
-    # 9 flavors by default, 9 calls
-    assert len(posts) == 9
+    # should be as many calls as we have flavors
+    assert len(posts) == numflavors
     parmdicts = [call[0][2] for call in posts]
     # checking two lists of dicts are equivalent is rather tricky; I
     # don't think we can technically rely on the order always being
     # the same, and in Python 3, a list of dicts cannot be sorted.
     # So we assert the length of the list, and assert that each of the
     # expected dicts is in the actual list.
-    assert len(parmdicts) == 9
+    assert len(parmdicts) == numflavors
     checkdicts = [
         {
             'DISTRI': 'fedora',
