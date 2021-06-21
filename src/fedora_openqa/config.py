@@ -284,6 +284,12 @@ UPDATETL = {
     # printing related stuff (printing tests are gating)
     'cups': ('kde', 'workstation'),
     'ghostscript': ('kde', 'workstation'),
+    # non-critpath container-y packages to run container tests on
+    'podman': ('container',),
+    'containernetworking-plugins': ('container',),
+    'crun': ('container',),
+    'fuse-overlayfs': ('container',),
+    'slirp4netns': ('container',),
 }
 
 for path in ('/etc/fedora-openqa',

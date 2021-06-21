@@ -481,6 +481,10 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     if extraparams:
         build = '{0}-EXTRA'.format(build)
     flavdict = {
+        'container': {
+            # this flavor uses the server base image
+            'HDD_1': 'disk_f{0}_server_3_{1}.img'.format(version, arch),
+        },
         'server': {
             'HDD_1': 'disk_f{0}_server_3_{1}.img'.format(version, arch),
         },
