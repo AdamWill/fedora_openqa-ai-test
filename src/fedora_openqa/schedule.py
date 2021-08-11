@@ -325,7 +325,9 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         return ('', [])
     logger.debug("Finding images for compose %s in location %s", rel.cid, location)
     images = _get_images(rel, wanted=wanted)
-    if flavors:
+    if flavors and flavors != ["universal"]:
+        # in special cast flavors is just "universal", we don't filter
+        # the image list so we can pick the best universal candidate
         flavors = [flavor.lower() for flavor in flavors]
         logger.debug("Only scheduling jobs for flavors %s", ' '.join(flavors))
         images = [img for img in images if img[0].lower() in flavors]
@@ -346,9 +348,12 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     if release.lower() == 'bikeshed':
         release = 'Rawhide'
     for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
-        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
-                                    release, location, force=force, extraparams=extraparams,
-                                    openqa_hostname=openqa_hostname, label=rel.label))
+        if flavors != ["universal"]:
+            # in the special case that flavors is just "universal", we
+            # don't want to schedule jobs, only work out univ cands
+            jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
+                                        release, location, force=force, extraparams=extraparams,
+                                        openqa_hostname=openqa_hostname, label=rel.label))
         if score > univs.get(arch, [None, 0])[1]:
             univs[arch] = (param_urls, score, subvariant, imagetype)
 

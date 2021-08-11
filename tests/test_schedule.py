@@ -514,6 +514,25 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # we have one x86_64 image for each flavor, so 2
     assert fakerun.call_count == 2
 
+    # check flavors with 'universal' is handled properly
+    fakerun.reset_mock()
+    ret = schedule.jobs_from_compose(COMPURL, flavors=['server-boot-iso', 'workstation-live-iso', 'universal'], arches=['x86_64'])
+    # we have one x86_64 image for each flavor, and universal should
+    # run with server-boot-iso, so 3
+    assert fakerun.call_count == 3
+    # should use server boot ISO
+    univs = [argtup[0][0]['ISO_URL'] for argtup in fakerun.call_args_list if argtup[0][1] == 'universal']
+    assert univs == [
+        COMPURL + 'Server/x86_64/iso/Fedora-Server-netinst-x86_64-25-20161115.n.0.iso',
+    ]
+
+    # check *only* 'universal' is handled properly
+    fakerun.reset_mock()
+    ret = schedule.jobs_from_compose(COMPURL, flavors=['universal'], arches=['x86_64'])
+    # we should only schedule 'universal', using the best candidate
+    assert fakerun.call_count == 1
+    # should use Server DVD ISO
+    assert fakerun.call_args[0][0]["ISO_URL"] == COMPURL + "Server/x86_64/iso/Fedora-Server-dvd-x86_64-25-20161115.n.0.iso"
 
     # check triggerexception is raised when appropriate
     with mock.patch('fedfind.release.get_release', side_effect=ValueError("Oops!")):
