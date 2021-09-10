@@ -665,7 +665,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'START_AFTER_TEST': '',
             'QEMU_HOST_IP': '172.16.2.2',
             'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
-            'HDD_1': 'disk_f25_server_3_x86_64.img',
+            'HDD_1': 'disk_f25_server_3_x86_64.qcow2',
             'FLAVOR': 'updates-server',
             'CURRREL': '25',
             'PREVREL': '24',
@@ -686,7 +686,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'START_AFTER_TEST': '',
             'QEMU_HOST_IP': '172.16.2.2',
             'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
-            'HDD_1': 'disk_f25_server_3_x86_64.img',
+            'HDD_1': 'disk_f25_server_3_x86_64.qcow2',
             'FLAVOR': 'updates-container',
             'CURRREL': '25',
             'PREVREL': '24',
@@ -707,7 +707,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'START_AFTER_TEST': '',
             'QEMU_HOST_IP': '172.16.2.2',
             'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
-            'HDD_1': 'disk_f25_kde_4_x86_64.img',
+            'HDD_1': 'disk_f25_kde_4_x86_64.qcow2',
             'FLAVOR': 'updates-kde',
             'DESKTOP': 'kde',
             'CURRREL': '25',
@@ -729,7 +729,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'START_AFTER_TEST': '',
             'QEMU_HOST_IP': '172.16.2.2',
             'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
-            'HDD_1': 'disk_f25_desktop_4_x86_64.img',
+            'HDD_1': 'disk_f25_desktop_4_x86_64.qcow2',
             'FLAVOR': 'updates-workstation',
             'DESKTOP': 'gnome',
             'CURRREL': '25',
@@ -933,9 +933,9 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     for post in posts:
         assert post[0][2]['ARCH'] == 'ppc64le'
         if 'HDD_1' in post[0][2]:
-            assert post[0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.img',
-                                           'disk_f25_desktop_4_ppc64le.img',
-                                           'disk_f25_kde_4_ppc64le.img']
+            assert post[0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.qcow2',
+                                           'disk_f25_desktop_4_ppc64le.qcow2',
+                                           'disk_f25_kde_4_ppc64le.qcow2']
 
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])
 @mock.patch('fedfind.helpers.get_current_release', return_value=29)

@@ -488,21 +488,21 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     flavdict = {
         'container': {
             # this flavor uses the server base image
-            'HDD_1': 'disk_f{0}_server_3_{1}.img'.format(version, arch),
+            'HDD_1': 'disk_f{0}_server_3_{1}.qcow2'.format(version, arch),
         },
         'server': {
-            'HDD_1': 'disk_f{0}_server_3_{1}.img'.format(version, arch),
+            'HDD_1': 'disk_f{0}_server_3_{1}.qcow2'.format(version, arch),
         },
         'server-upgrade': {},
         'kde': {
-            'HDD_1': 'disk_f{0}_kde_4_{1}.img'.format(version, arch),
+            'HDD_1': 'disk_f{0}_kde_4_{1}.qcow2'.format(version, arch),
             'DESKTOP': 'kde',
         },
         'kde-live-iso': {
             'SUBVARIANT': 'KDE',
         },
         'workstation': {
-            'HDD_1': 'disk_f{0}_desktop_4_{1}.img'.format(version, arch),
+            'HDD_1': 'disk_f{0}_desktop_4_{1}.qcow2'.format(version, arch),
             'DESKTOP': 'gnome',
         },
         'workstation-upgrade': {},
