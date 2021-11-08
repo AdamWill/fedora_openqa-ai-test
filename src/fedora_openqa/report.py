@@ -34,7 +34,7 @@ from operator import attrgetter
 import mwclient.errors
 from openqa_client.client import OpenQA_Client
 from openqa_client.const import JOB_SCENARIO_WITH_MACHINE_KEYS
-from resultsdb_api import ResultsDBapi, ResultsDBapiException
+from resultsdb_api import ResultsDBapi, ResultsDBapiException, ResultsDBAuth
 from resultsdb_conventions.fedora import FedoraImageResult, FedoraComposeResult, FedoraBodhiResult
 from resultsdb_conventions.fedoracoreos import FedoraCoreOSBuildResult, FedoraCoreOSImageResult
 from wikitcms.wiki import Wiki, ResTuple
@@ -370,8 +370,13 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         resultsdb_url = CONFIG.get('report', 'resultsdb_url')
 
     if do_report:
+        authmethod = None
+        authuser = CONFIG.get("report", "resultsdb_user")
+        authpass = CONFIG.get("report", "resultsdb_password")
+        if authuser and authpass:
+            authmethod = ResultsDBAuth.basic_auth(authuser, authpass)
         try:
-            rdb_instance = ResultsDBapi(resultsdb_url)
+            rdb_instance = ResultsDBapi(resultsdb_url, request_auth=authmethod)
         except ResultsDBapiException as e:
             logger.error(e)
             return

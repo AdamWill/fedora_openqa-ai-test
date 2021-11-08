@@ -43,6 +43,8 @@ CONFIG.set('cli', 'log-file', '')
 CONFIG.set('cli', 'log-level', 'info')
 
 CONFIG.set('report', 'resultsdb_url', 'http://localhost:5001/api/v2.0/')
+CONFIG.set('report', 'resultsdb_user', '')
+CONFIG.set('report', 'resultsdb_password', '')
 CONFIG.set('report', 'wiki_hostname', 'stg.fedoraproject.org')
 
 CONFIG.set('schedule', 'arches', 'x86_64')

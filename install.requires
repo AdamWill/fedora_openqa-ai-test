@@ -3,6 +3,6 @@ fedora-messaging
 openqa-client>=1.1
 setuptools
 six
-resultsdb_api
+resultsdb_api>=2.1.5
 resultsdb_conventions>=2.1.0
 wikitcms

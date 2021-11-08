@@ -425,6 +425,26 @@ class TestResultsDBReport:
         scenario = 'fedora.Server-dvd-iso.x86_64.64bit'
         assert fakeres.call_args[1]['scenario'] == scenario
 
+    @mock.patch('fedora_openqa.report.ResultsDBapi')
+    def test_config(self, fakeapi, fakeres, jobdict01):
+        """Check config values (URL, username, password) are used."""
+        testurl = "http://someotherhost:5001/api/v2.0/"
+        testuser = "someuser"
+        testpassword = "somepassword"
+        # first, check non-config case
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeapi.call_args[0][0] != testurl
+        assert fakeapi.call_args[1]["request_auth"] is None
+        # now, set some config
+        fakeapi.reset_mock()
+        fosreport.CONFIG.set("report", "resultsdb_url", testurl)
+        fosreport.CONFIG.set("report", "resultsdb_user", testuser)
+        fosreport.CONFIG.set("report", "resultsdb_password", testpassword)
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeapi.call_args[0][0] == testurl
+        assert fakeapi.call_args[1]["request_auth"].username == testuser
+        assert fakeapi.call_args[1]["request_auth"].password == testpassword
+
     def test_update(self, fakeres, oqaclientmock, jobdict02):
         """Check report behaviour with an update test job (rather than
         a compose test job).

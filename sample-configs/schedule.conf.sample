@@ -14,6 +14,11 @@ log-level: info
 [report]
 # URL of ResultsDB instance to report to
 resultsdb_url: http://localhost/resultsdb_api/api/v2.0/
+# Username to use for ResultsDB authentication if any
+resultsdb_user: someuser
+# Password to use for ResultsDB authentication if any
+# If both user and password are set, authentication will be enabled
+resultsdb_password: somepass
 
 # Hostname of Fedora wiki to report to
 wiki_hostname: stg.fedoraproject.org
