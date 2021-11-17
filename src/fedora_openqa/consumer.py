@@ -26,6 +26,7 @@ import logging
 
 # external imports
 import fedora_messaging.config
+from openqa_client.client import OpenQA_Client
 
 # internal imports
 from .config import UPDATETL
@@ -63,6 +64,8 @@ class OpenQAScheduler(object):
         """Consume incoming message."""
         if 'pungi' in message.topic:
             return self._consume_compose(message)
+        elif 'bodhi.update.status.testing' in message.topic:
+            return self._consume_retrigger(message)
         elif 'bodhi' in message.topic:
             return self._consume_update(message)
 
@@ -98,6 +101,64 @@ class OpenQAScheduler(object):
             return
 
         return
+
+    def _update_schedule(self, advisory, version, flavors):
+        """
+        Shared schedule, log, return code for _consume_retrigger and
+        _consume_update.
+        """
+        # flavors
+        # being None here results in our desired behaviour (jobs will
+        # be created for *all* flavors)
+        jobs = []
+        # pylint: disable=no-member
+        for arch in self.update_arches:
+            jobs.extend(schedule.jobs_from_update(
+                advisory, version, flavors=flavors,
+                openqa_hostname=self.openqa_hostname, force=True, arch=arch))
+        if jobs:
+            self.logger.info("openQA jobs run on update %s: "
+                      "%s", advisory, ' '.join(str(job) for job in jobs))
+        else:
+            self.logger.warning("No openQA jobs run!")
+            return
+
+        self.logger.debug("Finished")
+
+    def _consume_retrigger(self, message):
+        """Consume a 're-trigger tests' type message."""
+        body = _find_true_body(message)
+        if not body.get("re-trigger"):
+            self.logger.debug("Not a re-trigger request, ignoring")
+            return
+        advisory = body.get("artifact", {}).get("id", "")
+        self.logger.info("Handling test re-trigger request for update %s", advisory)
+        if not advisory.startswith("FEDORA-2"):
+            self.logger.info("Update %s does not look like a Fedora package update, ignoring", advisory)
+            return
+        # there's an extra weird UUID string on the end of the update
+        # ID in these messages for some reason, split it off
+        advisory = "-".join(advisory.split("-")[0:3])
+        # we get the 'dist tag' as the 'version' here, need to trim
+        # the leading "f"
+        version = body.get("artifact", {}).get("release", "")[1:]
+        # these messages do not include critpath status, so we can't
+        # "decide" whether to test the update. instead, as they're
+        # re-trigger messages, we'll just see whether we already
+        # tested the update, and for what flavors if so, and re-test
+        # in that same context
+        client = OpenQA_Client(self.openqa_hostname)
+        build = f"Update-{advisory}"
+        existjobs = client.openqa_request("GET", "jobs", params={"build": build})["jobs"]
+        flavors = [job.get("settings", {}).get("FLAVOR", "") for job in existjobs]
+        # strip the updates- prefix and ignore empty strings
+        flavors = [flavor.split("updates-")[-1] for flavor in flavors if flavor]
+        flavors = set(flavors)
+        if flavors:
+            self.logger.info("Re-running tests for update %s, flavors %s", advisory, ", ".join(flavors))
+            self._update_schedule(advisory, version, flavors)
+        else:
+            self.logger.info("No existing jobs found, so not scheduling any!")
 
     def _consume_update(self, message):
         """Consume an 'update' type message."""
@@ -147,24 +208,8 @@ class OpenQAScheduler(object):
             self.logger.debug("Update is not critical path and no packages in test list, no jobs scheduled")
             return
 
-        # Finally, now we've decided on flavors, run the jobs. flavors
-        # being None here results in our desired behaviour (jobs will
-        # be created for *all* flavors)
-        jobs = []
-        # pylint: disable=no-member
-        for arch in self.update_arches:
-            jobs.extend(schedule.jobs_from_update(
-                advisory, version, flavors=flavors,
-                openqa_hostname=self.openqa_hostname, force=True, arch=arch))
-        if jobs:
-            self.logger.info("openQA jobs run on update %s: "
-                      "%s", advisory, ' '.join(str(job) for job in jobs))
-        else:
-            self.logger.warning("No openQA jobs run!")
-            return
-
-        self.logger.debug("Finished")
-        return
+        # Finally, now we've decided on flavors, run the jobs.
+        self._update_schedule(advisory, version, flavors)
 
 
 # WIKI REPORTER

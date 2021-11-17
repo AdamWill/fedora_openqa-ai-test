@@ -183,6 +183,82 @@ TLALLEDIT.body['update']['builds'] = [{"epoch": 0, "nvr": "authselect-4.10.12-10
 EPELEDIT = copy.deepcopy(CRITPATHEDIT)
 EPELEDIT.body['update']['release']['id_prefix'] = 'FEDORA-EPEL'
 
+# Bodhi 'update ready for testing' message which is a re-trigger
+# request for a Fedora update
+RETRIGGER = Message(
+    topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
+    body={
+        "re-trigger": True,
+        "artifact": {
+          "release": "f34",
+          "type": "koji-build-group",
+          "builds": [
+            {
+              "nvr": "gdb-11.1-5.fc34",
+              "task_id": 78709925,
+              "scratch": False,
+              "component": "gdb",
+              "type": "koji-build",
+              "id": 1854854,
+              "issuer": "kevinb"
+            }
+          ],
+          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-2021-53a7dfa185",
+          "id": "FEDORA-2021-53a7dfa185-bb4a8e2be6997eb20655fa079af87470fe416415"
+        },
+        "contact": {
+          "docs": "https://docs.fedoraproject.org/en-US/ci/",
+          "team": "Fedora CI",
+          "email": "admin@fp.o",
+          "name": "Bodhi"
+        },
+        "version": "0.2.2",
+        "agent": "adamwill",
+        "generated_at": "2021-11-12T22:25:12.966558Z"
+    }
+)
+
+# Bodhi 'update ready for testing' message which is not a re-trigger
+# request
+NONRETRIGGER = copy.deepcopy(RETRIGGER)
+NONRETRIGGER.body["re-trigger"] = False
+NONRETRIGGER.body["agent"] = "bodhi"
+
+# Bodhi 'update ready for testing' message which is a re-trigger
+# request, but not for a regular Fedora package update
+NONFRETRIGGER = Message(
+    topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
+    body={
+        "re-trigger": True,
+        "artifact": {
+          "release": "epel8",
+          "type": "koji-build-group",
+          "builds": [
+            {
+              "nvr": "libpinyin-epel-2.2.0-2.el8",
+              "task_id": 78921389,
+              "scratch": False,
+              "component": "libpinyin-epel",
+              "type": "koji-build",
+              "id": 1856264,
+              "issuer": "tdawson"
+            }
+          ],
+          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-EPEL-2021-049da15976",
+          "id": "FEDORA-EPEL-2021-049da15976-37a14b6e2476318d8338b1aa4a5a3190428eb328"
+        },
+        "contact": {
+          "docs": "https://docs.fedoraproject.org/en-US/ci/",
+          "team": "Fedora CI",
+          "email": "admin@fp.o",
+          "name": "Bodhi"
+        },
+        "version": "0.2.2",
+        "agent": "tdawson",
+        "generated_at": "2021-11-17T01:41:15.438773Z"
+    }
+)
+
 # initialize a few test consumers with different configs
 PRODCONF = {
     'consumer_config': {
@@ -249,7 +325,7 @@ class TestConsumers:
         ]
     )
     @pytest.mark.parametrize(
-        "message,flavors",
+        "message,gotjobs,flavors,advisory,version",
         [
             # For 'flavors': 'False' means no jobs should be created. For
             # compose scheduling, any other value just means "jobs should
@@ -257,27 +333,40 @@ class TestConsumers:
             # means "jobs should be created, and this is the expected value
             # of the 'flavors' kwarg to the fake_update call" (remember,
             # None means "run tests for all flavors").
-            (STARTEDCOMPOSE, False),
-            (DOOMEDCOMPOSE, False),
-            (FINISHEDCOMPOSE, True),
-            (FINCOMPLETE, True),
+            # if 'gotjobs' is True, we mock a query of existing jobs to
+            # return some. otherwise, we mock it to return nothing. This
+            # is for testing re-trigger request scheduling in both cases,
+            # it is irrelevant to 'new/edited update' and 'new compose'
+            # message handling.
+            # if "advisory" and/or "version" is a string, we'll check
+            # that value is used in the update scheduling request. This is
+            # for re-trigger request handling, where we do non-trivial
+            # parsing to get those values.
+            (STARTEDCOMPOSE, False, False, None, None),
+            (DOOMEDCOMPOSE, False, False, None, None),
+            (FINISHEDCOMPOSE, False, True, None, None),
+            (FINCOMPLETE, False, True, None, None),
             # for all critpath updates we should schedule for all flavors
-            (CRITPATHCREATE, None),
-            (CRITPATHEDIT, None),
-            (NONCRITCREATE, False),
-            (NONCRITEDIT, False),
-            (EPELCREATE, False),
-            (EPELEDIT, False),
+            (CRITPATHCREATE, False, None, None, None),
+            (CRITPATHEDIT, False, None, None, None),
+            (NONCRITCREATE, False, False, None, None),
+            (NONCRITEDIT, False, False, None, None),
+            (EPELCREATE, False, False, None, None),
+            (EPELEDIT, False, False, None, None),
             # TLCREATE contains only a 'server'-listed package
-            (TLCREATE, {'server', 'server-upgrade'}),
+            (TLCREATE, False, {'server', 'server-upgrade'}, None, None),
             # TLEDIT contains both 'server' and 'workstation-live-iso'-listed
             # packages
-            (TLEDIT, {'server', 'server-upgrade', 'workstation-live-iso'}),
+            (TLEDIT, False, {'server', 'server-upgrade', 'workstation-live-iso'}, None, None),
             # TLALLEDIT contains an 'all flavors'-listed package
-            (TLALLEDIT, None),
+            (TLALLEDIT, False, None, None, None),
+            (RETRIGGER, True, {'server', 'workstation'}, "FEDORA-2021-53a7dfa185", "34"),
+            (RETRIGGER, False, False, None, None),
+            (NONRETRIGGER, True, False, None, None),
+            (NONFRETRIGGER, True, False, None, None),
         ]
     )
-    def test_scheduler(self, fake_update, fake_schedule, consumer, oqah, message, flavors):
+    def test_scheduler(self, fake_update, fake_schedule, consumer, oqah, message, gotjobs, flavors, advisory, version):
         """Test the job scheduling consumers do their thing. The
         parametrization pairs are:
         1. (consumer, expected openQA hostname)
@@ -286,7 +375,21 @@ class TestConsumers:
         and that the hostname is as expected. If jobs aren't expected,
         we check the schedule function was not hit.
         """
-        consumer(message)
+        with mock.patch("openqa_client.client.OpenQA_Client.openqa_request", autospec=True) as fake_request:
+            if gotjobs:
+                # we mock four existing jobs across two flavors, to
+                # make sure we don't duplicate flavors in the request
+                fake_request.return_value = {
+                    'jobs': [
+                        {'id': 1, 'settings': {'FLAVOR': 'updates-server'}, 'state': 'done'},
+                        {'id': 2, 'settings': {'FLAVOR': 'updates-server'}, 'state': 'done'},
+                        {'id': 3, 'settings': {'FLAVOR': 'updates-workstation'}, 'state': 'done'},
+                        {'id': 4, 'settings': {'FLAVOR': 'updates-workstation'}, 'state': 'done'},
+                    ]
+                }
+            else:
+                fake_request.return_value = {'jobs': []}
+            consumer(message)
         if flavors is False:
             assert fake_schedule.call_count + fake_update.call_count == 0
         else:
@@ -302,6 +405,10 @@ class TestConsumers:
             else:
                 assert fake_update.call_args[1]['openqa_hostname'] == oqah
                 assert fake_update.call_args[1]['flavors'] == flavors
+                if advisory:
+                    assert fake_update.call_args[0][0] == advisory
+                if version:
+                    assert fake_update.call_args[0][1] == version
         #fake_schedule.reset_mock()
 
 
