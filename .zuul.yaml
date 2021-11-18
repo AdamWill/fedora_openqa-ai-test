@@ -1,7 +1,7 @@
 - job:
     name: fedora_openqa-tox
     run: ci/tox.yaml
-    nodeset: fedora-35-vm
+    nodeset: fedora-latest-vm
 - project:
     check:
       jobs:
