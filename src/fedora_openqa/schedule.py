@@ -390,23 +390,24 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     return (rel.cid, jobs)
 
 
-def jobs_from_fcosbuild(stream="next", flavors=None, force=False, extraparams=None, openqa_hostname=None):
-    """Schedule jobs for the current artifacts from the given Fedora
-    CoreOS stream (valid streams are "rawhide", "next", "testing",
-    "stable").
+def jobs_from_fcosbuild(buildurl, flavors=None, force=False, extraparams=None, openqa_hostname=None):
+    """Schedule jobs for the Fedora CoreOS build at the given URL
+    (should be the top-level URL with meta.json in it).
     flavors can be an iterable of flavors to schedule, otherwise all
-    known CoreOS flavors will be scheduled. If force is False, we
-    will not create jobs if some already exist for the same version
-    and flavor; if it's True, we will always create jobs.
+    known CoreOS flavors that are present in the build will be
+    scheduled.
+    If force is False, we will not create jobs if some already exist
+    for the same version and flavor; if it's True, we will always
+    create jobs.
     """
     flavdict = {
-        "CoreOS-colive-iso": ("iso", "colive", "ISO_URL"),
+        "CoreOS-colive-iso": ("live-iso", "colive", "ISO_URL"),
     }
-    url = f"https://builds.coreos.fedoraproject.org/streams/{stream}.json"
-    # assumes x86_64 for now, if CoreOS starts building for other
-    # arches will have to adjust this
-    artifacts = fedfind.helpers.download_json(url)["architectures"]["x86_64"]["artifacts"]["metal"]
-    version = artifacts["release"]
+    url = f"{buildurl}/meta.json"
+    metadata = fedfind.helpers.download_json(url)
+    arch = metadata["coreos-assembler.basearch"]
+    images = metadata["images"]
+    version = metadata["buildid"]
     relnum = version.split(".")[0]
     build = f"Fedora-CoreOS-{version}"
     logger.info("Scheduling jobs for CoreOS release %s", version)
@@ -415,19 +416,21 @@ def jobs_from_fcosbuild(stream="next", flavors=None, force=False, extraparams=No
         if flavors and flavor not in flavors:
             # filtered out!
             continue
-        location = artifacts["formats"].get(form, {}).get("disk", {}).get("location")
+        path = images.get(form, {}).get("path")
+        location = f"{buildurl}/{path}"
         if location:
             param_urls = {
                 param: location,
             }
         else:
-            # no artifact found, onto the next
+            # no image found, onto the next
             continue
+        logger.debug("Arch: %s", arch)
         logger.debug("Flavor: %s", flavor)
         logger.debug("Format: %s", form)
         logger.debug("Image type: %s", imagetype)
         logger.debug("Location: %s", location)
-        jobs.extend(run_openqa_jobs(param_urls, flavor, "x86_64", "CoreOS", imagetype, build,
+        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, "CoreOS", imagetype, build,
                                     relnum, "", force=force, extraparams=extraparams,
                                     openqa_hostname=openqa_hostname))
     return jobs

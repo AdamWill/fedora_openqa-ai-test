@@ -259,6 +259,25 @@ NONFRETRIGGER = Message(
     }
 )
 
+# Successful FCOS build message
+FCOSBUILD = Message(
+    topic="org.fedoraproject.prod.coreos.build.state.change",
+    body={
+        "build_id": "36.20211123.91.0",
+        "stream": "rawhide",
+        "basearch": "x86_64",
+        "build_dir": "https://builds.coreos.fedoraproject.org/prod/streams/rawhide/builds/36.20211123.91.0/x86_64",
+        "state": "FINISHED",
+        "result": "SUCCESS"
+    }
+)
+# Not "finished" FCOS build message
+FCOSBUILDNOTF = copy.deepcopy(FCOSBUILD)
+FCOSBUILDNOTF.body["state"] = "STARTED"
+# Not "successful" FCOS build message
+FCOSBUILDNOTS = copy.deepcopy(FCOSBUILD)
+FCOSBUILDNOTS.body["result"] = "FAILURE"
+
 # initialize a few test consumers with different configs
 PRODCONF = {
     'consumer_config': {
@@ -316,6 +335,7 @@ class TestConsumers:
 
     @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=('somecompose', [1]), autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1], autospec=True)
+    @mock.patch('fedora_openqa.schedule.jobs_from_fcosbuild', return_value=[1], autospec=True)
     @pytest.mark.parametrize(
         "consumer,oqah",
         [
@@ -364,9 +384,13 @@ class TestConsumers:
             (RETRIGGER, False, False, None, None),
             (NONRETRIGGER, True, False, None, None),
             (NONFRETRIGGER, True, False, None, None),
+            (FCOSBUILD, False, None, None, None),
+            (FCOSBUILDNOTF, False, False, None, None),
+            (FCOSBUILDNOTS, False, False, None, None)
         ]
     )
-    def test_scheduler(self, fake_update, fake_schedule, consumer, oqah, message, gotjobs, flavors, advisory, version):
+    def test_scheduler(self, fake_fcosbuild, fake_update, fake_schedule, consumer, oqah,
+                       message, gotjobs, flavors, advisory, version):
         """Test the job scheduling consumers do their thing. The
         parametrization pairs are:
         1. (consumer, expected openQA hostname)
@@ -391,17 +415,20 @@ class TestConsumers:
                 fake_request.return_value = {'jobs': []}
             consumer(message)
         if flavors is False:
-            assert fake_schedule.call_count + fake_update.call_count == 0
+            assert fake_schedule.call_count + fake_update.call_count + fake_fcosbuild.call_count == 0
         else:
             archcount = len(consumer.update_arches)
-            compcalls = fake_schedule.call_count
+            compcalls = fake_schedule.call_count + fake_fcosbuild.call_count
             updcalls = fake_update.call_count
-            # for a compose test on any consumer, the method should be
-            # hit once. for an update test, the method should be hit
-            # as many times as the consumer has arches configured
+            # for a compose/fcosbuild test on any consumer, the method
+            # should be hit once. for an update test, the method should
+            # be hit as many times as the consumer has arches
+            # configured
             assert (compcalls == 1 and updcalls == 0) or (compcalls == 0 and updcalls == archcount)
             if fake_schedule.call_count == 1:
                 assert fake_schedule.call_args[1]['openqa_hostname'] == oqah
+            elif fake_fcosbuild.call_count == 1:
+                assert fake_fcosbuild.call_args[1]['openqa_hostname'] == oqah
             else:
                 assert fake_update.call_args[1]['openqa_hostname'] == oqah
                 assert fake_update.call_args[1]['flavors'] == flavors

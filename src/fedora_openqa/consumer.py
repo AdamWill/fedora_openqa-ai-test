@@ -64,6 +64,8 @@ class OpenQAScheduler(object):
         """Consume incoming message."""
         if 'pungi' in message.topic:
             return self._consume_compose(message)
+        elif 'coreos' in message.topic:
+            return self._consume_fcosbuild(message)
         elif 'bodhi.update.status.testing' in message.topic:
             return self._consume_retrigger(message)
         elif 'bodhi' in message.topic:
@@ -100,6 +102,26 @@ class OpenQAScheduler(object):
             self.logger.debug("Finished")
             return
 
+        return
+
+    def _consume_fcosbuild(self, message):
+        """Consume an FCOS build state change message."""
+        body = _find_true_body(message)
+        # this is intentionally written to blow up if required info is
+        # missing from the message, as that would likely indicate a
+        # message format change and we'd need to handle that
+        if body["state"] != "FINISHED" or body["result"] != "SUCCESS":
+            self.logger.debug("Not a 'finished success' message, ignoring")
+            return
+        builddir = body["build_dir"]
+        self.logger.info("Scheduling openQA jobs for FCOS build %s", builddir)
+        jobs = schedule.jobs_from_fcosbuild(builddir, openqa_hostname=self.openqa_hostname)
+        if jobs:
+            self.logger.info("openQA jobs run: %s", ' '.join(str(job) for job in jobs))
+        else:
+            self.logger.info("No openQA jobs run!")
+            return
+        self.logger.debug("Finished")
         return
 
     def _update_schedule(self, advisory, version, flavors):

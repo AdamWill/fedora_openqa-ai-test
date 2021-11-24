@@ -215,12 +215,13 @@ class TestCommandFCOSBuild:
     @mock.patch('fedora_openqa.schedule.jobs_from_fcosbuild', return_value=[1, 2], autospec=True)
     def test_fcosbuild(self, fakejff, capsys):
         """General tests for command_fcosbuild."""
-        args = cli.parse_args(["fcosbuild"])
+        buildurl = "https://builds.coreos.fedoraproject.org/prod/streams/rawhide/builds/36.20211123.91.0/x86_64"
+        args = cli.parse_args(["fcosbuild", buildurl])
         with pytest.raises(SystemExit) as excinfo:
             cli.command_fcosbuild(args)
         (out, _) = capsys.readouterr()
-        # stream kwarg should be default stream ("next")
-        assert fakejff.call_args[1]["stream"] == "next"
+        # first arg should be buildurl
+        assert fakejff.call_args[0][0] == buildurl
         # flavors kwarg should be false-y (not, e.g., [None])
         assert not fakejff.call_args[1]["flavors"]
         # shouldn't force
@@ -230,16 +231,8 @@ class TestCommandFCOSBuild:
         # should exit 0
         assert not excinfo.value.code
 
-        # check explicit stream selection
-        args = cli.parse_args(["fcosbuild", "--stream", "testing"])
-        with pytest.raises(SystemExit) as excinfo:
-            cli.command_fcosbuild(args)
-        # should exit 0
-        assert not excinfo.value.code
-        assert fakejff.call_args[1]["stream"] == "testing"
-
         # check 'flavors'
-        args = cli.parse_args(["fcosbuild", "--flavors", "foo,bar"])
+        args = cli.parse_args(["fcosbuild", buildurl, "--flavors", "foo,bar"])
         with pytest.raises(SystemExit) as excinfo:
             cli.command_fcosbuild(args)
         # should exit 0
@@ -247,7 +240,7 @@ class TestCommandFCOSBuild:
         assert fakejff.call_args[1]["flavors"] == ["foo", "bar"]
 
         # check 'force'
-        args = cli.parse_args(["fcosbuild", "--force"])
+        args = cli.parse_args(["fcosbuild", buildurl, "--force"])
         with pytest.raises(SystemExit) as excinfo:
             cli.command_fcosbuild(args)
         # should exit 0

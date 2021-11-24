@@ -76,16 +76,16 @@ def command_compose(args):
     sys.exit()
 
 def command_fcosbuild(args):
-    """Schedule openQA jobs for a Fedora CoreOS build (current build
-    from specified stream). Currently assumes x86_64 as that's all
-    Fedora CoreOS builds for.
+    """
+    Schedule openQA jobs for a specific Fedora CoreOS build. Takes
+    the build directory URL.
     """
     flavors = None
     if args.flavors:
         flavors = args.flavors.split(',')
 
-    jobs = schedule.jobs_from_fcosbuild(stream=args.stream, flavors=flavors, force=args.force,
-                                            openqa_hostname=args.openqa_hostname)
+    jobs = schedule.jobs_from_fcosbuild(args.buildurl, flavors=flavors, force=args.force,
+                                        openqa_hostname=args.openqa_hostname)
     print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
     sys.exit()
 
@@ -223,8 +223,7 @@ def parse_args(args=None):
     parser_fcosbuild = subparsers.add_parser(
         "fcosbuild", description="Schedule jobs for a Fedora CoreOS build stream."
     )
-    parser_fcosbuild.add_argument("--stream", "-s", default="next", help="The stream to test the current build "
-                                  "from", metavar="STREAM", choices=("rawhide", "next", "testing", "stable"))
+    parser_fcosbuild.add_argument("buildurl", help="The URL to the build directory", metavar="BUILDURL")
     parser_fcosbuild.add_argument("--flavors", help="Comma-separated list of flavors to schedule jobs for "
                                   "(if not specified, all flavors will be scheduled)", metavar="FLAVORS")
     parser_fcosbuild.add_argument("--openqa-hostname", help="openQA host to schedule jobs on (default: "
