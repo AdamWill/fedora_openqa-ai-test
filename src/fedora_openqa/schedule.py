@@ -325,6 +325,13 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         return ('', [])
     logger.debug("Finding images for compose %s in location %s", rel.cid, location)
     images = _get_images(rel, wanted=wanted)
+    # these are 'special' upgrade flavors, not associated with an image
+    images.extend(
+        [
+            ("Workstation-upgrade", "x86_64", 0, {}, "Workstation", "upgrade"),
+            ("Workstation-upgrade", "aarch64", 0, {}, "Workstation", "upgrade"),
+        ]
+    )
     if flavors and flavors != ["universal"]:
         # in special cast flavors is just "universal", we don't filter
         # the image list so we can pick the best universal candidate
@@ -335,7 +342,7 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         logger.debug("Only scheduling jobs for arches %s", ' '.join(arches))
         images = [img for img in images if img[1] in arches]
 
-    if len(images) == 0:
+    if not images or (all(img[0] == "Workstation-upgrade" for img in images) and flavors != ["Workstation-upgrade"]):
         raise TriggerException("Compose found, but no available images")
     jobs = []
     univs = {}

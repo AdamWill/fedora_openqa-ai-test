@@ -380,12 +380,12 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # simple case
     ret = schedule.jobs_from_compose(COMPURL)
 
-    # 6 images, 1 universal arch
-    assert fakerun.call_count == 7
+    # 6 images, 1 x86_64 upgrade flavor, 1 universal arch
+    assert fakerun.call_count == 8
 
-    # the list of job ids should be 15 1s, as each fakerun call
+    # the list of job ids should be 8 1s, as each fakerun call
     # returns [1]
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(7)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
 
     for argtup in fakerun.call_args_list:
         # check rel identification bits got passed properly
@@ -438,11 +438,12 @@ def test_jobs_from_compose(fakerun, ffmock02):
             "dkboot": True,
         },
     ]
-    # first check we get 5 runs (one for each image plus two universal
-    # runs) with no arches set by config or arg, and this WANTED
+    # first check we get 7 runs (one for each image, x86_64 and
+    # aarch64 upgrade flavors, two universal runs) with no arches set
+    # by config or arg, and this WANTED
     schedule.CONFIG.set("schedule", "arches", "")
     ret = schedule.jobs_from_compose(COMPURL, wanted=wanted)
-    assert fakerun.call_count == 5
+    assert fakerun.call_count == 7
     # now check we get only 3 if we limit the arches
     fakerun.reset_mock()
     ret = schedule.jobs_from_compose(COMPURL, wanted=wanted, arches=['i386', 'armhfp'])
@@ -504,7 +505,7 @@ def test_jobs_from_compose(fakerun, ffmock02):
 def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     """Check that we tag candidate composes as 'important'."""
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(7)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
     # find the args that openqa_request was last called with
     reqargs = fakeclient.return_value.openqa_request.call_args
     assert reqargs[0] == ('POST', 'groups/1/comments')
@@ -517,7 +518,7 @@ def test_jobs_from_compose_label(fakerun, ffmock02):
     if there is one.
     """
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(7)])
+    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
     assert fakerun.call_args[1]["label"] == "RC-1.5"
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
