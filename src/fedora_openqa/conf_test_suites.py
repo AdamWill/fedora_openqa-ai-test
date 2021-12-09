@@ -421,11 +421,6 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
-    "QA:Testcase_Memtest86": {
-        "section": "Miscellaneous",
-        "env": "$BOOTMETHOD$",
-        "type": "Installation",
-    },
     "QA:Testcase_base_initial_setup": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT$",
@@ -1165,9 +1160,6 @@ TESTSUITES = {
     ],
     "install_rescue_encrypted": [
         "QA:Testcase_Anaconda_rescue_mode",
-    ],
-    "memtest": [
-        "QA:Testcase_Memtest86",
     ],
     "install_pxeboot": [
         "QA:Testcase_Boot_Methods_Pxeboot",
