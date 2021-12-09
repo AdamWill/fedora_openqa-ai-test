@@ -1387,8 +1387,9 @@ TESTSUITES = {
     "support_server": [],
     # this is a data test, does not map to any test case
     "memory_check": [],
-    # doesn't map to a wiki test case, was requested by desktop team
+    # don't map to a wiki test case, was requested by desktop team
     "unwanted_packages": [],
+    "desktop_fprint": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
