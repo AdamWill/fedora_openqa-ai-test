@@ -28,7 +28,7 @@ TESTCASES = {
     # derived from openQA job settings, this is used for e.g. to get
     # the correct 'environment' or 'testname'.
     #
-    #   special value       replacement
+    #   special value           replacement
     #
     #   $RUNARCH$             - "i386", "x86_64", "arm"
     #   $BOOTMETHOD$          - "x86_64 BIOS", "x86_64 UEFI", "ARM", "aarch64"
@@ -39,6 +39,7 @@ TESTCASES = {
     #   $IMAGETYPE$           - pungi 'type': "boot", "live"... "boot" -> "netinst"
     #   $FS$                  - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
     #   $DESKTOP$             - desktop: just the DESKTOP openQA setting
+    #   $APP$                 - application, for desktop_app_basic: derived from test suite name
 
     "QA:Testcase_Mediakit_Repoclosure": {
         "env": "$SUBVARIANT$",
@@ -548,10 +549,7 @@ TESTCASES = {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
         "section": "$RUNARCH$",
-        # FIXME: this is just hard-coded for now as we do not test
-        # any other applications, but we should really use a sub to
-        # derive this 'intelligently'
-        "name": "terminal",
+        "name": "$APP$",
     },
     "QA:Testcase_desktop_browser": {
         "env": "$SUBVARIANT$",
@@ -1280,6 +1278,15 @@ TESTSUITES = {
             "modules": ["workstation_core_applications"],
         },
     },
+    "eog": [
+        "QA:Testcase_desktop_app_basic",
+    ],
+    "evince": [
+        "QA:Testcase_desktop_app_basic",
+    ],
+    "gedit": [
+        "QA:Testcase_desktop_app_basic",
+    ],
     "server_firewall_default": [
         "QA:Testcase_Server_firewall_default",
     ],

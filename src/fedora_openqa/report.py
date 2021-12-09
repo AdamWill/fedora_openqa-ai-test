@@ -78,6 +78,15 @@ def _uniqueres_replacements(job, tcdict):
     else:
         firmware = 'BIOS'
         bootmethod = 'x86_64 BIOS'
+    # desktop apps: the test suite names the app, the matrix has
+    # descriptions like "file manager". so we need to map
+    apps = {
+        "evince": "document viewer",
+        "gedit": "text editor",
+        "eog": "image viewer",
+        "desktop_terminal": "terminal emulator",
+    }
+    app = apps.get(job["test"], "")
 
     # We effectively deep copy the `tcdict` dict here; if we just modified it directly
     # we'd actually be changing it in TESTCASES, so the results for later jobs in this run
@@ -94,6 +103,7 @@ def _uniqueres_replacements(job, tcdict):
         value = value.replace('$DESKTOP$', desktop)
         value = value.replace('$SUBVARIANT_OR_LOCAL$', subvariant_or_local)
         value = value.replace('$CLOUD_OR_BASE$', cloud_or_base)
+        value = value.replace('$APP$', app)
         changed[key] = value
 
     return changed

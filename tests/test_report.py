@@ -50,6 +50,7 @@ def test_uniqueres_replacements(jobdict01):
         "imagetype": "$IMAGETYPE$",
         "fs": "$FS$",
         "desktop": "$DESKTOP$",
+        "app": "$APP$",
     }
     origbase = copy.deepcopy(basedict)
     ret = fosreport._uniqueres_replacements(jobdict01, basedict)
@@ -60,6 +61,7 @@ def test_uniqueres_replacements(jobdict01):
     assert ret['imagetype'] == "dvd"
     # shouldn't crash, or anything
     assert ret['desktop'] == ''
+    assert ret['app'] == ''
     # basedict should not be modified
     assert basedict == origbase
 
@@ -94,6 +96,18 @@ def test_uniqueres_replacements(jobdict01):
         ret = fosreport._uniqueres_replacements(jobdict01, basedict)
     assert ret['firmware'] == 'UEFI'
     assert ret['bootmethod'] == 'aarch64'
+
+    # 'app' replacements
+    for (tname, expected) in (
+        ("eog", "image viewer"),
+        ("evince", "document viewer"),
+        ("gedit", "text editor"),
+        ("desktop_terminal", "terminal emulator"),
+    ):
+        with mock.patch.dict(jobdict01, {"test": tname}):
+            ret = fosreport._uniqueres_replacements(jobdict01, basedict)
+        assert ret["app"] == expected
+
 
 class TestGetPassedTcNames:
     """Tests for _get_passed_tcnames."""
