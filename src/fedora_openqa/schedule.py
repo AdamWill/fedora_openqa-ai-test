@@ -325,13 +325,18 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         return ('', [])
     logger.debug("Finding images for compose %s in location %s", rel.cid, location)
     images = _get_images(rel, wanted=wanted)
-    # these are 'special' upgrade flavors, not associated with an image
-    images.extend(
-        [
-            ("Workstation-upgrade", "x86_64", 0, {}, "Workstation", "upgrade"),
-            ("Workstation-upgrade", "aarch64", 0, {}, "Workstation", "upgrade"),
-        ]
-    )
+    # these are 'special' upgrade flavors, not associated with any
+    # image. We want to schedule them when testing 'full' composes
+    # that have a generic tree, but not when testing 'partial'
+    # composes that only produce images. fedfind's https_url_generic
+    # is a good indicator of this.
+    if rel.https_url_generic:
+        images.extend(
+            [
+                ("Workstation-upgrade", "x86_64", 0, {}, "Workstation", "upgrade"),
+                ("Workstation-upgrade", "aarch64", 0, {}, "Workstation", "upgrade"),
+            ]
+        )
     if flavors and flavors != ["universal"]:
         # in special cast flavors is just "universal", we don't filter
         # the image list so we can pick the best universal candidate

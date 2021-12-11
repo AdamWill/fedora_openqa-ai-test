@@ -490,6 +490,14 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # should use Server DVD ISO
     assert fakerun.call_args[0][0]["ISO_URL"] == COMPURL + "Server/x86_64/iso/Fedora-Server-dvd-x86_64-25-20161115.n.0.iso"
 
+    # check we don't schedule upgrade flavors for releases that don't
+    # have an https_url_generic
+    fakerun.reset_mock()
+    with mock.patch.object(fedfind.release.BranchedNightly, 'https_url_generic', None):
+        ret = schedule.jobs_from_compose(COMPURL)
+        # 6 images, 1 universal arch, but *not* the upgrade flavor
+        assert fakerun.call_count == 7
+
     # check triggerexception is raised when appropriate
     with mock.patch('fedfind.release.get_release', side_effect=ValueError("Oops!")):
         with pytest.raises(schedule.TriggerException):
