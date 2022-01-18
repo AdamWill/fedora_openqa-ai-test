@@ -1284,9 +1284,6 @@ TESTSUITES = {
     "evince": [
         "QA:Testcase_desktop_app_basic",
     ],
-    "gedit": [
-        "QA:Testcase_desktop_app_basic",
-    ],
     "server_firewall_default": [
         "QA:Testcase_Server_firewall_default",
     ],
