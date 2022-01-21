@@ -176,7 +176,7 @@ def _get_passed_tcnames(job, result, composeid, client=None):
                     except IndexError:
                         tcpass = False
                         if modname == 'workstation_core_applications':
-                            if job['settings']['DESKTOP'] == 'kde':
+                            if job['settings'].get("DESKTOP") == 'kde':
                                 # this is a known and OK case, no warning
                                 break
                         logger.warning("Did not find module %s in job data!", modname)
