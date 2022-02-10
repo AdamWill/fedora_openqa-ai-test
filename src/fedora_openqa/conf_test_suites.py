@@ -587,6 +587,11 @@ TESTCASES = {
         "section": "$RUNARCH$",
         "name": "virtual printer",
     },
+    "QA:Testcase_Printing_PDF": {
+        "env": "$SUBVARIANT$",
+        "type": "Desktop",
+        "section": "$RUNARCH$",
+    },
     "QA:Testcase_Server_firewall_default": {
         "env": "$RUNARCH$",
         "type": "Server",
@@ -1265,6 +1270,9 @@ TESTSUITES = {
     },
     "desktop_printing": [
         "QA:Testcase_Printing_New_Printer",
+    ],
+    "desktop_printing_builtin": [
+        "QA:Testcase_Printing_PDF",
     ],
     # this does not fully satisfy QA:Testcase_base_artwork_release_identification
     # (not even together with release_identification), it only *partly*
