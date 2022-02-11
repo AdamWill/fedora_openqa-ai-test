@@ -101,7 +101,7 @@ def test_uniqueres_replacements(jobdict01):
     for (tname, expected) in (
         ("eog", "image viewer"),
         ("evince", "document viewer"),
-        ("gedit", "text editor"),
+        ("gnome_text_editor", "text editor"),
         ("desktop_terminal", "terminal emulator"),
     ):
         with mock.patch.dict(jobdict01, {"test": tname}):
