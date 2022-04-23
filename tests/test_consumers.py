@@ -224,6 +224,22 @@ NONRETRIGGER = copy.deepcopy(RETRIGGER)
 NONRETRIGGER.body["re-trigger"] = False
 NONRETRIGGER.body["agent"] = "bodhi"
 
+# Mock Bodhi API response for FEDORA-2021-53a7dfa185
+NONRETRIGGERBODHI = {
+    "update": {
+        "alias": "FEDORA-2021-53a7dfa185",
+        "critpath": True,
+        "release": {
+            "branch": "f34",
+            "dist_tag": "f34",
+            "id_prefix": "FEDORA",
+            "long_name": "Fedora 34",
+            "name": "F34",
+            "version": "34"
+        },
+    },
+}
+
 # Bodhi 'update ready for testing' message which is a re-trigger
 # request, but not for a regular Fedora package update
 NONFRETRIGGER = Message(
@@ -256,6 +272,41 @@ NONFRETRIGGER = Message(
         "version": "0.2.2",
         "agent": "tdawson",
         "generated_at": "2021-11-17T01:41:15.438773Z"
+    }
+)
+
+# Bodhi 'update ready for testing' message for ELN, which we should
+# ignore
+ELNREADY = Message(
+    topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
+    body={
+        "re-trigger": False,
+        "artifact": {
+          "release": "eln",
+          "type": "koji-build-group",
+          "builds": [
+            {
+              "component": "plasma-systemsettings",
+              "id": 1959017,
+              "issuer": "distrobuildsync-eln/jenkins-continuous-infra.apps.ci.centos.org",
+              "nvr": "plasma-systemsettings-5.24.4-1.eln118",
+              "scratch": False,
+              "task_id": 86428034,
+              "type": "koji-build"
+            }
+          ],
+          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-2022-34ddfc814f",
+          "id": "FEDORA-2022-34ddfc814f-143513cf0c5a497b7eb940aa24879aba870fc111"
+        },
+        "contact": {
+          "docs": "https://docs.fedoraproject.org/en-US/ci/",
+          "team": "Fedora CI",
+          "email": "admin@fp.o",
+          "name": "Bodhi"
+        },
+        "version": "0.2.2",
+        "agent": "bodhi",
+        "generated_at": "2022-04-30T04:40:03.670552Z"
     }
 )
 
@@ -336,6 +387,7 @@ class TestConsumers:
     @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=('somecompose', [1]), autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1], autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_fcosbuild', return_value=[1], autospec=True)
+    @mock.patch('fedfind.helpers.download_json', return_value=NONRETRIGGERBODHI, autospec=True)
     @pytest.mark.parametrize(
         "consumer,oqah",
         [
@@ -369,6 +421,7 @@ class TestConsumers:
             # for all critpath updates we should schedule for all flavors
             (CRITPATHCREATE, False, None, None, None),
             (CRITPATHEDIT, False, None, None, None),
+            (CRITPATHEDIT, True, None, None, None),
             (NONCRITCREATE, False, False, None, None),
             (NONCRITEDIT, False, False, None, None),
             (EPELCREATE, False, False, None, None),
@@ -382,15 +435,16 @@ class TestConsumers:
             (TLALLEDIT, False, None, None, None),
             (RETRIGGER, True, {'server', 'workstation'}, "FEDORA-2021-53a7dfa185", "34"),
             (RETRIGGER, False, False, None, None),
-            (NONRETRIGGER, True, False, None, None),
+            (NONRETRIGGER, True, None, "FEDORA-2021-53a7dfa185", "34"),
             (NONFRETRIGGER, True, False, None, None),
+            (ELNREADY, True, False, None, None),
             (FCOSBUILD, False, None, None, None),
             (FCOSBUILDNOTF, False, False, None, None),
             (FCOSBUILDNOTS, False, False, None, None)
         ]
     )
-    def test_scheduler(self, fake_fcosbuild, fake_update, fake_schedule, consumer, oqah,
-                       message, gotjobs, flavors, advisory, version):
+    def test_scheduler(self, fake_download, fake_fcosbuild, fake_update, fake_schedule, consumer,
+                       oqah, message, gotjobs, flavors, advisory, version):
         """Test the job scheduling consumers do their thing. The
         parametrization pairs are:
         1. (consumer, expected openQA hostname)

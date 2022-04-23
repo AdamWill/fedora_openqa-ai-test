@@ -767,14 +767,21 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     ]
     for checkdict in checkdicts:
         print(checkdict)
-        print(parmdicts[1])
         assert checkdict in parmdicts
 
-    # test we do *not* schedule jobs for release that looks like the
-    # Rawhide release. Note: fakecurrr returns 25 as the 'branched
-    # release' so code thinks 'rawhide release' is 26
+    # test we do schedule jobs for the Rawhide release. Note:
+    # fakecurrr returns 25 as the 'branched release' so code thinks
+    # 'rawhide release' is 26
+    fakeinst.openqa_request.reset_mock()
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
-    assert ret == []
+    assert ret == [1 for i in range(numflavors)]
+    # check we got all the posts and set version to the number
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # should be as many calls as we have flavors
+    assert len(posts) == numflavors
+    parmdicts = [call[0][2] for call in posts]
+    for parmdict in parmdicts:
+        assert parmdict["VERSION"] == "26"
 
     # check we don't crash or fail to schedule if get_current_release
     # or get_current_stables fail

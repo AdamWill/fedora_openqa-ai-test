@@ -25,6 +25,7 @@ openQA jobs."""
 import logging
 
 # external imports
+import fedfind.helpers
 import fedora_messaging.config
 from openqa_client.client import OpenQA_Client
 
@@ -67,9 +68,16 @@ class OpenQAScheduler(object):
         elif 'coreos' in message.topic:
             return self._consume_fcosbuild(message)
         elif 'bodhi.update.status.testing' in message.topic:
-            return self._consume_retrigger(message)
+            return self._consume_ready(message)
+        elif 'bodhi.update.edit' in message.topic:
+            # we always want to run tests when an update is edited,
+            # even if they already ran
+            return self._consume_update(message, force=True)
         elif 'bodhi' in message.topic:
-            return self._consume_update(message)
+            # should be 'update.request.testing'; we only want to run
+            # the tests if they did not already run in response to
+            # an 'update.status.testing' message
+            return self._consume_update(message, force=False)
 
     def _consume_compose(self, message):
         """Consume a 'compose' type message."""
@@ -124,7 +132,7 @@ class OpenQAScheduler(object):
         self.logger.debug("Finished")
         return
 
-    def _update_schedule(self, advisory, version, flavors):
+    def _update_schedule(self, advisory, version, flavors, force=True):
         """
         Shared schedule, log, return code for _consume_retrigger and
         _consume_update.
@@ -137,33 +145,53 @@ class OpenQAScheduler(object):
         for arch in self.update_arches:
             jobs.extend(schedule.jobs_from_update(
                 advisory, version, flavors=flavors,
-                openqa_hostname=self.openqa_hostname, force=True, arch=arch))
+                openqa_hostname=self.openqa_hostname, force=force, arch=arch))
         if jobs:
             self.logger.info("openQA jobs run on update %s: "
                       "%s", advisory, ' '.join(str(job) for job in jobs))
         else:
-            self.logger.warning("No openQA jobs run!")
+            if force:
+                self.logger.warning("No openQA jobs run!")
+            else:
+                self.logger.debug("No openQA jobs run, likely already tested")
             return
 
         self.logger.debug("Finished")
 
-    def _consume_retrigger(self, message):
-        """Consume a 're-trigger tests' type message."""
+    def _consume_ready(self, message):
+        """
+        Consume a 'ready for testing' type message
+        (koji-build-group.build.complete)
+        """
         body = _find_true_body(message)
-        if not body.get("re-trigger"):
-            self.logger.debug("Not a re-trigger request, ignoring")
-            return
         advisory = body.get("artifact", {}).get("id", "")
-        self.logger.info("Handling test re-trigger request for update %s", advisory)
         if not advisory.startswith("FEDORA-2"):
             self.logger.info("Update %s does not look like a Fedora package update, ignoring", advisory)
+            return
+        # we get the 'dist tag' as the 'version' here, need to trim
+        # the leading "f"
+        version = body.get("artifact", {}).get("release", "")[1:]
+        if not version.isdigit():
+            # it's probably "ln", from "eln", which we don't test
+            self.logger.info("Update %s version does not look like main Fedora, ignoring", advisory)
             return
         # there's an extra weird UUID string on the end of the update
         # ID in these messages for some reason, split it off
         advisory = "-".join(advisory.split("-")[0:3])
-        # we get the 'dist tag' as the 'version' here, need to trim
-        # the leading "f"
-        version = body.get("artifact", {}).get("release", "")[1:]
+        if body.get("re-trigger"):
+            self._consume_retrigger(body, advisory, version)
+            return
+        # If it's not a re-trigger request, it should be an initial
+        # message for a new update. Use force=False to handle races
+        # with bodhi.request.testing messages and not double-schedule
+        # new updates. FIXME: until Bodhi 6 is deployed to prod, we
+        # need to retrieve the update dict from Bodhi, the message
+        # does not have enough info
+        url = "https://bodhi.fedoraproject.org/updates/" + advisory
+        update = fedfind.helpers.download_json(url)["update"]
+        self._parse_update_and_schedule(update, force=False)
+
+    def _consume_retrigger(self, body, advisory, version):
         # these messages do not include critpath status, so we can't
         # "decide" whether to test the update. instead, as they're
         # re-trigger messages, we'll just see whether we already
@@ -178,14 +206,25 @@ class OpenQAScheduler(object):
         flavors = set(flavors)
         if flavors:
             self.logger.info("Re-running tests for update %s, flavors %s", advisory, ", ".join(flavors))
-            self._update_schedule(advisory, version, flavors)
+            self._update_schedule(advisory, version, flavors, force=True)
         else:
             self.logger.info("No existing jobs found, so not scheduling any!")
 
-    def _consume_update(self, message):
-        """Consume an 'update' type message."""
+    def _consume_update(self, message, force=True):
+        """
+        Consume a Bodhi update.edit or update.request.testing
+        message.
+        """
         body = _find_true_body(message)
         update = body.get('update', {})
+        self._parse_update_and_schedule(update, force=force)
+
+    def _parse_update_and_schedule(self, update, force=True):
+        """
+        Given an "update" dict (from a message or a Bodhi query),
+        decide whether we should schedule tests for it and for what
+        flavors, then hand off scheduling to _update_schedule.
+        """
         advisory = update.get('alias')
         critpath = update.get('critpath', False)
         version = update.get('release', {}).get('version')
@@ -231,7 +270,7 @@ class OpenQAScheduler(object):
             return
 
         # Finally, now we've decided on flavors, run the jobs.
-        self._update_schedule(advisory, version, flavors)
+        self._update_schedule(advisory, version, flavors, force=force)
 
 
 # WIKI REPORTER

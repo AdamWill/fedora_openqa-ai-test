@@ -474,21 +474,6 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     the ones we pass in here.
     """
     version = str(version)
-    # Bail if version looks like Rawhide version, because we do
-    # not really want to run tests on Rawhide updates yet. There
-    # is no mechanism for combining interdependent packages into
-    # one update, so we will get failures, and generating base
-    # disk images for Rawhide is pretty unreliable.
-    try:
-        if int(version) > fedfind.helpers.get_current_release(branched=True):
-            logger.info("jobs_from_update: Not scheduling jobs for update %s as it appears to be for "
-                        "Rawhide!", update)
-            return []
-    except ValueError:
-        # but don't fail to schedule if fedfind fails...
-        logger.warning("jobs_from_update: could not check if update %s is for Rawhide! Scheduling "
-                       "anyway. Tests will fail if this update is for Rawhide.", update)
-
     if not arch:
         # set a default in a way that works neatly with the CLI bits
         arch = 'x86_64'
