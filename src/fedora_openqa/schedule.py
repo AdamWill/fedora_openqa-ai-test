@@ -61,6 +61,7 @@ UPDATE_FLAVORS = (
     'workstation-upgrade',
     'workstation-live-iso',
     'everything-boot-iso',
+    'silverblue-dvd_ostree-iso',
 )
 
 class TriggerException(Exception):

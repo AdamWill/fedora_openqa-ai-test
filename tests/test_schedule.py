@@ -709,6 +709,11 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
                     'FLAVOR': 'updates-workstation-upgrade',
                 },
             },
+            {
+                'settings': {
+                    'FLAVOR': 'updates-silverblue-dvd_ostree-iso',
+                },
+            },
         ],
         'ids': [1],
     }
