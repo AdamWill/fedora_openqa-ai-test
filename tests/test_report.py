@@ -167,6 +167,21 @@ class TestGetPassedTcNames:
         ret = fosreport._get_passed_tcnames(jobdict01, 'passed', 'somecompose', fakeclient)
         assert ret == []
 
+    def test_special_case(self, jobdict05):
+        """Tests the dumb special case where we add another tcname
+        for install_default_upload on Workstation and Silverblue.
+        """
+        ret = fosreport._get_passed_tcnames(jobdict05, 'passed', 'somecompose')
+        assert sorted(ret) == [
+            "QA:Testcase_Anaconda_User_Interface_Graphical",
+            "QA:Testcase_Anaconda_user_creation",
+            "QA:Testcase_Boot_default_install",
+            "QA:Testcase_base_initial_setup",
+            "QA:Testcase_base_startup",
+            "QA:Testcase_install_to_VirtIO",
+            "QA:Testcase_partitioning_guided_empty",
+        ]
+
     def test_modules(self, jobdict01):
         """Test the dict case of _get_passed_tcnames where test modules
         must be passed. We test behaviour both with overall job result

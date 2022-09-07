@@ -393,6 +393,56 @@ def jobdict04():
         "test": "base_services_start"
     }
 
+@pytest.fixture(scope="function")
+def jobdict05():
+    """Another jobdict, for a special case (install_default_upload on
+    Workstation). Trimmed a bit for length.
+    """
+    return {
+        "result": "passed",
+        "settings": {
+            "ARCH": "x86_64",
+            "ARCH_BASE_MACHINE": "64bit",
+            "BACKEND": "qemu",
+            "BUILD": "Fedora-Rawhide-20220906.n.0",
+            "CURRREL": "36",
+            "DEPLOY_UPLOAD_TEST": "install_default_upload",
+            "DESKTOP": "gnome",
+            "DISTRI": "fedora",
+            "FLAVOR": "Workstation-live-iso",
+            "HDDSIZEGB": "20",
+            "IMAGETYPE": "live",
+            "ISO": "Fedora-Workstation-Live-x86_64-Rawhide-20220906.n.0.iso",
+            "LIVE": "1",
+            "LOCATION": "https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20220906.n.0/compose",
+            "MACHINE": "64bit",
+            "NICTYPE_USER_OPTIONS": "net=172.16.2.0/24",
+            "PACKAGE_SET": "default",
+            "PART_TABLE_TYPE": "mbr",
+            "POSTINSTALL": "_collect_data",
+            "PREVREL": "35",
+            "QEMUCPU": "Nehalem",
+            "QEMUCPUS": "2",
+            "QEMURAM": "3072",
+            "QEMUVGA": "virtio",
+            "QEMU_HOST_IP": "172.16.2.2",
+            "QEMU_VIRTIO_RNG": "1",
+            "RAWREL": "38",
+            "STORE_HDD_1": "disk_Workstation-live-iso_64bit.qcow2",
+            "SUBVARIANT": "Workstation",
+            "TEST": "install_default_upload",
+            "TEST_SUITE_NAME": "install_default_upload",
+            "TEST_TARGET": "ISO",
+            "UP1REL": "37",
+            "UP2REL": "36",
+            "VERSION": "Rawhide",
+            "WORKER_CLASS": "qemu_x86_64"
+        },
+        "state": "done",
+        "t_finished": "2022-09-06T10:04:05",
+        "t_started": "2022-09-06T09:36:00",
+        "test": "install_default_upload"
+    }
 
 @pytest.fixture(scope="function")
 def ffimg01():

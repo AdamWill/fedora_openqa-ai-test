@@ -220,6 +220,10 @@ def _get_passed_tcnames(job, result, composeid, client=None):
     # other side of 'isdict' condition - this is the simple list case.
     elif result in ('passed', 'softfailed'):
         passed = testsuite
+        # special case: for install_default_upload on Workstation or
+        # Silverblue, add base_initial_setup (#100)
+        if job["settings"]["SUBVARIANT"] in ("Silverblue", "Workstation") and tsname == "install_default_upload":
+            passed.append("QA:Testcase_base_initial_setup")
 
     return passed
 
