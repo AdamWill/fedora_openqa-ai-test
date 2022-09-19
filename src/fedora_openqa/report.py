@@ -85,6 +85,8 @@ def _uniqueres_replacements(job, tcdict):
         "gnome_text_editor": "text editor",
         "eog": "image viewer",
         "desktop_terminal": "terminal emulator",
+        "nautilus": "file manager",
+        "help_viewer": "help viewer",
     }
     app = apps.get(job["test"], "")
 

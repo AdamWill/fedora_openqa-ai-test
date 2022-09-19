@@ -1286,6 +1286,9 @@ TESTSUITES = {
             "modules": ["workstation_core_applications"],
         },
     },
+    "nautilus": [
+        "QA:Testcase_desktop_app_basic",
+    ],
     "eog": [
         "QA:Testcase_desktop_app_basic",
     ],
@@ -1293,6 +1296,9 @@ TESTSUITES = {
         "QA:Testcase_desktop_app_basic",
     ],
     "gnome_text_editor": [
+        "QA:Testcase_desktop_app_basic",
+    ],
+    "help_viewer": [
         "QA:Testcase_desktop_app_basic",
     ],
     "server_firewall_default": [
