@@ -57,7 +57,7 @@ TESTCASES = {
     },
     "QA:Testcase_arm_image_deployment": {
         "name": "$SUBVARIANT$",
-        "section": "ARM disk images",
+        "section": "AArch64 disk images",
         "env": "$RUNARCH$ VM",
         "type": "Installation"
     },
