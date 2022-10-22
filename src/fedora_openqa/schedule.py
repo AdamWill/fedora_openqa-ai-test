@@ -154,13 +154,12 @@ def _get_releases(release):
     # the hard disk image file names for the upgrade tests
     try:
         currrel = str(fedfind.helpers.get_current_release())
-        prevrel = str(int(currrel) - 1)
         rawrel = str(fedfind.helpers.get_current_release(branched=True) + 1)
     except ValueError:
         # we don't really want to bail entirely if fedfind failed for
         # some reason, let's just run the other tests and set a value
         # that shows what went wrong for the upgrade tests
-        currrel = prevrel = "FEDFINDERROR"
+        currrel = "FEDFINDERROR"
         # this *might* work...depends on bugs...
         rawrel = "rawhide"
     if str(release).isdigit():
@@ -184,7 +183,6 @@ def _get_releases(release):
     return {
         "CURRREL": currrel,
         "UP1REL": up1rel,
-        "PREVREL": prevrel,
         "UP2REL": up2rel,
         "RAWREL": rawrel,
     }
@@ -554,7 +552,6 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
                        "release is same as update release. This may cause some tests to fail "
                        "if that is not true.")
         relparams["CURRREL"] = str(version)
-        relparams["PREVREL"] = str(int(version) - 1)
 
     # find oldest release
     try:

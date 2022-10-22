@@ -276,7 +276,6 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
             'BUILD': 'Fedora-25-20161115.n.0',
             'LOCATION': rel.location,
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -358,7 +357,6 @@ def test_run_openqa_jobs_rawhide_vers(fakedupes, fakeclient, fakecurr, ffmock):
     schedule.run_openqa_jobs(
         param_urls, flavor, arch, subvariant, imagetype, "Fedora-Rawhide-20170207.n.0", "Rawhide", rel.location)
     assert instance.openqa_request.call_args[0][2]["CURRREL"] == "25"
-    assert instance.openqa_request.call_args[0][2]["PREVREL"] == "24"
     assert instance.openqa_request.call_args[0][2]["RAWREL"] == "26"
     assert instance.openqa_request.call_args[0][2]["UP1REL"] == "25"
     assert instance.openqa_request.call_args[0][2]["UP2REL"] == "24"
@@ -368,7 +366,6 @@ def test_run_openqa_jobs_rawhide_vers(fakedupes, fakeclient, fakecurr, ffmock):
     schedule.run_openqa_jobs(
         param_urls, flavor, arch, subvariant, imagetype, "Fedora-Rawhide-20170207.n.0", "Rawhide", rel.location)
     assert instance.openqa_request.call_args[0][2]["CURRREL"] == "FEDFINDERROR"
-    assert instance.openqa_request.call_args[0][2]["PREVREL"] == "FEDFINDERROR"
     assert instance.openqa_request.call_args[0][2]["RAWREL"] == "rawhide"
     assert instance.openqa_request.call_args[0][2]["UP1REL"] == "FEDFINDERROR"
     assert instance.openqa_request.call_args[0][2]["UP2REL"] == "FEDFINDERROR"
@@ -591,7 +588,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
             'FLAVOR': 'updates-server-upgrade',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -611,7 +607,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
             'FLAVOR': 'updates-workstation-upgrade',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -632,7 +627,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'HDD_1': 'disk_f25_server_3_x86_64.qcow2',
             'FLAVOR': 'updates-server',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -653,7 +647,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'HDD_1': 'disk_f25_server_3_x86_64.qcow2',
             'FLAVOR': 'updates-container',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -675,7 +668,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'FLAVOR': 'updates-kde',
             'DESKTOP': 'kde',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -697,7 +689,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'FLAVOR': 'updates-workstation',
             'DESKTOP': 'gnome',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -717,7 +708,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
             'FLAVOR': 'updates-everything-boot-iso',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -738,7 +728,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'FLAVOR': 'updates-workstation-live-iso',
             'SUBVARIANT': 'Workstation',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -759,7 +748,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'FLAVOR': 'updates-kde-live-iso',
             'SUBVARIANT': 'KDE',
             'CURRREL': '25',
-            'PREVREL': '24',
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
@@ -943,7 +931,6 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
         'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
         'FLAVOR': 'updates-everything-boot-iso',
         'CURRREL': '29',
-        'PREVREL': '28',
         'RAWREL': '30',
         'UP1REL': '27',
         'UP2REL': '26',
@@ -981,7 +968,6 @@ def test_jobs_from_fcosbuild(fakeclient, fakecurrr, fakecurrs, fakejson):
         "NICTYPE_USER_OPTIONS": "net=172.16.2.0/24",
         "FLAVOR": "CoreOS-colive-iso",
         "CURRREL": "35",
-        "PREVREL": "34",
         "RAWREL": "36",
         "UP1REL": "35",
         "UP2REL": "34",
