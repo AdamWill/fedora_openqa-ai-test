@@ -582,7 +582,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         fullparams['FLAVOR'] = fullflav
         if extraparams:
             fullparams.update(extraparams)
-        output = client.openqa_request('POST', 'isos', fullparams)
+        output = client.openqa_request('POST', 'isos', data=fullparams)
         logger.debug("jobs_from_update: planned %s jobs: %s", flavor, output["ids"])
         jobs.extend(output["ids"])
 

@@ -565,7 +565,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     # should be as many calls as we have flavors
     assert len(posts) == numflavors
-    parmdicts = [call[0][2] for call in posts]
+    parmdicts = [call[1]["data"] for call in posts]
     # checking two lists of dicts are equivalent is rather tricky; I
     # don't think we can technically rely on the order always being
     # the same, and in Python 3, a list of dicts cannot be sorted.
@@ -759,7 +759,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     # should be as many calls as we have flavors
     assert len(posts) == numflavors
-    parmdicts = [call[0][2] for call in posts]
+    parmdicts = [call[1]["data"] for call in posts]
     for parmdict in parmdicts:
         assert parmdict["VERSION"] == "26"
 
@@ -790,7 +790,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # one flavor, one call
     assert len(posts) == 1
     # check parm dict FLAVOR value
-    assert posts[0][0][2]['FLAVOR'] == 'updates-server'
+    assert posts[0][1]["data"]['FLAVOR'] == 'updates-server'
 
     # test dupe detection and 'force'
     fakeinst.openqa_request.reset_mock()
@@ -849,7 +849,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # one flavor, one call
     assert len(posts) == 1
     # check parm dict FLAVOR value
-    assert posts[0][0][2]['FLAVOR'] == 'updates-workstation'
+    assert posts[0][1]['data']['FLAVOR'] == 'updates-workstation'
     # now try with force=True
     fakeinst.openqa_request.reset_mock()
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', force=True)
@@ -864,8 +864,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     # check parm dict values
-    assert posts[0][0][2]['BUILD'] == 'Update-FEDORA-2017-b07d628952-EXTRA'
-    assert posts[0][0][2]['FOO'] == 'bar'
+    assert posts[0][1]['data']['BUILD'] == 'Update-FEDORA-2017-b07d628952-EXTRA'
+    assert posts[0][1]['data']['FOO'] == 'bar'
 
     # test openqa_hostname
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', openqa_hostname='openqa.example')
@@ -876,15 +876,12 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', arch='ppc64le')
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
-    print(posts[0])
-    print(posts[1])
-    print(posts[2])
     # check parm dict values. They should have correct arch, if they
     # have HDD_1, it should be one of the expected values
     for post in posts:
-        assert post[0][2]['ARCH'] == 'ppc64le'
-        if 'HDD_1' in post[0][2]:
-            assert post[0][2]['HDD_1'] in ['disk_f25_server_3_ppc64le.qcow2',
+        assert post[1]['data']['ARCH'] == 'ppc64le'
+        if 'HDD_1' in post[1]['data']:
+            assert post[1]['data']['HDD_1'] in ['disk_f25_server_3_ppc64le.qcow2',
                                            'disk_f25_desktop_4_ppc64le.qcow2',
                                            'disk_f25_kde_4_ppc64le.qcow2']
 
@@ -908,7 +905,7 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     # one flavor, one call
     assert len(posts) == 1
-    parmdict = posts[0][0][2]
+    parmdict = posts[0][1]["data"]
     assert parmdict == {
         'DISTRI': 'fedora',
         'VERSION': '28',
