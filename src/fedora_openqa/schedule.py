@@ -483,32 +483,17 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         build = 'Update-{0}'.format(update)
     if extraparams:
         build = '{0}-EXTRA'.format(build)
-    flavdict = {
-        'container': {
-            # this flavor uses the server base image
-            'HDD_1': 'disk_f{0}_server_3_{1}.qcow2'.format(version, arch),
-        },
-        'server': {
-            'HDD_1': 'disk_f{0}_server_3_{1}.qcow2'.format(version, arch),
-        },
-        'server-upgrade': {},
-        'kde': {
-            'HDD_1': 'disk_f{0}_kde_4_{1}.qcow2'.format(version, arch),
-            'DESKTOP': 'kde',
-        },
-        'kde-live-iso': {
-            'SUBVARIANT': 'KDE',
-        },
-        'workstation': {
-            'HDD_1': 'disk_f{0}_desktop_4_{1}.qcow2'.format(version, arch),
-            'DESKTOP': 'gnome',
-        },
-        'workstation-upgrade': {},
-        'workstation-live-iso': {
-            'SUBVARIANT': 'Workstation',
-        },
-        'everything-boot-iso': {},
-    }
+    flavlist = [
+        'container',
+        'server',
+        'server-upgrade',
+        'kde',
+        'kde-live-iso',
+        'workstation',
+        'workstation-upgrade',
+        'workstation-live-iso',
+        'everything-boot-iso',
+    ]
     # we'll set ADVISORY and ADVISORY_OR_TASK for updates, and KOJITASK and
     # ADVISORY_OR_TASK for Koji tasks. I'd probably have designed this more
     # cleanly if doing it from scratch, but we started with updates and added
@@ -566,7 +551,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     jobs = []
 
     if not flavors:
-        flavors = flavdict.keys()
+        flavors = flavlist
 
     for flavor in flavors:
         if int(version) == oldest and 'upgrade' in flavor:
@@ -592,8 +577,6 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # we start from the relparams, as we want later-read param
         # dicts to override them sometimes
         fullparams = relparams.copy()
-        # add in the per-flavor params
-        fullparams.update(flavdict[flavor])
         # add in the base params
         fullparams.update(baseparams)
         fullparams['FLAVOR'] = fullflav
