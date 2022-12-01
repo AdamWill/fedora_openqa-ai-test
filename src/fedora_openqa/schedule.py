@@ -49,6 +49,19 @@ FORMAT_TO_PARAM = {
     "qcow2": "HDD_2_URL",
 }
 
+# flavors to schedule update tests for; we put it here so the tests
+# can import it
+UPDATE_FLAVORS = (
+    'container',
+    'server',
+    'server-upgrade',
+    'kde',
+    'kde-live-iso',
+    'workstation',
+    'workstation-upgrade',
+    'workstation-live-iso',
+    'everything-boot-iso',
+)
 
 class TriggerException(Exception):
     pass
@@ -561,17 +574,7 @@ def jobs_from_update(
     jobs = []
 
     if not flavors:
-        flavors = (
-            'container',
-            'server',
-            'server-upgrade',
-            'kde',
-            'kde-live-iso',
-            'workstation',
-            'workstation-upgrade',
-            'workstation-live-iso',
-            'everything-boot-iso',
-        )
+        flavors = UPDATE_FLAVORS
 
     for flavor in flavors:
         if int(version) == oldest and 'upgrade' in flavor:
