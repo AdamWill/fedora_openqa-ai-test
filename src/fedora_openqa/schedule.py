@@ -498,7 +498,7 @@ def jobs_from_update(
         build = 'Update-{0}'.format(update)
         advkey = 'ADVISORY'
         # now we retrieve the list of NVRs in the update as of right now and
-        # include it as a variable; the test will download and test those
+        # include them as variables; the test will download and test those
         # NVRs. We do this instead of the test just using bodhi CLI to get
         # whatever's in the update at the time the test runs so we can publish
         # correct CI Messages:
@@ -507,13 +507,23 @@ def jobs_from_update(
         updjson = fedfind.helpers.download_json(url)
         builds = updjson['update']['builds']
         nvrs = [build['nvr'] for build in builds]
-        baseparams = {'ADVISORY_NVRS': ' '.join(nvrs)}
         if not version:
             # find version in update data
             version = updjson['update']['release']['version']
+        baseparams = {}
+        # chunk the nvr list, to avoid awkward problems with very
+        # long values like https://progress.opensuse.org/issues/121054
+        chunksize = 20
+        chunked_nvrs = [nvrs[i:i+chunksize] for i in range(0, len(nvrs), chunksize)]
+        for (num, nvrs) in enumerate(chunked_nvrs, 1):
+            # we split the list across multiple settings because a
+            # surprising amount of tricky bugs show up if a settings
+            # value is very long, e.g.:
+            # https://progress.opensuse.org/issues/121054
+            baseparams[f'ADVISORY_NVRS_{num}'] = ' '.join(nvrs)
+
     if extraparams:
         build = '{0}-EXTRA'.format(build)
-
     baseparams.update({
         'DISTRI': 'fedora',
         'VERSION': version,

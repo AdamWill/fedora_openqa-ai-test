@@ -39,24 +39,41 @@ import fedora_openqa.schedule as schedule
 COMPURL = 'https://kojipkgs.fedoraproject.org/compose/branched/Fedora-25-20161115.n.0/compose/'
 # trimmed Bodhi response for FEDORA-2017-b07d628952, jobs_from_update
 # uses this to determine the release and the NVRs in the update. This
-# is tweaked from the real output to include *two* builds.
+# is tweaked from the real output to include 21 builds (one more than
+# the chunk size for splitting ADVISORY_NVRS).
+UPDATENVRS_1 = (
+    'cockpit-129-1.fc25',
+    'systemd-231-7.fc25',
+    'chirp-20171204-1.fc25',
+    'whois-5.2.19-1.fc25',
+    'lcgdm-1.9.1-1.fc25',
+    'redis-4.0.6-1.fc25',
+    'newsbeuter-2.9-6.fc25',
+    'bandit-1.4.0-5.fc25',
+    'pdc-client-1.8.0-4.fc25',
+    'cinnamon-3.6.6-12.fc25',
+    'modulemd-1.3.3-1.fc25',
+    'libextractor-1.6-2.fc25',
+    'python-rmtest-0.6.6-1.fc25',
+    'dnssec-trigger-0.15-1.fc25',
+    'lynx-2.8.9-0.20.dev16.fc25',
+    'perl-Digest-SHA-6.00-1.fc25',
+    'torrent-file-editor-0.3.9-1.fc25',
+    'libverto-jsonrpc-0.1.0-16.fc25',
+    'geany-1.32-1.fc25',
+    'geany-plugins-1.32-1.fc25',
+)
+UPDATENVRS_2 = ('python-yattag-1.9.2-1.fc25',)
 UPDATEJSON = {
     'update': {
         'builds': [
             {
-                'nvr': 'cockpit-129-1.fc25',
+                'nvr': nvr,
                 'release_id': 15,
                 'signed': True,
                 'type': 'rpm',
                 'epoch': 0
-            },
-            {
-                'nvr': 'systemd-231-7.fc25',
-                'release_id': 15,
-                'signed': True,
-                'type': 'rpm',
-                'epoch': 0
-            },
+            } for nvr in UPDATENVRS_1 + UPDATENVRS_2
         ],
         'release': {
             'version': '25'
@@ -575,6 +592,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # So we assert the length of the list, and assert that each of the
     # expected dicts is in the actual list.
     assert len(parmdicts) == numflavors
+    advisories1 = ' '.join(UPDATENVRS_1)
+    advisories2 = ' '.join(UPDATENVRS_2)
     checkdicts = [
         {
             'DISTRI': 'fedora',
@@ -582,7 +601,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
@@ -601,7 +621,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
@@ -620,7 +641,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
@@ -639,7 +661,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
@@ -658,7 +681,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
@@ -677,7 +701,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
@@ -696,7 +721,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
@@ -715,7 +741,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
@@ -734,7 +761,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
             'ADVISORY': 'FEDORA-2017-b07d628952',
-            'ADVISORY_NVRS': 'cockpit-129-1.fc25 systemd-231-7.fc25',
+            'ADVISORY_NVRS_1': advisories1,
+            'ADVISORY_NVRS_2': advisories2,
             'ADVISORY_OR_TASK': 'FEDORA-2017-b07d628952',
             '_OBSOLETE': '1',
             '_ONLY_OBSOLETE_SAME_BUILD': '1',
