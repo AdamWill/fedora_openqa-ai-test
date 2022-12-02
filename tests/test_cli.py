@@ -144,19 +144,17 @@ class TestCommandUpdateTask:
     def test_command_update_task(self, fakejfu, target, capsys):
         """General tests for the command_update_task function."""
         if target.isdigit():
-            targetarg = 'task'
+            testargs = ('task', target, '25')
         else:
-            targetarg = 'update'
-        args = cli.parse_args(
-            [targetarg, target, '25']
-        )
+            testargs = ('update', '--release', '25', target)
+        args = cli.parse_args(testargs)
         with pytest.raises(SystemExit) as excinfo:
             cli.command_update_task(args)
         (out, _) = capsys.readouterr()
         # first arg should be target
         assert fakejfu.call_args[0][0] == target
         # second should be release
-        assert fakejfu.call_args[0][1] == 25
+        assert fakejfu.call_args[1]['version'] == 25
         # flavors kwarg should be false-y (not, e.g., [None])
         assert not fakejfu.call_args[1]['flavors']
         # should print out list of scheduled jobs
@@ -168,7 +166,7 @@ class TestCommandUpdateTask:
 
         # check 'flavor'
         args = cli.parse_args(
-            ['update', target, '25', '--flavor', 'server']
+            testargs + ('--flavor', 'server')
         )
         with pytest.raises(SystemExit) as excinfo:
             cli.command_update_task(args)
@@ -178,7 +176,7 @@ class TestCommandUpdateTask:
 
         # check 'force'
         args = cli.parse_args(
-            ['update', target, '25', '--force']
+            testargs + ('--force',)
         )
         with pytest.raises(SystemExit) as excinfo:
             cli.command_update_task(args)
@@ -188,13 +186,23 @@ class TestCommandUpdateTask:
 
         # check 'openqa_hostname'
         args = cli.parse_args(
-            ['update', target, '25', '--openqa-hostname', 'openqa.example']
+            testargs + ('--openqa-hostname', 'openqa.example')
         )
         with pytest.raises(SystemExit) as excinfo:
             cli.command_update_task(args)
         # should exit 0
         assert not excinfo.value.code
         assert fakejfu.call_args[1]['openqa_hostname'] == 'openqa.example'
+
+    @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1, 2], autospec=True)
+    def test_command_update_norelease(self, fakejfu, capsys):
+        """Test update is OK with no release number."""
+        args = cli.parse_args(('update', 'FEDORA-2017-b07d628952'))
+        with pytest.raises(SystemExit) as excinfo:
+            cli.command_update_task(args)
+        # should exit 0
+        assert not excinfo.value.code
+        assert fakejfu.call_args[1]['version'] is None
 
     # this should not in fact get hit, but just in case we *do* break the code,
     # let's mock it to be safe...

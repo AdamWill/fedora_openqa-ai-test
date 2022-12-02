@@ -38,8 +38,8 @@ import fedora_openqa.schedule as schedule
 
 COMPURL = 'https://kojipkgs.fedoraproject.org/compose/branched/Fedora-25-20161115.n.0/compose/'
 # trimmed Bodhi response for FEDORA-2017-b07d628952, jobs_from_update
-# uses this to determine the NVRs in the update. This is tweaked from
-# the real output to include *two* builds.
+# uses this to determine the release and the NVRs in the update. This
+# is tweaked from the real output to include *two* builds.
 UPDATEJSON = {
     'update': {
         'builds': [
@@ -57,7 +57,10 @@ UPDATEJSON = {
                 'type': 'rpm',
                 'epoch': 0
             },
-        ]
+        ],
+        'release': {
+            'version': '25'
+        }
     }
 }
 # trimmed CoreOS build metadata JSON, used for scheduling CoreOS jobs
@@ -556,8 +559,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # for now, return no 'jobs' (for the dupe query), one 'id' (for
     # the post request)
     fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
-    # simple case
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25')
+    # simple case, using release detection
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952')
     # should get as many jobs (all with id 1 due to the mock return
     # value) as we have flavors
     assert ret == [1 for i in range(numflavors)]
@@ -753,7 +756,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # fakecurrr returns 25 as the 'branched release' so code thinks
     # 'rawhide release' is 26
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26')
     assert ret == [1 for i in range(numflavors)]
     # check we got all the posts and set version to the number
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
@@ -768,21 +771,21 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     fakeinst.openqa_request.reset_mock()
     fakecurrs.side_effect = ValueError("Well, that was unfortunate")
     fakecurrr.side_effect = ValueError("Well, that was unfortunate")
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '26')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26')
     assert ret == [1 for i in range(numflavors)]
     fakecurrs.side_effect = None
 
     # check we don't schedule upgrade jobs when update is for oldest
     # stable release
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '24')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='24')
     # upgrade flavors skipped, so numflavors - 2 jobs (there are two
     # upgrade flavors)
     assert ret == [1 for i in range(numflavors - 2)]
 
     # test 'flavors'
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', flavors=['server'])
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', flavors=['server'])
     # should get one job
     assert ret == [1]
     # find the POST calls
@@ -840,7 +843,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
         ],
         'ids': [1],
     }
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25')
     # should get one job, for workstation (the only flavor we don't
     # have a 'dupe' for)
     assert ret == [1]
@@ -852,7 +855,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     assert posts[0][1]['data']['FLAVOR'] == 'updates-workstation'
     # now try with force=True
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', force=True)
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', force=True)
     # should get numflavors jobs this time
     assert ret == [1 for i in range(numflavors)]
 
@@ -860,6 +863,9 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     fakeinst.openqa_request.reset_mock()
     # set the openqa_request return value back to the no-dupes version
     fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
+    # we intentionally test 'version' as a positional arg here to make
+    # sure it isn't moved; it should never be moved as it was required
+    # for a long time
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', flavors=['server'], extraparams={'FOO': 'bar'})
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
@@ -868,12 +874,12 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     assert posts[0][1]['data']['FOO'] == 'bar'
 
     # test openqa_hostname
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', openqa_hostname='openqa.example')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', openqa_hostname='openqa.example')
     assert fakeclient.call_args[0][0] == 'openqa.example'
 
     # test arch
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', arch='ppc64le')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', arch='ppc64le')
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     # check parm dict values. They should have correct arch, if they
@@ -898,7 +904,7 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
     # the post request)
     fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
     # simple case
-    ret = schedule.jobs_from_update('32099714', '28', flavors=['everything-boot-iso'])
+    ret = schedule.jobs_from_update('32099714', version='28', flavors=['everything-boot-iso'])
     # should get one job for one flavor
     assert ret == [1]
     # find the POST calls
@@ -924,6 +930,9 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
         'UP1REL': '27',
         'UP2REL': '26',
     }
+    # check we error out if no release is passed
+    with pytest.raises(schedule.TriggerException):
+        ret = schedule.jobs_from_update('32099714', flavors=['everything-boot-iso'])
 
 @mock.patch("fedfind.helpers.download_json", return_value=COREOSJSON)
 @mock.patch("fedfind.helpers.get_current_stables", return_value=[33, 34, 35])

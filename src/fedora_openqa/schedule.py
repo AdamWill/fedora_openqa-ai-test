@@ -446,64 +446,56 @@ def jobs_from_fcosbuild(buildurl, flavors=None, force=False, extraparams=None, o
     return jobs
 
 
-def jobs_from_update(update, version, flavors=None, force=False, extraparams=None, openqa_hostname=None, arch=None):
+def jobs_from_update(
+        update, version=None, flavors=None, force=False, extraparams=None, openqa_hostname=None, arch=None
+    ):
     """Schedule jobs for a specific Fedora update (or scratch build).
-    update is the advisory ID or task ID, version is the release
-    number, flavors defines which update tests should be run (valid
-    values are the 'flavdict' keys). force, extraparams and
-    openqa_hostname are as for jobs_from_compose. To explain the HDD_1
-    and START_AFTER_TEST settings: most tests in the 'update' scenario
-    are shared with the 'compose' scenario. Many of them specify
-    START_AFTER_TEST as 'install_default_upload' and HDD_1 as the disk
-    image that install_default_upload creates, so that in the compose
-    scenario, these tests run after install_default_upload and use the
-    image it creates. For update testing, there is no install_default_
-    upload test; we instead want to run these tests using the pre-
-    existing createhdds-created base image. So here, we specify the
-    appropriate HDD_1 value, and an empty value for START_AFTER_TEST,
-    so the scheduler will not try to create a dependency on the non-
-    existent install_default_upload test, and the correct disk image
-    will be used. There are a *few* tests where we do *not* want to
-    override these values, however: the tests where there really is a
+    update is the advisory ID or task ID. version is the release
+    number; for updates it will be discovered from Bodhi if not
+    specified, for tasks it must be specified. flavors defines which
+    update tests should be run (valid values are the 'flavdict' keys).
+    force, extraparams and openqa_hostname are as for
+    jobs_from_compose. To explain the HDD_1 and START_AFTER_TEST
+    settings: most tests in the 'update' scenario are shared with the
+    'compose' scenario. Many of them specify START_AFTER_TEST as
+    'install_default_upload' and HDD_1 as the disk image that
+    install_default_upload creates, so that in the compose scenario,
+    these tests run after install_default_upload and use the image it
+    creates. For update testing, there is no install_default_upload
+    test; we instead want to run these tests using the pre-existing
+    createhdds-created base image. So here, we specify the appropriate
+    HDD_1 value, and an empty value for START_AFTER_TEST, so the
+    scheduler will not try to create a dependency on the non-existent
+    install_default_upload test, and the correct disk image will be
+    used. There are a *few* tests where we do *not* want to override
+    these values, however: the tests where there really is a
     dependency in both scenarios (e.g. the cockpit_basic test has to
     run after the cockpit_default test and use the disk image it
     uploads). For these tests, we specify the values in the templates
     as +START_AFTER_TEST and +HDD_1; the + makes those values win over
     the ones we pass in here.
     """
-    version = str(version)
+    if version:
+        version = str(version)
     if not arch:
         # set a default in a way that works neatly with the CLI bits
         arch = 'x86_64'
     if update.isdigit():
         # Koji task ID: treat as a non-reported scratch build test
         build = "Kojitask-{0}-NOREPORT".format(update)
+        # we'll set ADVISORY and ADVISORY_OR_TASK for updates, and KOJITASK and
+        # ADVISORY_OR_TASK for Koji tasks. I'd probably have designed this more
+        # cleanly if doing it from scratch, but we started with updates and added
+        # tasks later and it's a bit messy. We need to have a consistently-named
+        # variable for the distri templates substitution, there's no mechanism to
+        # do 'substitute for this var or this other var depending which exists'
+        advkey = 'KOJITASK'
+        baseparams = {}
+        if not version:
+            raise TriggerException("Must provide version when scheduling a Koji task!")
     else:
         # normal update case
         build = 'Update-{0}'.format(update)
-    if extraparams:
-        build = '{0}-EXTRA'.format(build)
-    flavlist = [
-        'container',
-        'server',
-        'server-upgrade',
-        'kde',
-        'kde-live-iso',
-        'workstation',
-        'workstation-upgrade',
-        'workstation-live-iso',
-        'everything-boot-iso',
-    ]
-    # we'll set ADVISORY and ADVISORY_OR_TASK for updates, and KOJITASK and
-    # ADVISORY_OR_TASK for Koji tasks. I'd probably have designed this more
-    # cleanly if doing it from scratch, but we started with updates and added
-    # tasks later and it's a bit messy. We need to have a consistently-named
-    # variable for the distri templates substitution, there's no mechanism to
-    # do 'substitute for this var or this other var depending which exists'
-    if update.isdigit():
-        advkey = 'KOJITASK'
-        baseparams = {}
-    else:
         advkey = 'ADVISORY'
         # now we retrieve the list of NVRs in the update as of right now and
         # include it as a variable; the test will download and test those
@@ -512,9 +504,16 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         # correct CI Messages:
         # https://pagure.io/fedora-qa/fedora_openqa/issue/78
         url = 'https://bodhi.fedoraproject.org/updates/' + update
-        builds = fedfind.helpers.download_json(url)['update']['builds']
+        updjson = fedfind.helpers.download_json(url)
+        builds = updjson['update']['builds']
         nvrs = [build['nvr'] for build in builds]
         baseparams = {'ADVISORY_NVRS': ' '.join(nvrs)}
+        if not version:
+            # find version in update data
+            version = updjson['update']['release']['version']
+    if extraparams:
+        build = '{0}-EXTRA'.format(build)
+
     baseparams.update({
         'DISTRI': 'fedora',
         'VERSION': version,
@@ -529,6 +528,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         'QEMU_HOST_IP': '172.16.2.2',
         'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
     })
+
     # get the release params
     relparams = _get_releases(release=version)
     if relparams["CURRREL"] == "FEDFINDERROR":
@@ -536,7 +536,7 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
         logger.warning("jobs_from_update: could not determine current release! Assuming current "
                        "release is same as update release. This may cause some tests to fail "
                        "if that is not true.")
-        relparams["CURRREL"] = str(version)
+        relparams["CURRREL"] = version
 
     # find oldest release
     try:
@@ -551,7 +551,17 @@ def jobs_from_update(update, version, flavors=None, force=False, extraparams=Non
     jobs = []
 
     if not flavors:
-        flavors = flavlist
+        flavors = (
+            'container',
+            'server',
+            'server-upgrade',
+            'kde',
+            'kde-live-iso',
+            'workstation',
+            'workstation-upgrade',
+            'workstation-live-iso',
+            'everything-boot-iso',
+        )
 
     for flavor in flavors:
         if int(version) == oldest and 'upgrade' in flavor:

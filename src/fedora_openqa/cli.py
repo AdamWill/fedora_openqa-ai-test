@@ -101,7 +101,7 @@ def command_update_task(args):
         buildarg = args.task
     else:
         buildarg = args.update
-    jobs = schedule.jobs_from_update(buildarg, args.release, flavors=flavors, force=args.force,
+    jobs = schedule.jobs_from_update(buildarg, version=args.release, flavors=flavors, force=args.force,
                                      openqa_hostname=args.openqa_hostname, arch=args.arch)
     print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
     sys.exit()
@@ -198,15 +198,16 @@ def parse_args(args=None):
     # parser_update and parser_task are nearly the same, so...
     parser_update = subparsers.add_parser('update', description="Schedule jobs for a specific update.")
     parser_update.add_argument('update', help="The update ID (e.g. 'FEDORA-2017-b07d628952')", metavar='UPDATE')
+    parser_update.add_argument('--release', help="The release the update is for (e.g. '25'), automatically "
+                               "determined if omitted", type=int, metavar="NN")
     parser_task = subparsers.add_parser('task', description="Schedule jobs for a specific Koji task.")
     parser_task.add_argument('task', help="The task ID (e.g. '32099714')", metavar='TASK')
+    parser_task.add_argument('release', help="The release the task is for (e.g. '25')", type=int, metavar="NN")
     for updtaskparser in [parser_update, parser_task]:
         if updtaskparser is parser_update:
             targetstr = 'update'
         else:
             targetstr = 'task'
-        updtaskparser.add_argument('release', help="The release the {0} is for (e.g. '25')".format(targetstr),
-                                   type=int, metavar="NN")
         updtaskparser.add_argument('--flavor', help="A single flavor to schedule jobs for (e.g. 'server'), "
                                    "otherwise jobs will be scheduled for all update flavors")
         updtaskparser.add_argument(
