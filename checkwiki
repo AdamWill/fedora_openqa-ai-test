@@ -87,12 +87,12 @@ def read_templates(distripath):
 
 def get_page(testtype):
     """Get the page if we didn't yet, cache it, and return from cache."""
-    dist = "Fedora"
+    ttype = testtype
     if testtype == "General":
         # only IoT events have a General page
-        dist = "Fedora-IoT"
+        ttype = "General_IoT"
     if not testtype in PAGES:
-        PAGES[testtype] = SITE.get_validation_page(testtype=testtype, dist=dist)
+        PAGES[testtype] = SITE.pages[f"Template:{ttype}_test_matrix"]
     return PAGES[testtype]
 
 def cases_from_suite(suite):
@@ -297,10 +297,14 @@ def check_wiki_mapping(templates, modules):
             cands = [cand for cand in row.results.keys() if restup.env.lower() in cand.lower()]
             # we should have *exactly one* cand
             if len(cands) == 0:
-                print("Env {0} not found in ResultRow: case {1}, name {2}, section {3}, "
-                      "page {4}!".format(restup.env, row.testcase, row.name,
-                                         row.section, restup.testtype))
-                failed = 1
+                if restup.env == "CoreOS":
+                    # we don't track coreos results in wiki
+                    pass
+                else:
+                    print("Env {0} not found in ResultRow: case {1}, name {2}, section {3}, "
+                          "page {4}!".format(restup.env, row.testcase, row.name,
+                                             row.section, restup.testtype))
+                    failed = 1
             if len(cands) > 1:
                 print("Too many matches found for env {0} in ResultRow {1}!".format(
                     restup.env, row.testcase))
