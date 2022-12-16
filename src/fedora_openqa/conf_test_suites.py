@@ -1424,6 +1424,14 @@ TESTSUITES = {
     # don't map to a wiki test case, was requested by desktop team
     "unwanted_packages": [],
     "desktop_fprint": [],
+    # GNOME app tests that aren't in the matrix
+    "archiver": [],
+    "calculator": [],
+    "clocks": [],
+    "contacts": [],
+    "maps": [],
+    "sysmon": [],
+    "weather": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
