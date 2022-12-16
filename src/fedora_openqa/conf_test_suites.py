@@ -651,12 +651,14 @@ TESTCASES = {
         "type": "General",
     },
     "QA:Testcase_RpmOstree_Rebase": {
-        "env": "$RUNARCH$",
-        "type": "General",
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "Base",
     },
     "QA:Testcase_RpmOstree_Package_Layering": {
-        "env": "$RUNARCH$",
-        "type": "General",
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT_OR_LOCAL$",
+        "type": "Base",
     },
     "QA:Testcase_Clevis": {
         "env": "$RUNARCH$",
@@ -1401,10 +1403,10 @@ TESTSUITES = {
     "iot_greenboot": [
         "QA:Testcase_Greenboot",
     ],
-    "iot_rpmostree_rebase": [
+    "rpmostree_rebase": [
         "QA:Testcase_RpmOstree_Rebase",
     ],
-    "iot_rpmostree_overlay": [
+    "rpmostree_overlay": [
         "QA:Testcase_RpmOstree_Package_Layering",
     ],
     "iot_clevis": [
