@@ -571,7 +571,10 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
     # many assertions below depend on the number of update flavors
     # we have; instead of changing them all every time we change
     # that, we update this constant
-    numflavors = len(UPDATE_FLAVORS)
+    allflavors = set()
+    for flavlist in UPDATE_FLAVORS.values():
+        allflavors.update(flavlist)
+    numflavors = len(allflavors)
     # the OpenQA_Client instance mock
     fakeinst = fakeclient.return_value
     # for now, return no 'jobs' (for the dupe query), one 'id' (for
@@ -615,7 +618,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             'RAWREL': '26',
             'UP1REL': '24',
             'UP2REL': '23',
-        } for flavor in [f"updates-{oflav}" for oflav in UPDATE_FLAVORS]
+        } for flavor in [f"updates-{oflav}" for oflav in allflavors]
     ]
     for checkdict in checkdicts:
         print(checkdict)
@@ -764,6 +767,28 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
             assert post[1]['data']['HDD_1'] in ['disk_f25_server_3_ppc64le.qcow2',
                                            'disk_f25_desktop_4_ppc64le.qcow2',
                                            'disk_f25_kde_4_ppc64le.qcow2']
+
+    # test critpath group handling: if the update lists what critpath
+    # groups it is part of, we should only schedule a subset of flavs
+    fakeinst.openqa_request.reset_mock()
+    modupdate = dict(UPDATEJSON)
+    modupdate["update"] = dict(UPDATEJSON["update"])
+    modupdate["update"]["critpath_groups"] = "critical-path-apps critical-path-gnome"
+    fakejson.return_value = modupdate
+    groupflavors = set()
+    for cgroup in ("critical-path-apps", "critical-path-gnome"):
+        groupflavors.update(UPDATE_FLAVORS[cgroup])
+    ret = schedule.jobs_from_update("FEDORA-2017-b07d628952")
+    # should get as many jobs (all with id 1 due to the mock return
+    # value) as we have flavors for those critpath groups
+    assert ret == [1 for i in range(len(groupflavors))]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # should be as many calls as we have flavors
+    assert len(posts) == len(groupflavors)
+    parmdicts = [call[1]["data"] for call in posts]
+    for parmdict in parmdicts:
+        assert parmdict["FLAVOR"].split("updates-")[1] in groupflavors
 
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])
 @mock.patch('fedfind.helpers.get_current_release', return_value=29)

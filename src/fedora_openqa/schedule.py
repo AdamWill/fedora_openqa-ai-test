@@ -50,19 +50,48 @@ FORMAT_TO_PARAM = {
 }
 
 # flavors to schedule update tests for; we put it here so the tests
-# can import it
-UPDATE_FLAVORS = (
-    'container',
-    'server',
-    'server-upgrade',
-    'kde',
-    'kde-live-iso',
-    'workstation',
-    'workstation-upgrade',
-    'workstation-live-iso',
-    'everything-boot-iso',
-    'silverblue-dvd_ostree-iso',
-)
+# can import it. The keys here are critical path group names, the
+# values are the flavors we need to schedule for updates in each
+# critical path group. The associations here need to be kept in line
+# with the greenwave gating policy at
+# https://pagure.io/fedora-infra/ansible/blob/main/f/roles/openshift-apps/greenwave/templates/fedora.yaml
+# - for each group, we need to schedule all the flavors from which
+# tests are listed in any gating policy that's applied to the decision
+# context for that group. So as we gate on tests from every flavor for
+# the 'core' and 'critical-path-base' groups, we need to schedule
+# every flavor; as we only gate on tests from "kde" and "kde-live-iso"
+# for the "critical-path-kde" group, we only need to schedule those
+# flavors; and so on.
+UPDATE_FLAVORS = {
+    "core": (
+        "container",
+        "server",
+        "server-upgrade",
+        "kde",
+        "kde-live-iso",
+        "workstation",
+        "workstation-upgrade",
+        "workstation-live-iso",
+        "everything-boot-iso",
+        "silverblue-dvd_ostree-iso",
+    ),
+    "critical-path-apps": ("kde", "server", "workstation"),
+    "critical-path-base": (
+        "container",
+        "server",
+        "server-upgrade",
+        "kde",
+        "kde-live-iso",
+        "workstation",
+        "workstation-upgrade",
+        "workstation-live-iso",
+        "everything-boot-iso",
+        "silverblue-dvd_ostree-iso",
+    ),
+    "critical-path-gnome": ("workstation", "workstation-upgrade", "workstation-live-iso", "silverblue-dvd_ostree-iso"),
+    "critical-path-kde": ("kde", "kde-live-iso"),
+    "critical-path-server": ("server", "server-upgrade"),
+}
 
 class TriggerException(Exception):
     pass
@@ -489,6 +518,7 @@ def jobs_from_update(
     as +START_AFTER_TEST and +HDD_1; the + makes those values win over
     the ones we pass in here.
     """
+    critpathgroups = []
     if version:
         version = str(version)
     if not arch:
@@ -519,6 +549,9 @@ def jobs_from_update(
         # https://pagure.io/fedora-qa/fedora_openqa/issue/78
         url = 'https://bodhi.fedoraproject.org/updates/' + update
         updjson = fedfind.helpers.download_json(url)
+        critpathgroups = updjson["update"].get("critpath_groups", "")
+        if critpathgroups:
+            critpathgroups = critpathgroups.split(" ")
         builds = updjson['update']['builds']
         nvrs = [build['nvr'] for build in builds]
         if not version:
@@ -575,7 +608,14 @@ def jobs_from_update(
     jobs = []
 
     if not flavors:
-        flavors = UPDATE_FLAVORS
+        flavors = set()
+        if critpathgroups:
+            for cpgroup in critpathgroups:
+                flavors.update(UPDATE_FLAVORS.get(cpgroup, tuple()))
+        else:
+            for flavlist in UPDATE_FLAVORS.values():
+                flavors.update(flavlist)
+
 
     for flavor in flavors:
         if int(version) == oldest and 'upgrade' in flavor:
