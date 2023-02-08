@@ -521,13 +521,22 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
 
         # construct common args for resultsdb_conventions Result
         kwargs = {}
-        # map openQA's results to resultsdb's outcome
-        kwargs["outcome"] = {
-            'passed': "PASSED",
-            'failed': "FAILED",
-            'parallel_failed': "FAILED",
-            'softfailed': "INFO"
-        }.get(job['result'], 'NEEDS_INSPECTION')
+        # map openQA's state/results to resultsdb's outcome
+        if job["result"] == "none":
+            kwargs["outcome"] = {
+                'scheduled': "QUEUED",
+                'assigned': "QUEUED",
+                'setup': "QUEUED",
+                'running': "RUNNING",
+                'uploading': "RUNNING"
+            }.get(job["state"], "NEEDS_INSPECTION")
+        else:
+            kwargs["outcome"] = {
+                'passed': "PASSED",
+                'failed': "FAILED",
+                'parallel_failed': "FAILED",
+                'softfailed': "INFO"
+            }.get(job['result'], 'NEEDS_INSPECTION')
         job_url = "%s/tests/%s" % (openqa_baseurl, job['id'])
         if job["result"] in ["passed", "softfailed"]:
             kwargs["tc_url"] = job_url  # point testcase url to latest passed test

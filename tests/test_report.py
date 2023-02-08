@@ -528,6 +528,29 @@ class TestResultsDBReport:
         fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_args[1]['outcome'] == 'NEEDS_INSPECTION'
 
+        # now test the non-completed outcomes...
+        jobdict['result'] = 'none'
+
+        jobdict['state'] = 'scheduled'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['outcome'] == 'QUEUED'
+
+        jobdict['state'] = 'assigned'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['outcome'] == 'QUEUED'
+
+        jobdict['state'] = 'setup'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['outcome'] == 'QUEUED'
+
+        jobdict['state'] = 'running'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['outcome'] == 'RUNNING'
+
+        jobdict['state'] = 'uploading'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['outcome'] == 'RUNNING'
+
     def test_test_target(self, fakeres, ffmock, oqaclientmock):
         """Check resultsdb_report TEST_TARGET behaviour."""
         jobdict = oqaclientmock[2]
