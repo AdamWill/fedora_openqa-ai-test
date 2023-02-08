@@ -75,6 +75,12 @@ UPDATE_FLAVORS = {
         "everything-boot-iso",
         "silverblue-dvd_ostree-iso",
     ),
+    "critical-path-anaconda": (
+        "everything-boot-iso",
+        "kde-live-iso",
+        "silverblue-dvd_ostree-iso",
+        "workstation-live-iso"
+    ),
     "critical-path-apps": ("kde", "server", "workstation"),
     "critical-path-base": (
         "container",
@@ -87,6 +93,12 @@ UPDATE_FLAVORS = {
         "workstation-live-iso",
         "everything-boot-iso",
         "silverblue-dvd_ostree-iso",
+    ),
+    "critical-path-compose": (
+        "everything-boot-iso",
+        "kde-live-iso",
+        "silverblue-dvd_ostree-iso",
+        "workstation-live-iso"
     ),
     "critical-path-gnome": ("workstation", "workstation-upgrade", "workstation-live-iso", "silverblue-dvd_ostree-iso"),
     "critical-path-kde": ("kde", "kde-live-iso"),
