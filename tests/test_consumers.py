@@ -56,6 +56,30 @@ PASSMSG = Message(
         }
     }
 )
+# Restarted test message (ZMQ->AMQP bridge style with whole fedmsg as
+# 'body'). Note, it really is the case that "id" is an int for job.done
+# messages but a str for job.restart messages, check real message in
+# datagrepper for verification
+RESTARTMSG = Message(
+    topic="org.fedoraproject.stg.openqa.job.restart",
+    body={
+        'msg_id': "2017-f059828d-0969-4545-be7a-db8334f6a71f",
+        'msg': {
+            "ARCH": "x86_64",
+            "BUILD": "Fedora-Rawhide-20170207.n.0",
+            "FLAVOR": "universal",
+            "ISO": "Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso",
+            "MACHINE": "64bit",
+            "TEST": "install_asian_language",
+            "id": "71262",
+            "newbuild": None,
+            "remaining": 23,
+            "result": {
+                "71262": 71263
+            }
+        }
+    }
+)
 
 # Started compose message
 STARTEDCOMPOSE = Message(
@@ -549,14 +573,21 @@ class TestConsumers:
         ]
     )
     def test_resultsdb_default(self, fake_report, consumer, expected):
-        """Test we appropriately attempt to report results for a passed
-        test to ResultsDB, with expected default values. Works much the
-        same as test_wiki_default; the parametrization tuples specify
-        the expected resultsdb_report args for each consumer.
+        """Test we appropriately attempt to report results to
+        ResultsDB, with expected default values. Works much the same
+        as test_wiki_default; the parametrization tuples specify the
+        expected resultsdb_report args for each consumer.
         """
         consumer(PASSMSG)
         assert fake_report.call_count == 1
         assert fake_report.call_args[1]['jobs'] == [71262]
+        assert fake_report.call_args[1]['do_report'] == expected['report']
+        assert fake_report.call_args[1]['openqa_hostname'] == expected['oqah']
+        assert fake_report.call_args[1]['resultsdb_url'] == expected['rdburl']
+        fake_report.reset_mock()
+        consumer(RESTARTMSG)
+        assert fake_report.call_count == 1
+        assert fake_report.call_args[1]['jobs'] == [71263]
         assert fake_report.call_args[1]['do_report'] == expected['report']
         assert fake_report.call_args[1]['openqa_hostname'] == expected['oqah']
         assert fake_report.call_args[1]['resultsdb_url'] == expected['rdburl']

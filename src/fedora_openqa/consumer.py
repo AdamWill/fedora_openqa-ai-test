@@ -320,7 +320,11 @@ class OpenQAResultsDBReporter(object):
     def __call__(self, message):
         """Consume incoming message."""
         body = _find_true_body(message)
-        job = body['id']
+        if "restart" in message.topic:
+            ojob = body["id"]
+            job = body["result"][ojob]
+        else:
+            job = body["id"]
         self.logger.info("reporting results for %s", job)
         # pylint: disable=no-member
         report.resultsdb_report(
