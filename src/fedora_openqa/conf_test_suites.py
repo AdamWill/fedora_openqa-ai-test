@@ -561,11 +561,6 @@ TESTCASES = {
         "type": "Desktop",
         "section": "$RUNARCH$",
     },
-    "QA:Testcase_desktop_user_switching": {
-        "env": "$SUBVARIANT$",
-        "type": "Desktop",
-        "section": "$RUNARCH$",
-    },
     "QA:Testcase_desktop_update_graphical": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
@@ -1255,7 +1250,6 @@ TESTSUITES = {
     ],
     "desktop_login": [
         "QA:Testcase_desktop_login",
-        "QA:Testcase_desktop_user_switching",
     ],
     "desktop_update_graphical": [
         "QA:Testcase_desktop_update_graphical",
