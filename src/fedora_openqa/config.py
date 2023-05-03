@@ -66,7 +66,6 @@ WANTED = [
             "format": "iso",
             "arch": "x86_64",
         },
-        "score": 6,
     },
     {
         "match": {
@@ -75,7 +74,6 @@ WANTED = [
             "format": "iso",
             "arch": "x86_64",
         },
-        "score": 10,
     },
     {
         "match": {
@@ -84,7 +82,6 @@ WANTED = [
             "format": "iso",
             "arch": "x86_64",
         },
-        "score": 8,
     },
     {
         "match": {
@@ -133,7 +130,6 @@ WANTED = [
             "format": "iso",
             "arch": "ppc64le",
         },
-        "score": 8,
     },
     {
         "match": {
@@ -150,7 +146,6 @@ WANTED = [
             "format": "iso",
             "arch": "ppc64le",
         },
-        "score": 6,
     },
     {
         "match": {
@@ -159,7 +154,6 @@ WANTED = [
             "format": "iso",
             "arch": "ppc64le",
         },
-        "score": 10,
     },
     {
         "match": {
@@ -200,7 +194,6 @@ WANTED = [
             "format": "iso",
             "arch": "aarch64",
         },
-        "score": 6,
     },
     {
         "match": {
@@ -209,7 +202,6 @@ WANTED = [
             "format": "iso",
             "arch": "aarch64",
         },
-        "score": 10,
     },
     {
         "match": {

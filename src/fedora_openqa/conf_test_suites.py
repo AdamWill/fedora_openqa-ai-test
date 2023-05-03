@@ -1411,8 +1411,9 @@ TESTSUITES = {
     "iot_zezere_ignition": [
         "QA:Testcase_Zezere_Ignition",
     ],
-    # this is a support test for other tests
+    # these are support tests for other tests
     "support_server": [],
+    "support_server_2": [],
     # this is a data test, does not map to any test case
     "memory_check": [],
     # don't map to a wiki test case, was requested by desktop team

@@ -110,7 +110,7 @@ class TriggerException(Exception):
 
 
 def _get_images(rel, wanted=None):
-    """Given a fedfind Release instance, this returns a list of (flavor, arch, score, {param: url},
+    """Given a fedfind Release instance, this returns a list of (flavor, arch, {param: url},
     subvariant, imagetype) tuples for images to be tested.
     """
     if not wanted:
@@ -122,7 +122,6 @@ def _get_images(rel, wanted=None):
             # see if the foundimg matches the wantimg
             if not all(item in foundimg.items() for item in matchdict.items()):
                 continue
-            score = wantimg.get('score', 0)
             # assign a 'flavor' using fedfind's 'image identifier'
             flavor = fedfind.helpers.identify_image(foundimg, undersub=True, out='string')
             # get a couple of values we use for other reasons
@@ -136,7 +135,7 @@ def _get_images(rel, wanted=None):
             param_urls = {
                 FORMAT_TO_PARAM[foundimg['format']]: url
             }
-            images.append((flavor, arch, score, param_urls, subvariant, imagetype))
+            images.append((flavor, arch, param_urls, subvariant, imagetype))
     return images
 
 
@@ -296,8 +295,8 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     default set of tested images is specified in config.py. It can be
     overridden by a system-wide or per-user file as well as with this
     argument. The layout is, intentionally, a subset of the pungi
-    images.json metadata file (except for the 'score' item). Check
-    config.py to see the layout and for more information.
+    images.json metadata file. Check config.py to see the layout and
+    for more information.
 
     If force is False, for each ISO, jobs will only be scheduled if
     there are no existing, non-cancelled jobs for the same ISO and
@@ -357,13 +356,17 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     if rel.https_url_generic:
         images.extend(
             [
-                ("Workstation-upgrade", "x86_64", 0, {}, "Workstation", "upgrade"),
-                ("Workstation-upgrade", "aarch64", 0, {}, "Workstation", "upgrade"),
+                ("Workstation-upgrade", "x86_64", {}, "Workstation", "upgrade"),
+                ("Workstation-upgrade", "aarch64", {}, "Workstation", "upgrade"),
+                # we set SUBVARIANT to 'Server' for the 'universal' tests for
+                # historical reasons, that's what it usually wound as with the
+                # old mechanism
+                ("universal", "x86_64", {}, "Server", "upgrade"),
+                ("universal", "aarch64", {}, "Server", "upgrade"),
+                ("universal", "ppc64le", {}, "Server", "upgrade"),
             ]
         )
-    if flavors and flavors != ["universal"]:
-        # in special cast flavors is just "universal", we don't filter
-        # the image list so we can pick the best universal candidate
+    if flavors:
         flavors = [flavor.lower() for flavor in flavors]
         logger.debug("Only scheduling jobs for flavors %s", ' '.join(flavors))
         images = [img for img in images if img[0].lower() in flavors]
@@ -371,37 +374,23 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         logger.debug("Only scheduling jobs for arches %s", ' '.join(arches))
         images = [img for img in images if img[1] in arches]
 
-    if not images or (all(img[0] == "Workstation-upgrade" for img in images) and flavors != ["Workstation-upgrade"]):
+    if not images:
         raise TriggerException("Compose found, but no available images")
+    # here we're checking if we only got the 'special' upgrade flavors
+    # *and that's not what the user asked for*. if it's what the user
+    # asked for we should still go ahead
+    if all(img[0] in ("Workstation-upgrade", "universal") for img in images):
+        if not flavors or not all(flav in ("workstation-upgrade", "universal") for flav in flavors):
+            raise TriggerException("Compose found, but no available images")
+
     jobs = []
-    univs = {}
 
-    # schedule per-image jobs, keeping track of the highest score
-    # per arch along the way
+    # schedule per-image jobs
     release = rel.release
-    for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
-        if flavors != ["universal"]:
-            # in the special case that flavors is just "universal", we
-            # don't want to schedule jobs, only work out univ cands
-            jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
-                                        release, location, force=force, extraparams=extraparams,
-                                        openqa_hostname=openqa_hostname, label=rel.label))
-        if score > univs.get(arch, [None, 0])[1]:
-            univs[arch] = (param_urls, score, subvariant, imagetype)
-
-    # now schedule universal jobs...unless 'flavors' was passed and
-    # 'universal' wasn't in it
-    if flavors and 'universal' not in flavors:
-        univs = {}
-    if univs:
-        for (arch, (param_urls, _, subvariant, imagetype)) in univs.items():
-            # We are assuming that ISO_URL is present in param_urls. This could create problem when
-            # unversal tests are run on product that doesn't have ISO.
-            logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
-            jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype,
-                                        rel.cid, release, location, force=force,
-                                        extraparams=extraparams, openqa_hostname=openqa_hostname,
-                                        label=rel.label))
+    for (flavor, arch, param_urls, subvariant, imagetype) in images:
+        jobs.extend(run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, rel.cid,
+                                    release, location, force=force, extraparams=extraparams,
+                                    openqa_hostname=openqa_hostname, label=rel.label))
 
     # if we scheduled any jobs, and this is a Fedora candidate compose,
     # tag this build as 'important'
