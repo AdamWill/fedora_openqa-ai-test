@@ -516,7 +516,7 @@ def ffmock(ffmd01, ffimg01):
 @pytest.yield_fixture(scope="function")
 def ffmock02():
     """Alternative fedfind mock using some real metadata files (from
-    the Fedora 25 20161115.n.0 compose), for tests that need more
+    the Fedora-Rawhide-20230502.n.0 compose), for tests that need more
     complete metadata.
     """
     cifile = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'composeinfo.json')
@@ -526,7 +526,7 @@ def ffmock02():
     with open(imgsfile, 'r') as imgsfh:
         imgsdict = json.loads(imgsfh.read())
     metadata = {'composeinfo': cidict, 'images': imgsdict}
-    mdpatch = mock.patch.object(fedfind.release.BranchedNightly, 'metadata', metadata)
+    mdpatch = mock.patch.object(fedfind.release.RawhideNightly, 'metadata', metadata)
     mdpatch.start()
     yield
     mdpatch.stop()

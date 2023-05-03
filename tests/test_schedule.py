@@ -37,7 +37,9 @@ import pytest
 import fedora_openqa.schedule as schedule
 from fedora_openqa.schedule import UPDATE_FLAVORS
 
-COMPURL = 'https://kojipkgs.fedoraproject.org/compose/branched/Fedora-25-20161115.n.0/compose/'
+# these are just used to keep some line lengths short...
+COMPURL = 'https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20230502.n.0/compose/'
+COMPVR = 'Rawhide-20230502.n.0'
 # trimmed Bodhi response for FEDORA-2017-b07d628952, jobs_from_update
 # uses this to determine the release and the NVRs in the update. This
 # is tweaked from the real output to include 21 builds (one more than
@@ -83,7 +85,6 @@ UPDATEJSON = {
 }
 # trimmed CoreOS build metadata JSON, used for scheduling CoreOS jobs
 COREOSJSON = {
-    # pylint: disable=line-too-long
     "buildid": "36.20211123.91.0",
     "images": {
         "live-iso": {
@@ -100,10 +101,10 @@ class TestGetImages:
 
     def test_basic(self):
         """Test the basic case, with the ffmock02 data mock (real data
-        from a circa F25 Branched nightly with lots of images) and
+        from a circa F39 Rawhide nightly with lots of images) and
         default WANTED.
         """
-        rel = fedfind.release.get_release(cid='Fedora-25-20161115.n.0')
+        rel = fedfind.release.get_release(cid='Fedora-Rawhide-20230502.n.0')
         ret = schedule._get_images(rel)
         assert ret == [
             (
@@ -111,7 +112,7 @@ class TestGetImages:
                 "x86_64",
                 6,
                 {
-                    "ISO_URL": COMPURL + "Server/x86_64/iso/Fedora-Server-netinst-x86_64-25-20161115.n.0.iso"
+                    "ISO_URL": f"{COMPURL}Server/x86_64/iso/Fedora-Server-netinst-x86_64-{COMPVR}.iso"
                 },
                 "Server",
                 "boot"
@@ -121,7 +122,7 @@ class TestGetImages:
                 "x86_64",
                 10,
                 {
-                    "ISO_URL": COMPURL + "Server/x86_64/iso/Fedora-Server-dvd-x86_64-25-20161115.n.0.iso"
+                    "ISO_URL": f"{COMPURL}Server/x86_64/iso/Fedora-Server-dvd-x86_64-{COMPVR}.iso"
                 },
                 "Server",
                 "dvd"
@@ -131,7 +132,7 @@ class TestGetImages:
                 "x86_64",
                 8,
                 {
-                    "ISO_URL": COMPURL + "Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-25-20161115.n.0.iso"
+                    "ISO_URL": f"{COMPURL}Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-{COMPVR}.iso"
                 },
                 "Everything",
                 "boot"
@@ -141,7 +142,7 @@ class TestGetImages:
                 "x86_64",
                 0,
                 {
-                    "ISO_URL": COMPURL + "Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-25-20161115.n.0.iso"
+                    "ISO_URL": f"{COMPURL}Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-{COMPVR}.iso"
                 },
                 "Workstation",
                 "live"
@@ -151,18 +152,148 @@ class TestGetImages:
                 "x86_64",
                 0,
                 {
-                    "ISO_URL": COMPURL + "Spins/x86_64/iso/Fedora-KDE-Live-x86_64-25-20161115.n.0.iso"
+                    "ISO_URL": f"{COMPURL}Spins/x86_64/iso/Fedora-KDE-Live-x86_64-{COMPVR}.iso"
                 },
                 "KDE",
                 "live"
+            ),
+            (
+                "Silverblue-dvd_ostree-iso",
+                "x86_64",
+                0,
+                {
+                    "ISO_URL": f"{COMPURL}Silverblue/x86_64/iso/Fedora-Silverblue-ostree-x86_64-{COMPVR}.iso"
+                },
+                "Silverblue",
+                "dvd-ostree"
             ),
             (
                 "Cloud_Base-qcow2-qcow2",
                 "x86_64",
                 0,
                 {
+                    "HDD_2_URL": f"{COMPURL}Cloud/x86_64/images/Fedora-Cloud-Base-{COMPVR}.x86_64.qcow2"
+                },
+                "Cloud_Base",
+                "qcow2"
+            ),
+            (
+                "Everything-boot-iso",
+                "ppc64le",
+                8,
+                {
+                    "ISO_URL": f"{COMPURL}Everything/ppc64le/iso/Fedora-Everything-netinst-ppc64le-{COMPVR}.iso"
+                },
+                "Everything",
+                "boot"
+            ),
+            (
+                "Workstation-live-iso",
+                "ppc64le",
+                0,
+                {
+                    "ISO_URL": f"{COMPURL}Workstation/ppc64le/iso/Fedora-Workstation-Live-ppc64le-{COMPVR}.iso"
+                },
+                "Workstation",
+                "live"
+            ),
+            (
+                "Server-boot-iso",
+                "ppc64le",
+                6,
+                {
+                    "ISO_URL": f"{COMPURL}Server/ppc64le/iso/Fedora-Server-netinst-ppc64le-{COMPVR}.iso"
+                },
+                "Server",
+                "boot"
+            ),
+            (
+                "Server-dvd-iso",
+                "ppc64le",
+                10,
+                {
+                    "ISO_URL": f"{COMPURL}Server/ppc64le/iso/Fedora-Server-dvd-ppc64le-{COMPVR}.iso"
+                },
+                "Server",
+                "dvd"
+            ),
+            (
+                "Cloud_Base-qcow2-qcow2",
+                "ppc64le",
+                0,
+                {
+                    "HDD_2_URL": f"{COMPURL}Cloud/ppc64le/images/Fedora-Cloud-Base-{COMPVR}.ppc64le.qcow2"
+                },
+                "Cloud_Base",
+                "qcow2"
+            ),
+            (
+                "Silverblue-dvd_ostree-iso",
+                "ppc64le",
+                0,
+                {
+                    "ISO_URL": f"{COMPURL}Silverblue/ppc64le/iso/Fedora-Silverblue-ostree-ppc64le-{COMPVR}.iso"
+                },
+                "Silverblue",
+                "dvd-ostree"
+            ),
+            (
+                "Minimal-raw_xz-raw.xz",
+                "aarch64",
+                0,
+                {
+                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Spins/aarch64/images/Fedora-Minimal-{COMPVR}.aarch64.raw.xz"
+                },
+                "Minimal",
+                "raw-xz"
+            ),
+            (
+                "Server-boot-iso",
+                "aarch64",
+                6,
+                {
+                    "ISO_URL": f"{COMPURL}Server/aarch64/iso/Fedora-Server-netinst-aarch64-{COMPVR}.iso"
+                },
+                "Server",
+                "boot"
+            ),
+            (
+                "Server-dvd-iso",
+                "aarch64",
+                10,
+                {
+                    "ISO_URL": f"{COMPURL}Server/aarch64/iso/Fedora-Server-dvd-aarch64-{COMPVR}.iso"
+                },
+                "Server",
+                "dvd"
+            ),
+            (
+                "Server-raw_xz-raw.xz",
+                "aarch64",
+                0,
+                {
+                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Server/aarch64/images/Fedora-Server-{COMPVR}.aarch64.raw.xz"
+                },
+                "Server",
+                "raw-xz"
+            ),
+            (
+                "Workstation-raw_xz-raw.xz",
+                "aarch64",
+                0,
+                {
                     # pylint: disable=line-too-long
-                    "HDD_2_URL": COMPURL + "CloudImages/x86_64/images/Fedora-Cloud-Base-25-20161115.n.0.x86_64.qcow2",
+                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Workstation/aarch64/images/Fedora-Workstation-{COMPVR}.aarch64.raw.xz"
+                },
+                "Workstation",
+                "raw-xz"
+            ),
+            (
+                "Cloud_Base-qcow2-qcow2",
+                "aarch64",
+                0,
+                {
+                    "HDD_2_URL": f"{COMPURL}Cloud/aarch64/images/Fedora-Cloud-Base-{COMPVR}.aarch64.qcow2"
                 },
                 "Cloud_Base",
                 "qcow2"
@@ -170,42 +301,31 @@ class TestGetImages:
         ]
 
     def test_wanted_arg(self):
-        """Test custom WANTED passed by arg is respected. Also tests
-        the stuff specific to ARM images, since we don't have those in
-        default WANTED any more.
-        """
+        """Test custom WANTED passed by arg is respected."""
         wanted = [
             {
                 "match": {
                     "subvariant": "Minimal",
                     "type": "raw-xz",
                     "format": "raw.xz",
-                    "arch": "armhfp",
+                    "arch": "aarch64",
                 },
-                "dkboot": True,
             },
         ]
-        rel = fedfind.release.get_release(cid='Fedora-25-20161115.n.0')
+        rel = fedfind.release.get_release(cid='Fedora-Rawhide-20230502.n.0')
         ret = schedule._get_images(rel, wanted)
         assert ret == [
             (
                 "Minimal-raw_xz-raw.xz",
-                "armhfp",
+                "aarch64",
                 0,
-                {
-                    "KERNEL": "Fedora-25-20161115.n.0.armhfp.vmlinuz",
-                    "INITRD": "Fedora-25-20161115.n.0.armhfp.initrd.img",
-                    "INITRD_URL": COMPURL + "Everything/armhfp/os/images/pxeboot/initrd.img",
-                    # pylint: disable=line-too-long
-                    "HDD_2_DECOMPRESS_URL": COMPURL + "Spins/armhfp/images/Fedora-Minimal-armhfp-25-20161115.n.0-sda.raw.xz",
-                    "KERNEL_URL": COMPURL + "Everything/armhfp/os/images/pxeboot/vmlinuz"
-                },
+                {"HDD_2_DECOMPRESS_URL": f"{COMPURL}Spins/aarch64/images/Fedora-Minimal-{COMPVR}.aarch64.raw.xz"},
                 "Minimal",
                 "raw-xz"
             ),
         ]
 
-    @mock.patch.object(fedfind.release.BranchedNightly, 'cid', 'Fedora-25-updates-testing-20161115.n.0')
+    @mock.patch.object(fedfind.release.RawhideNightly, 'cid', 'Fedora-Rawhide-updates-testing-20230502.n.0')
     def test_update_testing(self):
         """Test that the image file name munging for updates-testing
         composes works. Image file names for updates-testing and
@@ -215,9 +335,9 @@ class TestGetImages:
         asset directories.
         """
         # we don't use cid here to avoid the sanity check failing
-        rel = fedfind.release.get_release(25, 'Branched', '20161115.n.0')
+        rel = fedfind.release.get_release('Rawhide', '', '20230502.n.0')
         # let's just check the mocking is working as expected...
-        assert rel.cid == 'Fedora-25-updates-testing-20161115.n.0'
+        assert rel.cid == 'Fedora-Rawhide-updates-testing-20230502.n.0'
         # this is to ensure we actually check *something*
         count = 0
         ret = schedule._get_images(rel)
@@ -272,13 +392,13 @@ def test_find_duplicate_jobs():
     assert len(ret) == 0
 
 
-@mock.patch('fedfind.helpers.get_current_release', return_value=25, autospec=True)
+@mock.patch('fedfind.helpers.get_current_release', return_value=38, autospec=True)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
 @mock.patch('fedora_openqa.schedule._find_duplicate_jobs', return_value=[], autospec=True)
 def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     """Tests for run_openqa_jobs."""
     # get our expected images from the ffmock02 image list.
-    rel = fedfind.release.get_release(cid='Fedora-25-20161115.n.0')
+    rel = fedfind.release.get_release(cid='Fedora-Rawhide-20230502.n.0')
     images = schedule._get_images(rel)
 
     # OpenQA_Client mock 'instance' is the class mock return value
@@ -287,19 +407,19 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     for (flavor, arch, _, param_urls, subvariant, imagetype) in images:
         instance.reset_mock()
         schedule.run_openqa_jobs(
-            param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location)
+            param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location)
         assert instance.openqa_request.call_count == 1
         expdict = {
             'DISTRI': 'fedora',
-            'VERSION': '25',
+            'VERSION': 'Rawhide',
             'FLAVOR': flavor,
-            'ARCH': arch if arch != 'armhfp' else 'arm',
-            'BUILD': 'Fedora-25-20161115.n.0',
+            'ARCH': arch,
+            'BUILD': 'Fedora-Rawhide-20230502.n.0',
             'LOCATION': rel.location,
-            'CURRREL': '25',
-            'RAWREL': '26',
-            'UP1REL': '24',
-            'UP2REL': '23',
+            'CURRREL': '38',
+            'RAWREL': '39',
+            'UP1REL': '38',
+            'UP2REL': '37',
             'SUBVARIANT': subvariant,
             'IMAGETYPE': imagetype,
             'QEMU_HOST_IP': '172.16.2.2',
@@ -314,7 +434,7 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     instance.reset_mock()
     (flavor, arch, _, param_urls, subvariant, imagetype) = images[0]
     schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location,
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location,
         label="RC-1.5")
     assert instance.openqa_request.call_count == 1
     assert instance.openqa_request.call_args[0][2]['LABEL'] == 'RC-1.5'
@@ -324,13 +444,13 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     fakedupes.return_value = [{'id': 1}]
     (flavor, arch, _, param_urls, subvariant, imagetype) = images[0]
     schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location)
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location)
     assert instance.openqa_request.call_count == 0
 
     # check force overrides dupe detection
     instance.reset_mock()
     schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location,
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location,
         force=True)
     assert instance.openqa_request.call_count == 1
 
@@ -338,21 +458,21 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     instance.reset_mock()
     fakedupes.return_value = []
     schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location,
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location,
         extraparams={'EXTRA': 'here'})
     assert instance.openqa_request.call_args[0][2]['EXTRA'] == 'here'
-    assert instance.openqa_request.call_args[0][2]['BUILD'] == 'Fedora-25-20161115.n.0-EXTRA'
+    assert instance.openqa_request.call_args[0][2]['BUILD'] == 'Fedora-Rawhide-20230502.n.0-EXTRA'
 
     # check openqa_hostname is passed through
     schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location,
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location,
         openqa_hostname='somehost')
     assert fakeclient.call_args[0][0] == 'somehost'
 
     # check we set MODULAR param for modular composes
     instance.reset_mock()
     schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Modular-25-20161115.n.0', '25', rel.location)
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Modular-Rawhide-20230502.n.0', 'Rawhide', rel.location)
     assert instance.openqa_request.call_args[0][2]['MODULAR'] == '1'
 
     # check we don't crash or fail to schedule if get_current_release
@@ -360,7 +480,7 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     instance.reset_mock()
     fakecurr.side_effect = ValueError("Well, that was unfortunate")
     schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-25-20161115.n.0', '25', rel.location)
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location)
     assert instance.openqa_request.call_count == 1
     assert instance.openqa_request.call_args[0][2]['CURRREL'] == 'FEDFINDERROR'
 
@@ -398,20 +518,20 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # simple case
     ret = schedule.jobs_from_compose(COMPURL)
 
-    # 6 images, 1 x86_64 upgrade flavor, 1 universal arch
-    assert fakerun.call_count == 8
+    # 7 images, 1 x86_64 upgrade flavor, 1 universal arch
+    assert fakerun.call_count == 9
 
-    # the list of job ids should be 8 1s, as each fakerun call
+    # the list of job ids should be 9 1s, as each fakerun call
     # returns [1]
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
+    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(9)])
 
     for argtup in fakerun.call_args_list:
         # check rel identification bits got passed properly
-        assert argtup[0][-3:] == ('Fedora-25-20161115.n.0', '25', COMPURL)
+        assert argtup[0][-3:] == ('Fedora-Rawhide-20230502.n.0', 'Rawhide', COMPURL)
 
     univs = [argtup[0][0]['ISO_URL'] for argtup in fakerun.call_args_list if argtup[0][1] == 'universal']
     assert univs == [
-        COMPURL + 'Server/x86_64/iso/Fedora-Server-dvd-x86_64-25-20161115.n.0.iso',
+        COMPURL + 'Server/x86_64/iso/Fedora-Server-dvd-x86_64-Rawhide-20230502.n.0.iso',
     ]
 
     # check force, extraparams and openqa_hostname are passed through
@@ -442,7 +562,7 @@ def test_jobs_from_compose(fakerun, ffmock02):
                 "subvariant": "Server",
                 "type": "boot",
                 "format": "iso",
-                "arch": "i386",
+                "arch": "ppc64le",
             },
             "score": 6,
         },
@@ -451,9 +571,8 @@ def test_jobs_from_compose(fakerun, ffmock02):
                 "subvariant": "Minimal",
                 "type": "raw-xz",
                 "format": "raw.xz",
-                "arch": "armhfp",
+                "arch": "aarch64",
             },
-            "dkboot": True,
         },
     ]
     # first check we get 7 runs (one for each image, x86_64 and
@@ -462,25 +581,29 @@ def test_jobs_from_compose(fakerun, ffmock02):
     schedule.CONFIG.set("schedule", "arches", "")
     ret = schedule.jobs_from_compose(COMPURL, wanted=wanted)
     assert fakerun.call_count == 7
-    # now check we get only 3 if we limit the arches
+    # now check we get only 4 (one for each image, aarch64 upgrade,
+    # and ppc64le universal) if we limit the arches
     fakerun.reset_mock()
-    ret = schedule.jobs_from_compose(COMPURL, wanted=wanted, arches=['i386', 'armhfp'])
-    assert fakerun.call_count == 3
+    ret = schedule.jobs_from_compose(COMPURL, wanted=wanted, arches=['ppc64le', 'aarch64'])
+    assert fakerun.call_count == 4
     # also if we get an arch setting from config file
-    schedule.CONFIG.set("schedule", "arches", "i386,armhfp")
+    schedule.CONFIG.set("schedule", "arches", "ppc64le,aarch64")
     fakerun.reset_mock()
     ret = schedule.jobs_from_compose(COMPURL, wanted=wanted)
-    assert fakerun.call_count == 3
-    # set config setting back to default
-    schedule.CONFIG.set("schedule", "arches", "x86_64")
+    assert fakerun.call_count == 4
 
-    # check flavors is handled properly
+    # check flavors is handled properly, with all arches in play
+    schedule.CONFIG.set("schedule", "arches", "")
     fakerun.reset_mock()
     ret = schedule.jobs_from_compose(COMPURL, flavors=['server-boot-iso', 'workstation-live-iso', 'foobar'])
-    # two of those flavors we have images for (1 image each), one we don't;
-    # universal SHOULD NOT be scheduled. FIXME we need another arch
-    # here too...
-    assert fakerun.call_count == 2
+    # server-boot-iso is wanted for x86_64, ppc64le, and aarch64
+    # workstation-live-iso is wanted for x86_64 and ppc64le
+    # foobar doesn't exist, universal SHOULD NOT be scheduled:
+    # total == 5
+    assert fakerun.call_count == 5
+
+    # set config setting back to default
+    schedule.CONFIG.set("schedule", "arches", "x86_64")
 
     # check flavors *and* arches is handled properly
     fakerun.reset_mock()
@@ -490,15 +613,16 @@ def test_jobs_from_compose(fakerun, ffmock02):
 
     # check flavors with 'universal' is handled properly
     fakerun.reset_mock()
-    ret = schedule.jobs_from_compose(COMPURL, flavors=['server-boot-iso', 'workstation-live-iso', 'universal'], arches=['x86_64'])
+    ret = schedule.jobs_from_compose(
+        COMPURL,
+        flavors=['server-boot-iso', 'workstation-live-iso', 'universal'], arches=['x86_64']
+    )
     # we have one x86_64 image for each flavor, and universal should
     # run with server-boot-iso, so 3
     assert fakerun.call_count == 3
     # should use server boot ISO
     univs = [argtup[0][0]['ISO_URL'] for argtup in fakerun.call_args_list if argtup[0][1] == 'universal']
-    assert univs == [
-        COMPURL + 'Server/x86_64/iso/Fedora-Server-netinst-x86_64-25-20161115.n.0.iso',
-    ]
+    assert univs == [f"{COMPURL}Server/x86_64/iso/Fedora-Server-netinst-x86_64-{COMPVR}.iso"]
 
     # check *only* 'universal' is handled properly
     fakerun.reset_mock()
@@ -506,15 +630,15 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # we should only schedule 'universal', using the best candidate
     assert fakerun.call_count == 1
     # should use Server DVD ISO
-    assert fakerun.call_args[0][0]["ISO_URL"] == COMPURL + "Server/x86_64/iso/Fedora-Server-dvd-x86_64-25-20161115.n.0.iso"
+    assert fakerun.call_args[0][0]["ISO_URL"] == f"{COMPURL}Server/x86_64/iso/Fedora-Server-dvd-x86_64-{COMPVR}.iso"
 
     # check we don't schedule upgrade flavors for releases that don't
     # have an https_url_generic
     fakerun.reset_mock()
-    with mock.patch.object(fedfind.release.BranchedNightly, 'https_url_generic', None):
+    with mock.patch.object(fedfind.release.RawhideNightly, 'https_url_generic', None):
         ret = schedule.jobs_from_compose(COMPURL)
-        # 6 images, 1 universal arch, but *not* the upgrade flavor
-        assert fakerun.call_count == 7
+        # 7 images, 1 universal arch, but *not* the upgrade flavor
+        assert fakerun.call_count == 8
 
     # check triggerexception is raised when appropriate
     with mock.patch('fedfind.release.get_release', side_effect=ValueError("Oops!")):
@@ -527,24 +651,24 @@ def test_jobs_from_compose(fakerun, ffmock02):
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-@mock.patch.object(fedfind.release.BranchedNightly, 'type', 'production')
+@mock.patch.object(fedfind.release.RawhideNightly, 'type', 'production')
 def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     """Check that we tag candidate composes as 'important'."""
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
+    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(9)])
     # find the args that openqa_request was last called with
     reqargs = fakeclient.return_value.openqa_request.call_args
     assert reqargs[0] == ('POST', 'groups/1/comments')
-    assert reqargs[1]['params'] == {'text': 'tag:Fedora-25-20161115.n.0:important:candidate'}
+    assert reqargs[1]['params'] == {'text': 'tag:Fedora-Rawhide-20230502.n.0:important:candidate'}
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
-@mock.patch.object(fedfind.release.BranchedNightly, 'label', 'RC-1.5')
+@mock.patch.object(fedfind.release.RawhideNightly, 'label', 'RC-1.5')
 def test_jobs_from_compose_label(fakerun, ffmock02):
     """Check that we pass compose label through to run_openqa_jobs if
     if there is one.
     """
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-25-20161115.n.0', [1 for _ in range(8)])
+    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(9)])
     assert fakerun.call_args[1]["label"] == "RC-1.5"
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
@@ -621,7 +745,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson):
         } for flavor in [f"updates-{oflav}" for oflav in allflavors]
     ]
     for checkdict in checkdicts:
-        print(checkdict)
         assert checkdict in parmdicts
 
     # test we do schedule jobs for the Rawhide release. Note:
@@ -869,7 +992,6 @@ def test_jobs_from_fcosbuild(fakeclient, fakecurrr, fakecurrs, fakejson):
         "UP1REL": "35",
         "UP2REL": "34",
         "IMAGETYPE": "colive",
-        # pylint: disable=line-too-long
         "ISO_URL": f"{buildurl}/fedora-coreos-36.20211123.91.0-live.x86_64.iso",
         "LOCATION": "",
         "SUBVARIANT": "CoreOS",

@@ -5,8 +5,8 @@
     },
     "payload": {
         "compose": {
-            "date": "20161115",
-            "id": "Fedora-25-20161115.n.0",
+            "date": "20230502",
+            "id": "Fedora-Rawhide-20230502.n.0",
             "respin": 0,
             "type": "nightly"
         },
@@ -15,339 +15,54 @@
             "name": "Fedora",
             "short": "Fedora",
             "type": "ga",
-            "version": "25"
+            "version": "Rawhide"
         },
         "variants": {
-            "Atomic": {
-                "arches": [
-                    "x86_64"
-                ],
-                "id": "Atomic",
-                "name": "Atomic",
-                "paths": {
-                    "debug_packages": {
-                        "x86_64": "Atomic/x86_64/debug/tree/Packages"
-                    },
-                    "debug_repository": {
-                        "x86_64": "Atomic/x86_64/debug/tree"
-                    },
-                    "debug_tree": {
-                        "x86_64": "Atomic/x86_64/debug/tree"
-                    },
-                    "isos": {
-                        "x86_64": "Atomic/x86_64/iso"
-                    },
-                    "os_tree": {
-                        "x86_64": "Atomic/x86_64/os"
-                    },
-                    "packages": {
-                        "x86_64": "Atomic/x86_64/os/Packages"
-                    },
-                    "repository": {
-                        "x86_64": "Atomic/x86_64/os"
-                    },
-                    "source_isos": {
-                        "x86_64": "Atomic/source/iso"
-                    },
-                    "source_packages": {
-                        "x86_64": "Atomic/source/tree/Packages"
-                    },
-                    "source_repository": {
-                        "x86_64": "Atomic/source/tree"
-                    },
-                    "source_tree": {
-                        "x86_64": "Atomic/source/tree"
-                    }
-                },
-                "type": "variant",
-                "uid": "Atomic"
-            },
             "Cloud": {
                 "arches": [
                     "aarch64",
-                    "armhfp",
-                    "i386",
-                    "ppc64",
                     "ppc64le",
+                    "s390x",
                     "x86_64"
                 ],
                 "id": "Cloud",
                 "name": "Cloud",
                 "paths": {
-                    "debug_packages": {
-                        "aarch64": "Cloud/aarch64/debug/tree/Packages",
-                        "armhfp": "Cloud/armhfp/debug/tree/Packages",
-                        "i386": "Cloud/i386/debug/tree/Packages",
-                        "ppc64": "Cloud/ppc64/debug/tree/Packages",
-                        "ppc64le": "Cloud/ppc64le/debug/tree/Packages",
-                        "x86_64": "Cloud/x86_64/debug/tree/Packages"
-                    },
-                    "debug_repository": {
-                        "aarch64": "Cloud/aarch64/debug/tree",
-                        "armhfp": "Cloud/armhfp/debug/tree",
-                        "i386": "Cloud/i386/debug/tree",
-                        "ppc64": "Cloud/ppc64/debug/tree",
-                        "ppc64le": "Cloud/ppc64le/debug/tree",
-                        "x86_64": "Cloud/x86_64/debug/tree"
-                    },
-                    "debug_tree": {
-                        "aarch64": "Cloud/aarch64/debug/tree",
-                        "armhfp": "Cloud/armhfp/debug/tree",
-                        "i386": "Cloud/i386/debug/tree",
-                        "ppc64": "Cloud/ppc64/debug/tree",
-                        "ppc64le": "Cloud/ppc64le/debug/tree",
-                        "x86_64": "Cloud/x86_64/debug/tree"
-                    },
-                    "isos": {
-                        "aarch64": "Cloud/aarch64/iso",
-                        "i386": "Cloud/i386/iso",
-                        "ppc64": "Cloud/ppc64/iso",
-                        "ppc64le": "Cloud/ppc64le/iso",
-                        "x86_64": "Cloud/x86_64/iso"
-                    },
-                    "os_tree": {
-                        "aarch64": "Cloud/aarch64/os",
-                        "armhfp": "Cloud/armhfp/os",
-                        "i386": "Cloud/i386/os",
-                        "ppc64": "Cloud/ppc64/os",
-                        "ppc64le": "Cloud/ppc64le/os",
-                        "x86_64": "Cloud/x86_64/os"
-                    },
-                    "packages": {
-                        "aarch64": "Cloud/aarch64/os/Packages",
-                        "armhfp": "Cloud/armhfp/os/Packages",
-                        "i386": "Cloud/i386/os/Packages",
-                        "ppc64": "Cloud/ppc64/os/Packages",
-                        "ppc64le": "Cloud/ppc64le/os/Packages",
-                        "x86_64": "Cloud/x86_64/os/Packages"
-                    },
-                    "repository": {
-                        "aarch64": "Cloud/aarch64/os",
-                        "armhfp": "Cloud/armhfp/os",
-                        "i386": "Cloud/i386/os",
-                        "ppc64": "Cloud/ppc64/os",
-                        "ppc64le": "Cloud/ppc64le/os",
-                        "x86_64": "Cloud/x86_64/os"
-                    },
-                    "source_packages": {
-                        "aarch64": "Cloud/source/tree/Packages",
-                        "armhfp": "Cloud/source/tree/Packages",
-                        "i386": "Cloud/source/tree/Packages",
-                        "ppc64": "Cloud/source/tree/Packages",
-                        "ppc64le": "Cloud/source/tree/Packages",
-                        "x86_64": "Cloud/source/tree/Packages"
-                    },
-                    "source_repository": {
-                        "aarch64": "Cloud/source/tree",
-                        "armhfp": "Cloud/source/tree",
-                        "i386": "Cloud/source/tree",
-                        "ppc64": "Cloud/source/tree",
-                        "ppc64le": "Cloud/source/tree",
-                        "x86_64": "Cloud/source/tree"
-                    },
-                    "source_tree": {
-                        "aarch64": "Cloud/source/tree",
-                        "armhfp": "Cloud/source/tree",
-                        "i386": "Cloud/source/tree",
-                        "ppc64": "Cloud/source/tree",
-                        "ppc64le": "Cloud/source/tree",
-                        "x86_64": "Cloud/source/tree"
+                    "images": {
+                        "aarch64": "Cloud/aarch64/images",
+                        "ppc64le": "Cloud/ppc64le/images",
+                        "s390x": "Cloud/s390x/images",
+                        "x86_64": "Cloud/x86_64/images"
                     }
                 },
                 "type": "variant",
                 "uid": "Cloud"
             },
-            "CloudImages": {
+            "Container": {
                 "arches": [
                     "aarch64",
-                    "i386",
-                    "ppc64",
                     "ppc64le",
+                    "s390x",
                     "x86_64"
                 ],
-                "id": "CloudImages",
-                "name": "CloudImages",
+                "id": "Container",
+                "name": "Container",
                 "paths": {
-                    "debug_packages": {
-                        "aarch64": "CloudImages/aarch64/debug/tree/Packages",
-                        "i386": "CloudImages/i386/debug/tree/Packages",
-                        "ppc64": "CloudImages/ppc64/debug/tree/Packages",
-                        "ppc64le": "CloudImages/ppc64le/debug/tree/Packages",
-                        "x86_64": "CloudImages/x86_64/debug/tree/Packages"
-                    },
-                    "debug_repository": {
-                        "aarch64": "CloudImages/aarch64/debug/tree",
-                        "i386": "CloudImages/i386/debug/tree",
-                        "ppc64": "CloudImages/ppc64/debug/tree",
-                        "ppc64le": "CloudImages/ppc64le/debug/tree",
-                        "x86_64": "CloudImages/x86_64/debug/tree"
-                    },
-                    "debug_tree": {
-                        "aarch64": "CloudImages/aarch64/debug/tree",
-                        "i386": "CloudImages/i386/debug/tree",
-                        "ppc64": "CloudImages/ppc64/debug/tree",
-                        "ppc64le": "CloudImages/ppc64le/debug/tree",
-                        "x86_64": "CloudImages/x86_64/debug/tree"
-                    },
-                    "isos": {
-                        "aarch64": "CloudImages/aarch64/iso",
-                        "i386": "CloudImages/i386/iso",
-                        "ppc64": "CloudImages/ppc64/iso",
-                        "ppc64le": "CloudImages/ppc64le/iso",
-                        "x86_64": "CloudImages/x86_64/iso"
-                    },
-                    "os_tree": {
-                        "aarch64": "CloudImages/aarch64/os",
-                        "i386": "CloudImages/i386/os",
-                        "ppc64": "CloudImages/ppc64/os",
-                        "ppc64le": "CloudImages/ppc64le/os",
-                        "x86_64": "CloudImages/x86_64/os"
-                    },
-                    "packages": {
-                        "aarch64": "CloudImages/aarch64/os/Packages",
-                        "i386": "CloudImages/i386/os/Packages",
-                        "ppc64": "CloudImages/ppc64/os/Packages",
-                        "ppc64le": "CloudImages/ppc64le/os/Packages",
-                        "x86_64": "CloudImages/x86_64/os/Packages"
-                    },
-                    "repository": {
-                        "aarch64": "CloudImages/aarch64/os",
-                        "i386": "CloudImages/i386/os",
-                        "ppc64": "CloudImages/ppc64/os",
-                        "ppc64le": "CloudImages/ppc64le/os",
-                        "x86_64": "CloudImages/x86_64/os"
-                    },
-                    "source_isos": {
-                        "aarch64": "CloudImages/source/iso",
-                        "i386": "CloudImages/source/iso",
-                        "ppc64": "CloudImages/source/iso",
-                        "ppc64le": "CloudImages/source/iso",
-                        "x86_64": "CloudImages/source/iso"
-                    },
-                    "source_packages": {
-                        "aarch64": "CloudImages/source/tree/Packages",
-                        "i386": "CloudImages/source/tree/Packages",
-                        "ppc64": "CloudImages/source/tree/Packages",
-                        "ppc64le": "CloudImages/source/tree/Packages",
-                        "x86_64": "CloudImages/source/tree/Packages"
-                    },
-                    "source_repository": {
-                        "aarch64": "CloudImages/source/tree",
-                        "i386": "CloudImages/source/tree",
-                        "ppc64": "CloudImages/source/tree",
-                        "ppc64le": "CloudImages/source/tree",
-                        "x86_64": "CloudImages/source/tree"
-                    },
-                    "source_tree": {
-                        "aarch64": "CloudImages/source/tree",
-                        "i386": "CloudImages/source/tree",
-                        "ppc64": "CloudImages/source/tree",
-                        "ppc64le": "CloudImages/source/tree",
-                        "x86_64": "CloudImages/source/tree"
+                    "images": {
+                        "aarch64": "Container/aarch64/images",
+                        "ppc64le": "Container/ppc64le/images",
+                        "s390x": "Container/s390x/images",
+                        "x86_64": "Container/x86_64/images"
                     }
                 },
                 "type": "variant",
-                "uid": "CloudImages"
-            },
-            "Docker": {
-                "arches": [
-                    "aarch64",
-                    "armhfp",
-                    "ppc64",
-                    "ppc64le",
-                    "x86_64"
-                ],
-                "id": "Docker",
-                "name": "Docker",
-                "paths": {
-                    "debug_packages": {
-                        "aarch64": "Docker/aarch64/debug/tree/Packages",
-                        "armhfp": "Docker/armhfp/debug/tree/Packages",
-                        "ppc64": "Docker/ppc64/debug/tree/Packages",
-                        "ppc64le": "Docker/ppc64le/debug/tree/Packages",
-                        "x86_64": "Docker/x86_64/debug/tree/Packages"
-                    },
-                    "debug_repository": {
-                        "aarch64": "Docker/aarch64/debug/tree",
-                        "armhfp": "Docker/armhfp/debug/tree",
-                        "ppc64": "Docker/ppc64/debug/tree",
-                        "ppc64le": "Docker/ppc64le/debug/tree",
-                        "x86_64": "Docker/x86_64/debug/tree"
-                    },
-                    "debug_tree": {
-                        "aarch64": "Docker/aarch64/debug/tree",
-                        "armhfp": "Docker/armhfp/debug/tree",
-                        "ppc64": "Docker/ppc64/debug/tree",
-                        "ppc64le": "Docker/ppc64le/debug/tree",
-                        "x86_64": "Docker/x86_64/debug/tree"
-                    },
-                    "isos": {
-                        "aarch64": "Docker/aarch64/iso",
-                        "armhfp": "Docker/armhfp/iso",
-                        "ppc64": "Docker/ppc64/iso",
-                        "ppc64le": "Docker/ppc64le/iso",
-                        "x86_64": "Docker/x86_64/iso"
-                    },
-                    "os_tree": {
-                        "aarch64": "Docker/aarch64/os",
-                        "armhfp": "Docker/armhfp/os",
-                        "ppc64": "Docker/ppc64/os",
-                        "ppc64le": "Docker/ppc64le/os",
-                        "x86_64": "Docker/x86_64/os"
-                    },
-                    "packages": {
-                        "aarch64": "Docker/aarch64/os/Packages",
-                        "armhfp": "Docker/armhfp/os/Packages",
-                        "ppc64": "Docker/ppc64/os/Packages",
-                        "ppc64le": "Docker/ppc64le/os/Packages",
-                        "x86_64": "Docker/x86_64/os/Packages"
-                    },
-                    "repository": {
-                        "aarch64": "Docker/aarch64/os",
-                        "armhfp": "Docker/armhfp/os",
-                        "ppc64": "Docker/ppc64/os",
-                        "ppc64le": "Docker/ppc64le/os",
-                        "x86_64": "Docker/x86_64/os"
-                    },
-                    "source_isos": {
-                        "aarch64": "Docker/source/iso",
-                        "armhfp": "Docker/source/iso",
-                        "ppc64": "Docker/source/iso",
-                        "ppc64le": "Docker/source/iso",
-                        "x86_64": "Docker/source/iso"
-                    },
-                    "source_packages": {
-                        "aarch64": "Docker/source/tree/Packages",
-                        "armhfp": "Docker/source/tree/Packages",
-                        "ppc64": "Docker/source/tree/Packages",
-                        "ppc64le": "Docker/source/tree/Packages",
-                        "x86_64": "Docker/source/tree/Packages"
-                    },
-                    "source_repository": {
-                        "aarch64": "Docker/source/tree",
-                        "armhfp": "Docker/source/tree",
-                        "ppc64": "Docker/source/tree",
-                        "ppc64le": "Docker/source/tree",
-                        "x86_64": "Docker/source/tree"
-                    },
-                    "source_tree": {
-                        "aarch64": "Docker/source/tree",
-                        "armhfp": "Docker/source/tree",
-                        "ppc64": "Docker/source/tree",
-                        "ppc64le": "Docker/source/tree",
-                        "x86_64": "Docker/source/tree"
-                    }
-                },
-                "type": "variant",
-                "uid": "Docker"
+                "uid": "Container"
             },
             "Everything": {
                 "arches": [
                     "aarch64",
-                    "armhfp",
-                    "i386",
-                    "ppc64",
                     "ppc64le",
+                    "s390x",
                     "x86_64"
                 ],
                 "id": "Everything",
@@ -355,150 +70,205 @@
                 "paths": {
                     "debug_packages": {
                         "aarch64": "Everything/aarch64/debug/tree/Packages",
-                        "armhfp": "Everything/armhfp/debug/tree/Packages",
-                        "i386": "Everything/i386/debug/tree/Packages",
-                        "ppc64": "Everything/ppc64/debug/tree/Packages",
                         "ppc64le": "Everything/ppc64le/debug/tree/Packages",
+                        "s390x": "Everything/s390x/debug/tree/Packages",
                         "x86_64": "Everything/x86_64/debug/tree/Packages"
                     },
                     "debug_repository": {
                         "aarch64": "Everything/aarch64/debug/tree",
-                        "armhfp": "Everything/armhfp/debug/tree",
-                        "i386": "Everything/i386/debug/tree",
-                        "ppc64": "Everything/ppc64/debug/tree",
                         "ppc64le": "Everything/ppc64le/debug/tree",
+                        "s390x": "Everything/s390x/debug/tree",
                         "x86_64": "Everything/x86_64/debug/tree"
                     },
                     "debug_tree": {
                         "aarch64": "Everything/aarch64/debug/tree",
-                        "armhfp": "Everything/armhfp/debug/tree",
-                        "i386": "Everything/i386/debug/tree",
-                        "ppc64": "Everything/ppc64/debug/tree",
                         "ppc64le": "Everything/ppc64le/debug/tree",
+                        "s390x": "Everything/s390x/debug/tree",
                         "x86_64": "Everything/x86_64/debug/tree"
                     },
                     "isos": {
                         "aarch64": "Everything/aarch64/iso",
-                        "i386": "Everything/i386/iso",
-                        "ppc64": "Everything/ppc64/iso",
                         "ppc64le": "Everything/ppc64le/iso",
+                        "s390x": "Everything/s390x/iso",
                         "x86_64": "Everything/x86_64/iso"
                     },
                     "os_tree": {
                         "aarch64": "Everything/aarch64/os",
-                        "armhfp": "Everything/armhfp/os",
-                        "i386": "Everything/i386/os",
-                        "ppc64": "Everything/ppc64/os",
                         "ppc64le": "Everything/ppc64le/os",
+                        "s390x": "Everything/s390x/os",
                         "x86_64": "Everything/x86_64/os"
                     },
                     "packages": {
                         "aarch64": "Everything/aarch64/os/Packages",
-                        "armhfp": "Everything/armhfp/os/Packages",
-                        "i386": "Everything/i386/os/Packages",
-                        "ppc64": "Everything/ppc64/os/Packages",
                         "ppc64le": "Everything/ppc64le/os/Packages",
+                        "s390x": "Everything/s390x/os/Packages",
                         "x86_64": "Everything/x86_64/os/Packages"
                     },
                     "repository": {
                         "aarch64": "Everything/aarch64/os",
-                        "armhfp": "Everything/armhfp/os",
-                        "i386": "Everything/i386/os",
-                        "ppc64": "Everything/ppc64/os",
                         "ppc64le": "Everything/ppc64le/os",
+                        "s390x": "Everything/s390x/os",
                         "x86_64": "Everything/x86_64/os"
                     },
                     "source_packages": {
                         "aarch64": "Everything/source/tree/Packages",
-                        "armhfp": "Everything/source/tree/Packages",
-                        "i386": "Everything/source/tree/Packages",
-                        "ppc64": "Everything/source/tree/Packages",
                         "ppc64le": "Everything/source/tree/Packages",
+                        "s390x": "Everything/source/tree/Packages",
                         "x86_64": "Everything/source/tree/Packages"
                     },
                     "source_repository": {
                         "aarch64": "Everything/source/tree",
-                        "armhfp": "Everything/source/tree",
-                        "i386": "Everything/source/tree",
-                        "ppc64": "Everything/source/tree",
                         "ppc64le": "Everything/source/tree",
+                        "s390x": "Everything/source/tree",
                         "x86_64": "Everything/source/tree"
                     },
                     "source_tree": {
                         "aarch64": "Everything/source/tree",
-                        "armhfp": "Everything/source/tree",
-                        "i386": "Everything/source/tree",
-                        "ppc64": "Everything/source/tree",
                         "ppc64le": "Everything/source/tree",
+                        "s390x": "Everything/source/tree",
                         "x86_64": "Everything/source/tree"
                     }
                 },
                 "type": "variant",
                 "uid": "Everything"
             },
+            "Kinoite": {
+                "arches": [
+                    "aarch64",
+                    "ppc64le",
+                    "x86_64"
+                ],
+                "id": "Kinoite",
+                "name": "Kinoite",
+                "paths": {
+                    "isos": {
+                        "aarch64": "Kinoite/aarch64/iso",
+                        "x86_64": "Kinoite/x86_64/iso"
+                    },
+                    "os_tree": {
+                        "aarch64": "Kinoite/aarch64/os",
+                        "x86_64": "Kinoite/x86_64/os"
+                    },
+                    "repository": {
+                        "aarch64": "Kinoite/aarch64/os",
+                        "x86_64": "Kinoite/x86_64/os"
+                    }
+                },
+                "type": "variant",
+                "uid": "Kinoite"
+            },
             "Labs": {
                 "arches": [
-                    "i386",
+                    "aarch64",
                     "x86_64"
                 ],
                 "id": "Labs",
                 "name": "Labs",
                 "paths": {
-                    "debug_packages": {
-                        "i386": "Labs/i386/debug/tree/Packages",
-                        "x86_64": "Labs/x86_64/debug/tree/Packages"
-                    },
-                    "debug_repository": {
-                        "i386": "Labs/i386/debug/tree",
-                        "x86_64": "Labs/x86_64/debug/tree"
-                    },
-                    "debug_tree": {
-                        "i386": "Labs/i386/debug/tree",
-                        "x86_64": "Labs/x86_64/debug/tree"
+                    "images": {
+                        "aarch64": "Labs/aarch64/images",
+                        "x86_64": "Labs/x86_64/images"
                     },
                     "isos": {
-                        "i386": "Labs/i386/iso",
                         "x86_64": "Labs/x86_64/iso"
-                    },
-                    "os_tree": {
-                        "i386": "Labs/i386/os",
-                        "x86_64": "Labs/x86_64/os"
-                    },
-                    "packages": {
-                        "i386": "Labs/i386/os/Packages",
-                        "x86_64": "Labs/x86_64/os/Packages"
-                    },
-                    "repository": {
-                        "i386": "Labs/i386/os",
-                        "x86_64": "Labs/x86_64/os"
-                    },
-                    "source_isos": {
-                        "i386": "Labs/source/iso",
-                        "x86_64": "Labs/source/iso"
-                    },
-                    "source_packages": {
-                        "i386": "Labs/source/tree/Packages",
-                        "x86_64": "Labs/source/tree/Packages"
-                    },
-                    "source_repository": {
-                        "i386": "Labs/source/tree",
-                        "x86_64": "Labs/source/tree"
-                    },
-                    "source_tree": {
-                        "i386": "Labs/source/tree",
-                        "x86_64": "Labs/source/tree"
                     }
                 },
                 "type": "variant",
                 "uid": "Labs"
             },
+            "Modular": {
+                "arches": [
+                    "aarch64",
+                    "ppc64le",
+                    "s390x",
+                    "x86_64"
+                ],
+                "id": "Modular",
+                "name": "Modular",
+                "paths": {
+                    "debug_packages": {
+                        "aarch64": "Modular/aarch64/debug/tree/Packages",
+                        "ppc64le": "Modular/ppc64le/debug/tree/Packages",
+                        "s390x": "Modular/s390x/debug/tree/Packages",
+                        "x86_64": "Modular/x86_64/debug/tree/Packages"
+                    },
+                    "debug_repository": {
+                        "aarch64": "Modular/aarch64/debug/tree",
+                        "ppc64le": "Modular/ppc64le/debug/tree",
+                        "s390x": "Modular/s390x/debug/tree",
+                        "x86_64": "Modular/x86_64/debug/tree"
+                    },
+                    "debug_tree": {
+                        "aarch64": "Modular/aarch64/debug/tree",
+                        "ppc64le": "Modular/ppc64le/debug/tree",
+                        "s390x": "Modular/s390x/debug/tree",
+                        "x86_64": "Modular/x86_64/debug/tree"
+                    },
+                    "os_tree": {
+                        "aarch64": "Modular/aarch64/os",
+                        "ppc64le": "Modular/ppc64le/os",
+                        "s390x": "Modular/s390x/os",
+                        "x86_64": "Modular/x86_64/os"
+                    },
+                    "packages": {
+                        "aarch64": "Modular/aarch64/os/Packages",
+                        "ppc64le": "Modular/ppc64le/os/Packages",
+                        "s390x": "Modular/s390x/os/Packages",
+                        "x86_64": "Modular/x86_64/os/Packages"
+                    },
+                    "repository": {
+                        "aarch64": "Modular/aarch64/os",
+                        "ppc64le": "Modular/ppc64le/os",
+                        "s390x": "Modular/s390x/os",
+                        "x86_64": "Modular/x86_64/os"
+                    },
+                    "source_packages": {
+                        "aarch64": "Modular/source/tree/Packages",
+                        "ppc64le": "Modular/source/tree/Packages",
+                        "s390x": "Modular/source/tree/Packages",
+                        "x86_64": "Modular/source/tree/Packages"
+                    },
+                    "source_repository": {
+                        "aarch64": "Modular/source/tree",
+                        "ppc64le": "Modular/source/tree",
+                        "s390x": "Modular/source/tree",
+                        "x86_64": "Modular/source/tree"
+                    },
+                    "source_tree": {
+                        "aarch64": "Modular/source/tree",
+                        "ppc64le": "Modular/source/tree",
+                        "s390x": "Modular/source/tree",
+                        "x86_64": "Modular/source/tree"
+                    }
+                },
+                "type": "variant",
+                "uid": "Modular"
+            },
+            "Sericea": {
+                "arches": [
+                    "x86_64"
+                ],
+                "id": "Sericea",
+                "name": "Sericea",
+                "paths": {
+                    "isos": {
+                        "x86_64": "Sericea/x86_64/iso"
+                    },
+                    "os_tree": {
+                        "x86_64": "Sericea/x86_64/os"
+                    },
+                    "repository": {
+                        "x86_64": "Sericea/x86_64/os"
+                    }
+                },
+                "type": "variant",
+                "uid": "Sericea"
+            },
             "Server": {
                 "arches": [
                     "aarch64",
-                    "armhfp",
-                    "i386",
-                    "ppc64",
                     "ppc64le",
+                    "s390x",
                     "x86_64"
                 ],
                 "id": "Server",
@@ -506,151 +276,116 @@
                 "paths": {
                     "debug_packages": {
                         "aarch64": "Server/aarch64/debug/tree/Packages",
-                        "armhfp": "Server/armhfp/debug/tree/Packages",
-                        "i386": "Server/i386/debug/tree/Packages",
-                        "ppc64": "Server/ppc64/debug/tree/Packages",
                         "ppc64le": "Server/ppc64le/debug/tree/Packages",
+                        "s390x": "Server/s390x/debug/tree/Packages",
                         "x86_64": "Server/x86_64/debug/tree/Packages"
                     },
                     "debug_repository": {
                         "aarch64": "Server/aarch64/debug/tree",
-                        "armhfp": "Server/armhfp/debug/tree",
-                        "i386": "Server/i386/debug/tree",
-                        "ppc64": "Server/ppc64/debug/tree",
                         "ppc64le": "Server/ppc64le/debug/tree",
+                        "s390x": "Server/s390x/debug/tree",
                         "x86_64": "Server/x86_64/debug/tree"
                     },
                     "debug_tree": {
                         "aarch64": "Server/aarch64/debug/tree",
-                        "armhfp": "Server/armhfp/debug/tree",
-                        "i386": "Server/i386/debug/tree",
-                        "ppc64": "Server/ppc64/debug/tree",
                         "ppc64le": "Server/ppc64le/debug/tree",
+                        "s390x": "Server/s390x/debug/tree",
                         "x86_64": "Server/x86_64/debug/tree"
+                    },
+                    "images": {
+                        "aarch64": "Server/aarch64/images",
+                        "ppc64le": "Server/ppc64le/images",
+                        "s390x": "Server/s390x/images",
+                        "x86_64": "Server/x86_64/images"
                     },
                     "isos": {
                         "aarch64": "Server/aarch64/iso",
-                        "armhfp": "Server/armhfp/iso",
-                        "i386": "Server/i386/iso",
-                        "ppc64": "Server/ppc64/iso",
                         "ppc64le": "Server/ppc64le/iso",
+                        "s390x": "Server/s390x/iso",
                         "x86_64": "Server/x86_64/iso"
                     },
                     "os_tree": {
                         "aarch64": "Server/aarch64/os",
-                        "armhfp": "Server/armhfp/os",
-                        "i386": "Server/i386/os",
-                        "ppc64": "Server/ppc64/os",
                         "ppc64le": "Server/ppc64le/os",
+                        "s390x": "Server/s390x/os",
                         "x86_64": "Server/x86_64/os"
                     },
                     "packages": {
                         "aarch64": "Server/aarch64/os/Packages",
-                        "armhfp": "Server/armhfp/os/Packages",
-                        "i386": "Server/i386/os/Packages",
-                        "ppc64": "Server/ppc64/os/Packages",
                         "ppc64le": "Server/ppc64le/os/Packages",
+                        "s390x": "Server/s390x/os/Packages",
                         "x86_64": "Server/x86_64/os/Packages"
                     },
                     "repository": {
                         "aarch64": "Server/aarch64/os",
-                        "armhfp": "Server/armhfp/os",
-                        "i386": "Server/i386/os",
-                        "ppc64": "Server/ppc64/os",
                         "ppc64le": "Server/ppc64le/os",
+                        "s390x": "Server/s390x/os",
                         "x86_64": "Server/x86_64/os"
                     },
                     "source_packages": {
                         "aarch64": "Server/source/tree/Packages",
-                        "armhfp": "Server/source/tree/Packages",
-                        "i386": "Server/source/tree/Packages",
-                        "ppc64": "Server/source/tree/Packages",
                         "ppc64le": "Server/source/tree/Packages",
+                        "s390x": "Server/source/tree/Packages",
                         "x86_64": "Server/source/tree/Packages"
                     },
                     "source_repository": {
                         "aarch64": "Server/source/tree",
-                        "armhfp": "Server/source/tree",
-                        "i386": "Server/source/tree",
-                        "ppc64": "Server/source/tree",
                         "ppc64le": "Server/source/tree",
+                        "s390x": "Server/source/tree",
                         "x86_64": "Server/source/tree"
                     },
                     "source_tree": {
                         "aarch64": "Server/source/tree",
-                        "armhfp": "Server/source/tree",
-                        "i386": "Server/source/tree",
-                        "ppc64": "Server/source/tree",
                         "ppc64le": "Server/source/tree",
+                        "s390x": "Server/source/tree",
                         "x86_64": "Server/source/tree"
                     }
                 },
                 "type": "variant",
                 "uid": "Server"
             },
+            "Silverblue": {
+                "arches": [
+                    "aarch64",
+                    "ppc64le",
+                    "x86_64"
+                ],
+                "id": "Silverblue",
+                "name": "Silverblue",
+                "paths": {
+                    "isos": {
+                        "aarch64": "Silverblue/aarch64/iso",
+                        "ppc64le": "Silverblue/ppc64le/iso",
+                        "x86_64": "Silverblue/x86_64/iso"
+                    },
+                    "os_tree": {
+                        "aarch64": "Silverblue/aarch64/os",
+                        "ppc64le": "Silverblue/ppc64le/os",
+                        "x86_64": "Silverblue/x86_64/os"
+                    },
+                    "repository": {
+                        "aarch64": "Silverblue/aarch64/os",
+                        "ppc64le": "Silverblue/ppc64le/os",
+                        "x86_64": "Silverblue/x86_64/os"
+                    }
+                },
+                "type": "variant",
+                "uid": "Silverblue"
+            },
             "Spins": {
                 "arches": [
-                    "armhfp",
-                    "i386",
+                    "aarch64",
                     "x86_64"
                 ],
                 "id": "Spins",
                 "name": "Spins",
                 "paths": {
-                    "debug_packages": {
-                        "armhfp": "Spins/armhfp/debug/tree/Packages",
-                        "i386": "Spins/i386/debug/tree/Packages",
-                        "x86_64": "Spins/x86_64/debug/tree/Packages"
-                    },
-                    "debug_repository": {
-                        "armhfp": "Spins/armhfp/debug/tree",
-                        "i386": "Spins/i386/debug/tree",
-                        "x86_64": "Spins/x86_64/debug/tree"
-                    },
-                    "debug_tree": {
-                        "armhfp": "Spins/armhfp/debug/tree",
-                        "i386": "Spins/i386/debug/tree",
-                        "x86_64": "Spins/x86_64/debug/tree"
+                    "images": {
+                        "aarch64": "Spins/aarch64/images"
                     },
                     "isos": {
-                        "armhfp": "Spins/armhfp/iso",
-                        "i386": "Spins/i386/iso",
+                        "aarch64": "Spins/aarch64/iso",
                         "x86_64": "Spins/x86_64/iso"
-                    },
-                    "os_tree": {
-                        "armhfp": "Spins/armhfp/os",
-                        "i386": "Spins/i386/os",
-                        "x86_64": "Spins/x86_64/os"
-                    },
-                    "packages": {
-                        "armhfp": "Spins/armhfp/os/Packages",
-                        "i386": "Spins/i386/os/Packages",
-                        "x86_64": "Spins/x86_64/os/Packages"
-                    },
-                    "repository": {
-                        "armhfp": "Spins/armhfp/os",
-                        "i386": "Spins/i386/os",
-                        "x86_64": "Spins/x86_64/os"
-                    },
-                    "source_isos": {
-                        "armhfp": "Spins/source/iso",
-                        "i386": "Spins/source/iso",
-                        "x86_64": "Spins/source/iso"
-                    },
-                    "source_packages": {
-                        "armhfp": "Spins/source/tree/Packages",
-                        "i386": "Spins/source/tree/Packages",
-                        "x86_64": "Spins/source/tree/Packages"
-                    },
-                    "source_repository": {
-                        "armhfp": "Spins/source/tree",
-                        "i386": "Spins/source/tree",
-                        "x86_64": "Spins/source/tree"
-                    },
-                    "source_tree": {
-                        "armhfp": "Spins/source/tree",
-                        "i386": "Spins/source/tree",
-                        "x86_64": "Spins/source/tree"
                     }
                 },
                 "type": "variant",
@@ -659,119 +394,23 @@
             "Workstation": {
                 "arches": [
                     "aarch64",
-                    "armhfp",
-                    "i386",
+                    "ppc64le",
                     "x86_64"
                 ],
                 "id": "Workstation",
                 "name": "Workstation",
                 "paths": {
-                    "debug_packages": {
-                        "aarch64": "Workstation/aarch64/debug/tree/Packages",
-                        "armhfp": "Workstation/armhfp/debug/tree/Packages",
-                        "i386": "Workstation/i386/debug/tree/Packages",
-                        "x86_64": "Workstation/x86_64/debug/tree/Packages"
-                    },
-                    "debug_repository": {
-                        "aarch64": "Workstation/aarch64/debug/tree",
-                        "armhfp": "Workstation/armhfp/debug/tree",
-                        "i386": "Workstation/i386/debug/tree",
-                        "x86_64": "Workstation/x86_64/debug/tree"
-                    },
-                    "debug_tree": {
-                        "aarch64": "Workstation/aarch64/debug/tree",
-                        "armhfp": "Workstation/armhfp/debug/tree",
-                        "i386": "Workstation/i386/debug/tree",
-                        "x86_64": "Workstation/x86_64/debug/tree"
+                    "images": {
+                        "aarch64": "Workstation/aarch64/images"
                     },
                     "isos": {
                         "aarch64": "Workstation/aarch64/iso",
-                        "i386": "Workstation/i386/iso",
+                        "ppc64le": "Workstation/ppc64le/iso",
                         "x86_64": "Workstation/x86_64/iso"
-                    },
-                    "os_tree": {
-                        "aarch64": "Workstation/aarch64/os",
-                        "armhfp": "Workstation/armhfp/os",
-                        "i386": "Workstation/i386/os",
-                        "x86_64": "Workstation/x86_64/os"
-                    },
-                    "packages": {
-                        "aarch64": "Workstation/aarch64/os/Packages",
-                        "armhfp": "Workstation/armhfp/os/Packages",
-                        "i386": "Workstation/i386/os/Packages",
-                        "x86_64": "Workstation/x86_64/os/Packages"
-                    },
-                    "repository": {
-                        "aarch64": "Workstation/aarch64/os",
-                        "armhfp": "Workstation/armhfp/os",
-                        "i386": "Workstation/i386/os",
-                        "x86_64": "Workstation/x86_64/os"
-                    },
-                    "source_packages": {
-                        "aarch64": "Workstation/source/tree/Packages",
-                        "armhfp": "Workstation/source/tree/Packages",
-                        "i386": "Workstation/source/tree/Packages",
-                        "x86_64": "Workstation/source/tree/Packages"
-                    },
-                    "source_repository": {
-                        "aarch64": "Workstation/source/tree",
-                        "armhfp": "Workstation/source/tree",
-                        "i386": "Workstation/source/tree",
-                        "x86_64": "Workstation/source/tree"
-                    },
-                    "source_tree": {
-                        "aarch64": "Workstation/source/tree",
-                        "armhfp": "Workstation/source/tree",
-                        "i386": "Workstation/source/tree",
-                        "x86_64": "Workstation/source/tree"
                     }
                 },
                 "type": "variant",
                 "uid": "Workstation"
-            },
-            "ostree": {
-                "arches": [
-                    "x86_64"
-                ],
-                "id": "ostree",
-                "name": "ostree",
-                "paths": {
-                    "debug_packages": {
-                        "x86_64": "ostree/x86_64/debug/tree/Packages"
-                    },
-                    "debug_repository": {
-                        "x86_64": "ostree/x86_64/debug/tree"
-                    },
-                    "debug_tree": {
-                        "x86_64": "ostree/x86_64/debug/tree"
-                    },
-                    "isos": {
-                        "x86_64": "ostree/x86_64/iso"
-                    },
-                    "os_tree": {
-                        "x86_64": "ostree/x86_64/os"
-                    },
-                    "packages": {
-                        "x86_64": "ostree/x86_64/os/Packages"
-                    },
-                    "repository": {
-                        "x86_64": "ostree/x86_64/os"
-                    },
-                    "source_isos": {
-                        "x86_64": "ostree/source/iso"
-                    },
-                    "source_packages": {
-                        "x86_64": "ostree/source/tree/Packages"
-                    },
-                    "source_repository": {
-                        "x86_64": "ostree/source/tree"
-                    },
-                    "source_tree": {
-                        "x86_64": "ostree/source/tree"
-                    }
-                },
-                "type": "variant",
-                "uid": "ostree"
             }
         }
     }
