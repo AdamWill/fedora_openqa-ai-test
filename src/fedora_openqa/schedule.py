@@ -268,12 +268,6 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
         params["LABEL"] = label
     params.update(_get_releases(release=version))
 
-    # for now, only images from composes with Modular in the name are
-    # modular; we may need to change this in future as modular goes
-    # mainstream
-    if 'Modular' in build:
-        params['MODULAR'] = '1'
-
     if extraparams:
         params.update(extraparams)
         # mung the BUILD so this is not considered a 'real' test run

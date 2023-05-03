@@ -469,12 +469,6 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
         openqa_hostname='somehost')
     assert fakeclient.call_args[0][0] == 'somehost'
 
-    # check we set MODULAR param for modular composes
-    instance.reset_mock()
-    schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Modular-Rawhide-20230502.n.0', 'Rawhide', rel.location)
-    assert instance.openqa_request.call_args[0][2]['MODULAR'] == '1'
-
     # check we don't crash or fail to schedule if get_current_release
     # fails
     instance.reset_mock()

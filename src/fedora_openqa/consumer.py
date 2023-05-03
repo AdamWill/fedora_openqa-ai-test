@@ -85,11 +85,6 @@ class OpenQAScheduler(object):
         status = body.get('status')
         location = body.get('location')
         compstr = body.get('compose_id', location)
-        # don't schedule tests on modular composes, for now, as we know
-        # many fail
-        if 'Fedora-Modular' in compstr:
-            self.logger.info("Not scheduling jobs for modular compose %s", compstr)
-            return
 
         if 'FINISHED' in status and location:
             # We have a complete pungi4 compose
