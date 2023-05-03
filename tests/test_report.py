@@ -85,13 +85,7 @@ def test_uniqueres_replacements(jobdict01):
         ret = fosreport._uniqueres_replacements(jobdict01, basedict)
     assert ret['subvariant'] == 'Cloud'
 
-    # check ARM stuff
-    with mock.patch.dict(jobdict01['settings'], {'ARCH': 'arm'}):
-        ret = fosreport._uniqueres_replacements(jobdict01, basedict)
-    assert ret['firmware'] == 'ARM'
-    assert ret['bootmethod'] == 'ARM'
-
-    # and aarch64
+    # check aarch64
     with mock.patch.dict(jobdict01['settings'], {'ARCH': 'aarch64'}):
         ret = fosreport._uniqueres_replacements(jobdict01, basedict)
     assert ret['firmware'] == 'UEFI'

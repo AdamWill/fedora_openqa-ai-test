@@ -66,10 +66,7 @@ def _uniqueres_replacements(job, tcdict):
     subvariant = subvariant.replace('_Base', '')
     subvariant_or_local = "Local" if "Cloud" in subvariant else subvariant
     cloud_or_base = "Cloud" if "Cloud" in subvariant else "Base"
-    if arch == "arm":
-        bootmethod = 'ARM'
-        firmware = 'ARM'
-    elif arch == "aarch64":
+    if arch == "aarch64":
         bootmethod = "aarch64"
         firmware = "UEFI"
     elif 'UEFI' in job['settings']:

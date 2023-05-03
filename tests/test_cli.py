@@ -87,7 +87,7 @@ class TestCommandCompose:
     @pytest.mark.parametrize(
         ("arg", "values"),
         [
-            ('arches', ('x86_64', 'i386,armhfp')),
+            ('arches', ('x86_64', 'ppc64le,aarch64')),
             ('flavors', ('server-boot-iso', 'workstation-live-iso,universal')),
         ]
     )

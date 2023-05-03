@@ -109,14 +109,6 @@ class TriggerException(Exception):
     pass
 
 
-def _get_dkboot_urls(location, arch='armhfp'):
-    """Given a fedfind release 'generic' location (and arch if provided), return URLs for kernel
-    and initrd files.
-    """
-    pxeboot_url = '{0}/{1}/os/images/pxeboot/{2}'
-    return (pxeboot_url.format(location, arch, 'vmlinuz'), pxeboot_url.format(location, arch, 'initrd.img'))
-
-
 def _get_images(rel, wanted=None):
     """Given a fedfind Release instance, this returns a list of (flavor, arch, score, {param: url},
     subvariant, imagetype) tuples for images to be tested.
@@ -151,13 +143,6 @@ def _get_images(rel, wanted=None):
                 fileparam = FORMAT_TO_PARAM[foundimg['format']].split('_URL')[0]
                 filename = os.path.basename(foundimg['path'])
                 param_urls[fileparam] = 'testing-' + filename
-            # if direct kernel boot is specified, we need to download kernel and initrd
-            if wantimg.get('dkboot', False):
-                (kernel_url, initrd_url) = _get_dkboot_urls(rel.https_url_generic, arch)
-                param_urls["KERNEL_URL"] = kernel_url
-                param_urls["KERNEL"] = "{0}.{1}.vmlinuz".format(rel.cid, arch)
-                param_urls["INITRD_URL"] = initrd_url
-                param_urls["INITRD"] = "{0}.{1}.initrd.img".format(rel.cid, arch)
 
             images.append((flavor, arch, score, param_urls, subvariant, imagetype))
     return images
@@ -271,7 +256,7 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
         'DISTRI': 'fedora',
         'VERSION': version,
         'FLAVOR': flavor,
-        'ARCH': arch if arch != 'armhfp' else 'arm',  # openQA does something special when `ARCH = arm`
+        'ARCH': arch,
         'BUILD': build,
         'LOCATION': location,
         'SUBVARIANT': subvariant,
@@ -429,8 +414,7 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     if univs:
         for (arch, (param_urls, _, subvariant, imagetype)) in univs.items():
             # We are assuming that ISO_URL is present in param_urls. This could create problem when
-            # unversal tests are run on product that doesn't have ISO. OTOH, only product without ISO
-            # is ARM and there would be whole lot of other problems if universal tests are run on ARM.
+            # unversal tests are run on product that doesn't have ISO.
             logger.info("running universal tests for %s with %s", arch, param_urls['ISO_URL'])
             jobs.extend(run_openqa_jobs(param_urls, 'universal', arch, subvariant, imagetype,
                                         rel.cid, release, location, force=force,
