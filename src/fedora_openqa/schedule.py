@@ -136,14 +136,6 @@ def _get_images(rel, wanted=None):
             param_urls = {
                 FORMAT_TO_PARAM[foundimg['format']]: url
             }
-            if 'updates-testing' in rel.cid:
-                # image names in 'updates-testing' and 'updates' composes
-                # are the same. we need to set a custom filename for the
-                # image for updates-testing composes to avoid a clash
-                fileparam = FORMAT_TO_PARAM[foundimg['format']].split('_URL')[0]
-                filename = os.path.basename(foundimg['path'])
-                param_urls[fileparam] = 'testing-' + filename
-
             images.append((flavor, arch, score, param_urls, subvariant, imagetype))
     return images
 
@@ -415,20 +407,18 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
                                         extraparams=extraparams, openqa_hostname=openqa_hostname,
                                         label=rel.label))
 
-    # if we scheduled any jobs, and this is a candidate compose, tag
-    # this build as 'important'
+    # if we scheduled any jobs, and this is a Fedora candidate compose,
+    # tag this build as 'important'
     # this prevents its jobs being obsoleted if a nightly compose shows
     # up while they're running, and prevents it being garbage-collected
     # don't do this for post-release nightlies that are *always*
     # candidates, though
     # using getattr as the 'respin' composes don't have these attrs
-    if getattr(rel, 'type', '') == 'production' and getattr(rel, 'product', '') == 'Fedora':
-        # we don't want to tag all updates / updates-testing composes
-        if 'updates' not in getattr(rel, 'milestone', '').lower() and jobs:
-            client = OpenQA_Client(openqa_hostname)
-            # we expect group 1 to be 'fedora'. I think this is reliable.
-            params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
-            client.openqa_request('POST', 'groups/1/comments', params=params)
+    if getattr(rel, 'type', '') == 'production' and getattr(rel, 'product', '') == 'Fedora' and jobs:
+        client = OpenQA_Client(openqa_hostname)
+        # we expect group 1 to be 'fedora'. I think this is reliable.
+        params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
+        client.openqa_request('POST', 'groups/1/comments', params=params)
 
     return (rel.cid, jobs)
 

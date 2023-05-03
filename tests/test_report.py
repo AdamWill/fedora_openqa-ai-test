@@ -633,15 +633,6 @@ class TestResultsDBReport:
         fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_count == 0
 
-    def test_updates_testing(self, fakeres, oqaclientmock):
-        """Check we strip the 'testing-' that we add to the asset file
-        name for updates-testing images before reporting results.
-        """
-        jobdict = oqaclientmock[2]
-        with mock.patch.dict(jobdict['settings'], {'ISO': 'testing-Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso'}):
-            fosreport.resultsdb_report(jobs=[1])
-        assert fakeres.call_args[1]['item'] == 'Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso'
-
     def test_note(self, fakeres, oqaclientmock):
         """Check resultsdb_report adds a note for failed modules."""
         jobdict = oqaclientmock[2]

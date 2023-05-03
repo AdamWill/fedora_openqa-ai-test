@@ -325,28 +325,6 @@ class TestGetImages:
             ),
         ]
 
-    @mock.patch.object(fedfind.release.RawhideNightly, 'cid', 'Fedora-Rawhide-updates-testing-20230502.n.0')
-    def test_update_testing(self):
-        """Test that the image file name munging for updates-testing
-        composes works. Image file names for updates-testing and
-        updates composes with the same date, version and respin are
-        identical; we need to rename the images from one of the
-        composes so they don't overwrite each other in the openQA
-        asset directories.
-        """
-        # we don't use cid here to avoid the sanity check failing
-        rel = fedfind.release.get_release('Rawhide', '', '20230502.n.0')
-        # let's just check the mocking is working as expected...
-        assert rel.cid == 'Fedora-Rawhide-updates-testing-20230502.n.0'
-        # this is to ensure we actually check *something*
-        count = 0
-        ret = schedule._get_images(rel)
-        for (_, _, _, param_urls, _, _) in ret:
-            if 'ISO_URL' in param_urls:
-                assert param_urls.get('ISO', '').startswith('testing-')
-                count += 1
-        assert count > 0
-
 
 def test_find_duplicate_jobs():
     """Tests for _find_duplicate_jobs."""
