@@ -379,10 +379,6 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     # schedule per-image jobs, keeping track of the highest score
     # per arch along the way
     release = rel.release
-    # for sanity's sake let's just treat the stupid-ass 'Bikeshed'
-    # version as 'Rawhide' for now
-    if release.lower() == 'bikeshed':
-        release = 'Rawhide'
     for (flavor, arch, score, param_urls, subvariant, imagetype) in images:
         if flavors != ["universal"]:
             # in the special case that flavors is just "universal", we
