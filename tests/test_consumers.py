@@ -170,6 +170,18 @@ CRITPATHEDIT = Message(
                 "name": "F24",
                 "version": "24"
             },
+            "builds": [
+                {
+                    "epoch": 0,
+                    "nvr": "codec2-0.6-1.fc24",
+                    "signed": False
+                },
+                {
+                    "epoch": 0,
+                    "nvr": "freedv-1.2-1.fc24",
+                    "signed": False
+                }
+            ]
         },
     }
 )
@@ -451,8 +463,8 @@ class TestConsumers:
             # if 'gotjobs' is True, we mock a query of existing jobs to
             # return some. otherwise, we mock it to return nothing. This
             # is for testing re-trigger request scheduling in both cases,
-            # it is irrelevant to 'new/edited update' and 'new compose'
-            # message handling.
+            # and also for testing edited update scheduling. it is irrelevant
+            # to 'new update' and 'new compose' message handling.
             # if "advisory" and/or "version" is a string, we'll check
             # that value is used in the update scheduling request. This is
             # for re-trigger request handling, where we do non-trivial
@@ -464,7 +476,9 @@ class TestConsumers:
             # for all critpath updates we should schedule for all flavors
             (CRITPATHCREATE, False, None, None, None),
             (CRITPATHEDIT, False, None, None, None),
-            (CRITPATHEDIT, True, None, None, None),
+            # when mocking existing jobs, we should not schedule for
+            # CRITPATHEDIT as it looks like the builds didn't change
+            (CRITPATHEDIT, True, False, None, None),
             (NONCRITCREATE, False, False, None, None),
             (NONCRITEDIT, False, False, None, None),
             (EPELCREATE, False, False, None, None),
@@ -476,6 +490,9 @@ class TestConsumers:
             (TLEDIT, False, {'server', 'server-upgrade', 'workstation-live-iso'}, None, None),
             # TLALLEDIT contains an 'all flavors'-listed package
             (TLALLEDIT, False, None, None, None),
+            # we should also schedule it when mocking existing jobs,
+            # because it looks like the builds changed
+            (TLALLEDIT, True, None, None, None),
             (RETRIGGER, True, {'server', 'workstation'}, "FEDORA-2023-1f3e17882f", "39"),
             (RETRIGGER, False, False, None, None),
             (NONRETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),
@@ -500,12 +517,47 @@ class TestConsumers:
             if gotjobs:
                 # we mock four existing jobs across two flavors, to
                 # make sure we don't duplicate flavors in the request
+                # the NVR data matches the unmodified state of the
+                # CRITPATHEDIT message, so when processing that msg
+                # it looks like the builds did not change
                 fake_request.return_value = {
                     'jobs': [
-                        {'id': 1, 'settings': {'FLAVOR': 'updates-server'}, 'state': 'done'},
-                        {'id': 2, 'settings': {'FLAVOR': 'updates-server'}, 'state': 'done'},
-                        {'id': 3, 'settings': {'FLAVOR': 'updates-workstation'}, 'state': 'done'},
-                        {'id': 4, 'settings': {'FLAVOR': 'updates-workstation'}, 'state': 'done'},
+                        {
+                            'id': 1,
+                            'settings': {
+                                'ADVISORY_NVRS_1': 'freedv-1.2-1.fc24',
+                                'ADVISORY_NVRS_2': 'codec2-0.6-1.fc24',
+                                'FLAVOR': 'updates-server'
+                            },
+                            'state': 'done'
+                        },
+                        {
+                            'id': 2,
+                            'settings': {
+                                'ADVISORY_NVRS_1': 'freedv-1.2-1.fc24',
+                                'ADVISORY_NVRS_2': 'codec2-0.6-1.fc24',
+                                'FLAVOR': 'updates-server'
+                            },
+                            'state': 'done'
+                        },
+                        {
+                            'id': 3,
+                            'settings': {
+                                'ADVISORY_NVRS_1': 'freedv-1.2-1.fc24',
+                                'ADVISORY_NVRS_2': 'codec2-0.6-1.fc24',
+                                'FLAVOR': 'updates-workstation'
+                            },
+                            'state': 'done'
+                        },
+                        {
+                            'id': 4,
+                            'settings': {
+                                'ADVISORY_NVRS_1': 'freedv-1.2-1.fc24',
+                                'ADVISORY_NVRS_2': 'codec2-0.6-1.fc24',
+                                'FLAVOR': 'updates-workstation'
+                            },
+                            'state': 'done'
+                        },
                     ]
                 }
             else:

@@ -71,9 +71,7 @@ class OpenQAScheduler(object):
         elif 'bodhi.update.status.testing' in message.topic:
             return self._consume_ready(message)
         elif 'bodhi.update.edit' in message.topic:
-            # we always want to run tests when an update is edited,
-            # even if they already ran
-            return self._consume_update(message, force=True)
+            return self._consume_edit(message)
         elif 'bodhi' in message.topic:
             return self._consume_update(message, force=False)
 
@@ -107,11 +105,20 @@ class OpenQAScheduler(object):
         if jobs:
             self.logger.info("openQA jobs run on update %s: "
                       "%s", advisory, ' '.join(str(job) for job in jobs))
-        else:
+        else:   # pragma: no cover
             if force:
                 self.logger.warning("No openQA jobs run!")
             else:
                 self.logger.debug("No openQA jobs run, likely already tested")
+
+    def _get_existing_jobs(self, advisory):
+        """
+        Get existing openQA jobs for the update the message body
+        relates to. Used by _handle_retrigger and _consume_edit.
+        """
+        client = OpenQA_Client(self.openqa_hostname)
+        build = f"Update-{advisory}"
+        return client.openqa_request("GET", "jobs", params={"build": build, "latest": "1"})["jobs"]
 
     def _handle_retrigger(self, body):
         """
@@ -124,12 +131,10 @@ class OpenQAScheduler(object):
         update = body.get("update", {})
         advisory = update.get('alias')
         version = update.get('release', {}).get('version')
-        if not advisory or not version:
+        if not advisory or not version: # pragma: no cover
             self.logger.warning("Unable to find advisory or version, no jobs scheduled!")
             return
-        client = OpenQA_Client(self.openqa_hostname)
-        build = f"Update-{advisory}"
-        existjobs = client.openqa_request("GET", "jobs", params={"build": build})["jobs"]
+        existjobs = self._get_existing_jobs(advisory)
         flavors = [job.get("settings", {}).get("FLAVOR", "") for job in existjobs]
         # strip the updates- prefix and ignore empty strings
         flavors = [flavor.split("updates-")[-1] for flavor in flavors if flavor]
@@ -188,11 +193,52 @@ class OpenQAScheduler(object):
         if not self._check_mainline(message):
             return
         if body.get("re-trigger"):
-            return self._handle_retrigger(body)
-        # If it's not a re-trigger request, it should be an initial
-        # message for a new update. Use force=False to handle races
-        # with other messages and not double-schedule new updates
-        return self._consume_update(message, force=False)
+            self._handle_retrigger(body)
+        else:
+            # If it's not a re-trigger request, it should be an initial
+            # message for a new update. Use force=False to handle races
+            # with other messages and not double-schedule new updates
+            self._consume_update(message, force=False)
+
+    def _consume_edit(self, message):
+        """
+        Consume an 'update edited' type message
+        (bodhi.update.edit). If the edit changed the builds in the
+        update, we should test it again.
+        """
+        body = message.body
+        update = body.get("update", {})
+        advisory = update.get('alias')
+        if not advisory:    # pragma: no cover
+            self.logger.warning("Unable to find advisory, no jobs scheduled!")
+            return
+        try:
+            # all jobs from the same execution pass (the 'latest' jobs)
+            # should have the same ADVISORY_NVRS settings, so we can
+            # just take the first
+            existjob = self._get_existing_jobs(advisory)[0]
+        except IndexError:
+            # didn't find any existing jobs...
+            self.logger.debug("Didn't find any existing jobs for %s", advisory)
+            existjob = {}
+        counter = 1
+        testedbuilds = set()
+        settings = existjob.get("settings", {})
+        # 'and settings' skips this when we didn't find an existing job
+        while counter and settings:
+            gotbuilds = settings.get(f"ADVISORY_NVRS_{counter}")
+            if gotbuilds:
+                testedbuilds.update(gotbuilds.split())
+                counter += 1
+            else:
+                # end the loop
+                counter = 0
+        currentbuilds = {build["nvr"] for build in update.get("builds", [])}
+        if currentbuilds != testedbuilds:
+            self.logger.debug("Edit to %s changed builds, re-scheduling tests", advisory)
+            self._consume_update(message)
+        else:
+            self.logger.debug("Edit to %s did not change builds, tests not re-scheduled", advisory)
 
     def _consume_update(self, message, force=True):
         """
