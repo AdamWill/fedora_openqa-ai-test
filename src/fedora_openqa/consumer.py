@@ -34,20 +34,6 @@ from .config import UPDATETL
 from . import schedule
 from . import report
 
-
-def _find_true_body(message):
-    """Currently the ZMQ->AMQP bridge produces a message with the
-    entire fedmsg as the 'body'. When the publisher is converted to
-    AMQP it will likely only include the 'msg' dict as the 'body'. So
-    let's try and make sure we work either way...
-    https://github.com/fedora-infra/fedmsg-migration-tools/issues/20
-    """
-    body = message.body
-    if 'msg' in body and 'msg_id' in body:
-        # OK, pretty sure this is a translated fedmsg, take 'msg'
-        body = body['msg']
-    return body
-
 # SCHEDULER
 
 
@@ -62,7 +48,22 @@ class OpenQAScheduler(object):
         self.logger = logging.getLogger(self.__class__.__name__)
 
     def __call__(self, message):
-        """Consume incoming message."""
+        """
+        Consume incoming message. Note on bodhi.update.status.testing
+        vs. update.request.testing: we use both of these to roughly
+        mean "a new update showed up". For Rawhide updates,
+        status.testing is most reliable, because it is sent for all
+        updates as soon as they are created, more or less.
+        update.request.testing is not sent at all for Rawhide updates
+        bodhi auto-pushes straight to stable. For non-Rawhide updates,
+        update.request.testing is usually most reliable, because it is
+        sent as soon as the update is created, unless it's somehow
+        gated from even being submitted to testing. status.testing is
+        only sent after the update has been included in an updates-
+        testing push, which may be several hours after it's created.
+        So we handle both messages for all updates, with force=False
+        so we'll run the tests only for whichever one we see first.
+        """
         if 'pungi' in message.topic:
             return self._consume_compose(message)
         elif 'coreos' in message.topic:
@@ -74,62 +75,24 @@ class OpenQAScheduler(object):
             # even if they already ran
             return self._consume_update(message, force=True)
         elif 'bodhi' in message.topic:
-            # should be 'update.request.testing'; we only want to run
-            # the tests if they did not already run in response to
-            # an 'update.status.testing' message
             return self._consume_update(message, force=False)
 
-    def _consume_compose(self, message):
-        """Consume a 'compose' type message."""
-        body = _find_true_body(message)
-        status = body.get('status')
-        location = body.get('location')
-        compstr = body.get('compose_id', location)
-
-        if 'FINISHED' in status and location:
-            # We have a complete pungi4 compose
-            self.logger.info("Scheduling openQA jobs for compose %s", compstr)
-            try:
-                # pylint: disable=no-member
-                (compose, jobs) = schedule.jobs_from_compose(location, openqa_hostname=self.openqa_hostname)
-            except schedule.TriggerException as err:
-                self.logger.warning("No openQA jobs run! %s", err)
-                return
-            if jobs:
-                self.logger.info("openQA jobs run on compose %s: "
-                          "%s", compose, ' '.join(str(job) for job in jobs))
-            else:
-                self.logger.warning("No openQA jobs run!")
-                return
-
-            self.logger.debug("Finished")
-            return
-
-        return
-
-    def _consume_fcosbuild(self, message):
-        """Consume an FCOS build state change message."""
-        body = _find_true_body(message)
-        # this is intentionally written to blow up if required info is
-        # missing from the message, as that would likely indicate a
-        # message format change and we'd need to handle that
-        if body["state"] != "FINISHED" or body["result"] != "SUCCESS":
-            self.logger.debug("Not a 'finished success' message, ignoring")
-            return
-        builddir = body["build_dir"]
-        self.logger.info("Scheduling openQA jobs for FCOS build %s", builddir)
-        jobs = schedule.jobs_from_fcosbuild(builddir, openqa_hostname=self.openqa_hostname)
-        if jobs:
-            self.logger.info("openQA jobs run: %s", ' '.join(str(job) for job in jobs))
-        else:
-            self.logger.info("No openQA jobs run!")
-            return
-        self.logger.debug("Finished")
-        return
+    def _check_mainline(self, message):
+        """
+        Given a message containing the standard Bodhi 'update' dict,
+        decide whether it's for mainline Fedora or not. We have to do
+        this on a couple of paths, so share the code.
+        """
+        reldict = message.body.get("update", {}).get('release', {})
+        if reldict.get('id_prefix') != 'FEDORA' or reldict.get('name') == 'ELN':
+            advisory = message.body.get("update", {}).get('alias')
+            self.logger.debug("%s doesn't look like a mainline Fedora update, no jobs scheduled", advisory)
+            return False
+        return True
 
     def _update_schedule(self, advisory, version, flavors, force=True):
         """
-        Shared schedule, log, return code for _consume_retrigger and
+        Shared schedule, log, return code for _handle_retrigger and
         _consume_update.
         """
         # flavors
@@ -149,49 +112,21 @@ class OpenQAScheduler(object):
                 self.logger.warning("No openQA jobs run!")
             else:
                 self.logger.debug("No openQA jobs run, likely already tested")
-            return
 
-        self.logger.debug("Finished")
-
-    def _consume_ready(self, message):
+    def _handle_retrigger(self, body):
         """
-        Consume a 'ready for testing' type message
-        (koji-build-group.build.complete)
+        Handle re-trigger request messages. These are published
+        when someone clicks the Re-Trigger Tests button in Bodhi.
+        Rather than re-deciding what tests to run, we'll see whether
+        we already tested the update, and for what flavors if so, and
+        re-test in that same context.
         """
-        body = _find_true_body(message)
-        advisory = body.get("artifact", {}).get("id", "")
-        if not advisory.startswith("FEDORA-2"):
-            self.logger.info("Update %s does not look like a Fedora package update, ignoring", advisory)
+        update = body.get("update", {})
+        advisory = update.get('alias')
+        version = update.get('release', {}).get('version')
+        if not advisory or not version:
+            self.logger.warning("Unable to find advisory or version, no jobs scheduled!")
             return
-        # we get the 'dist tag' as the 'version' here, need to trim
-        # the leading "f"
-        version = body.get("artifact", {}).get("release", "")[1:]
-        if not version.isdigit():
-            # it's probably "ln", from "eln", which we don't test
-            self.logger.info("Update %s version does not look like main Fedora, ignoring", advisory)
-            return
-        # there's an extra weird UUID string on the end of the update
-        # ID in these messages for some reason, split it off
-        advisory = "-".join(advisory.split("-")[0:3])
-        if body.get("re-trigger"):
-            self._consume_retrigger(body, advisory, version)
-            return
-        # If it's not a re-trigger request, it should be an initial
-        # message for a new update. Use force=False to handle races
-        # with bodhi.request.testing messages and not double-schedule
-        # new updates. FIXME: until Bodhi 6 is deployed to prod, we
-        # need to retrieve the update dict from Bodhi, the message
-        # does not have enough info
-        url = "https://bodhi.fedoraproject.org/updates/" + advisory
-        update = fedfind.helpers.download_json(url)["update"]
-        self._parse_update_and_schedule(update, force=False)
-
-    def _consume_retrigger(self, body, advisory, version):
-        # these messages do not include critpath status, so we can't
-        # "decide" whether to test the update. instead, as they're
-        # re-trigger messages, we'll just see whether we already
-        # tested the update, and for what flavors if so, and re-test
-        # in that same context
         client = OpenQA_Client(self.openqa_hostname)
         build = f"Update-{advisory}"
         existjobs = client.openqa_request("GET", "jobs", params={"build": build})["jobs"]
@@ -205,37 +140,86 @@ class OpenQAScheduler(object):
         else:
             self.logger.info("No existing jobs found, so not scheduling any!")
 
+    def _consume_compose(self, message):
+        """Consume a 'compose' type message."""
+        body = message.body
+        status = body.get('status')
+        location = body.get('location')
+        compstr = body.get('compose_id', location)
+
+        if 'FINISHED' in status and location:
+            # We have a complete pungi4 compose
+            self.logger.info("Scheduling openQA jobs for compose %s", compstr)
+            try:
+                # pylint: disable=no-member
+                (compose, jobs) = schedule.jobs_from_compose(location, openqa_hostname=self.openqa_hostname)
+            except schedule.TriggerException as err:
+                self.logger.warning("No openQA jobs run! %s", err)
+                return
+            if jobs:
+                self.logger.info("openQA jobs run on compose %s: "
+                          "%s", compose, ' '.join(str(job) for job in jobs))
+            else:
+                self.logger.warning("No openQA jobs run!")
+
+    def _consume_fcosbuild(self, message):
+        """Consume an FCOS build state change message."""
+        body = message.body
+        # this is intentionally written to blow up if required info is
+        # missing from the message, as that would likely indicate a
+        # message format change and we'd need to handle that
+        if body["state"] != "FINISHED" or body["result"] != "SUCCESS":
+            self.logger.debug("Not a 'finished success' message, ignoring")
+            return
+        builddir = body["build_dir"]
+        self.logger.info("Scheduling openQA jobs for FCOS build %s", builddir)
+        jobs = schedule.jobs_from_fcosbuild(builddir, openqa_hostname=self.openqa_hostname)
+        if jobs:
+            self.logger.info("openQA jobs run: %s", ' '.join(str(job) for job in jobs))
+        else:
+            self.logger.info("No openQA jobs run!")
+
+    def _consume_ready(self, message):
+        """
+        Consume a 'ready for testing' type message
+        (koji-build-group.build.complete)
+        """
+        body = message.body
+        if not self._check_mainline(message):
+            return
+        if body.get("re-trigger"):
+            return self._handle_retrigger(body)
+        # If it's not a re-trigger request, it should be an initial
+        # message for a new update. Use force=False to handle races
+        # with other messages and not double-schedule new updates
+        return self._consume_update(message, force=False)
+
     def _consume_update(self, message, force=True):
         """
-        Consume a Bodhi update.edit or update.request.testing
-        message.
+        Given a message containing an "update" dict, decide whether
+        we should schedule tests for it and for what flavors, then
+        hand off scheduling to _update_schedule.
         """
-        body = _find_true_body(message)
-        update = body.get('update', {})
-        self._parse_update_and_schedule(update, force=force)
-
-    def _parse_update_and_schedule(self, update, force=True):
-        """
-        Given an "update" dict (from a message or a Bodhi query),
-        decide whether we should schedule tests for it and for what
-        flavors, then hand off scheduling to _update_schedule.
-        """
+        update = message.body.get("update", {})
         advisory = update.get('alias')
         critpath = update.get('critpath', False)
-        version = update.get('release', {}).get('version')
-        # to make sure this is a Fedora, not EPEL, update
-        idpref = update.get('release', {}).get('id_prefix')
+        reldict = update.get('release', {})
+        version = reldict.get('version')
+        # bail if this isn't a mainline Fedora update
+        if reldict.get('id_prefix') != 'FEDORA' or reldict.get('name') == 'ELN':
+            self.logger.debug("%s doesn't look like a mainline Fedora update, no jobs scheduled", advisory)
+            return
         # list of flavors to run the tests for, starts empty. If set
         # to None, means 'run all tests'.
         flavors = []
 
-        # if update is critpath, always run all update tests
-        if critpath and advisory and version and idpref == 'FEDORA':
+        # if update is critpath, just let the scheduler handle it
+        if critpath and advisory and version:
             self.logger.info("Scheduling openQA jobs for critical path update %s", advisory)
             flavors = None
 
         # otherwise check the list of non-critpath packages we test
-        elif advisory and version and idpref == 'FEDORA':
+        elif advisory and version:
             self.logger.debug("Checking non-critpath test list for update %s", advisory)
             for build in update.get('builds', []):
                 # get just the package name by splitting the NVR. This
@@ -285,7 +269,7 @@ class OpenQAWikiReporter(object):
 
     def __call__(self, message):
         """Consume incoming message."""
-        body = _find_true_body(message)
+        body = message.body
         job = body['id']
         self.logger.info("reporting results for %s", job)
         # pylint: disable=no-member
@@ -314,7 +298,7 @@ class OpenQAResultsDBReporter(object):
 
     def __call__(self, message):
         """Consume incoming message."""
-        body = _find_true_body(message)
+        body = message.body
         if "restart" in message.topic:
             ojob = body["id"]
             job = body["result"][ojob]

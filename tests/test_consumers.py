@@ -36,47 +36,39 @@ import pytest
 # 'internal' imports
 import fedora_openqa.consumer
 
-# Passed test message (ZMQ->AMQP bridge style with whole fedmsg as
-# 'body')
+# Passed test message
 PASSMSG = Message(
     topic="org.fedoraproject.stg.openqa.job.done",
     body={
-        'msg_id': "2017-f059828d-0969-4545-be7a-db8334f6a71f",
-        'msg': {
-            "ARCH": "x86_64",
-            "BUILD": "Fedora-Rawhide-20170207.n.0",
-            "FLAVOR": "universal",
-            "ISO": "Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso",
-            "MACHINE": "64bit",
-            "TEST": "install_asian_language",
-            "id": 71262,
-            "newbuild": None,
-            "remaining": 23,
-            "result": "passed"
-        }
+        "ARCH": "x86_64",
+        "BUILD": "Fedora-Rawhide-20170207.n.0",
+        "FLAVOR": "universal",
+        "ISO": "Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso",
+        "MACHINE": "64bit",
+        "TEST": "install_asian_language",
+        "id": 71262,
+        "newbuild": None,
+        "remaining": 23,
+        "result": "passed"
     }
 )
-# Restarted test message (ZMQ->AMQP bridge style with whole fedmsg as
-# 'body'). Note, it really is the case that "id" is an int for job.done
-# messages but a str for job.restart messages, check real message in
-# datagrepper for verification
+# Restarted test message. Note, it really is the case that "id" is an
+# int for job.done messages but a str for job.restart messages, check
+# real message in datagrepper for verification
 RESTARTMSG = Message(
     topic="org.fedoraproject.stg.openqa.job.restart",
     body={
-        'msg_id': "2017-f059828d-0969-4545-be7a-db8334f6a71f",
-        'msg': {
-            "ARCH": "x86_64",
-            "BUILD": "Fedora-Rawhide-20170207.n.0",
-            "FLAVOR": "universal",
-            "ISO": "Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso",
-            "MACHINE": "64bit",
-            "TEST": "install_asian_language",
-            "id": "71262",
-            "newbuild": None,
-            "remaining": 23,
-            "result": {
-                "71262": 71263
-            }
+        "ARCH": "x86_64",
+        "BUILD": "Fedora-Rawhide-20170207.n.0",
+        "FLAVOR": "universal",
+        "ISO": "Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso",
+        "MACHINE": "64bit",
+        "TEST": "install_asian_language",
+        "id": "71262",
+        "newbuild": None,
+        "remaining": 23,
+        "result": {
+            "71262": 71263
         }
     }
 )
@@ -111,17 +103,13 @@ FINISHEDCOMPOSE = Message(
     }
 )
 
-# Finished incomplete compose message (ZMQ->AMQP bridge style with
-# whole fedmsg as 'body')
+# Finished incomplete compose message
 FINCOMPLETE = Message(
     topic="org.fedoraproject.prod.pungi.compose.status.change",
     body={
-        "msg_id": "2017-f059828d-0969-4545-be7a-db8334f6a71f",
-        "msg": {
-            "compose_id": "Fedora-Rawhide-20170206.n.0",
-            "location": "http://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170206.n.0/compose",
-            "status": "FINISHED_INCOMPLETE"
-        }
+        "compose_id": "Fedora-Rawhide-20170206.n.0",
+        "location": "http://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170206.n.0/compose",
+        "status": "FINISHED_INCOMPLETE"
     }
 )
 
@@ -207,120 +195,31 @@ TLALLEDIT.body['update']['builds'] = [{"epoch": 0, "nvr": "authselect-4.10.12-10
 EPELEDIT = copy.deepcopy(CRITPATHEDIT)
 EPELEDIT.body['update']['release']['id_prefix'] = 'FEDORA-EPEL'
 
-# Bodhi 'update ready for testing' message which is a re-trigger
-# request for a Fedora update
-RETRIGGER = Message(
-    topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
-    body={
-        "re-trigger": True,
-        "artifact": {
-          "release": "f34",
-          "type": "koji-build-group",
-          "builds": [
-            {
-              "nvr": "gdb-11.1-5.fc34",
-              "task_id": 78709925,
-              "scratch": False,
-              "component": "gdb",
-              "type": "koji-build",
-              "id": 1854854,
-              "issuer": "kevinb"
-            }
-          ],
-          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-2021-53a7dfa185",
-          "id": "FEDORA-2021-53a7dfa185-bb4a8e2be6997eb20655fa079af87470fe416415"
-        },
-        "contact": {
-          "docs": "https://docs.fedoraproject.org/en-US/ci/",
-          "team": "Fedora CI",
-          "email": "admin@fp.o",
-          "name": "Bodhi"
-        },
-        "version": "0.2.2",
-        "agent": "adamwill",
-        "generated_at": "2021-11-12T22:25:12.966558Z"
-    }
-)
-
 # Bodhi 'update ready for testing' message which is not a re-trigger
-# request
-NONRETRIGGER = copy.deepcopy(RETRIGGER)
-NONRETRIGGER.body["re-trigger"] = False
-NONRETRIGGER.body["agent"] = "bodhi"
+# request for a Fedora update
+# Edited from
+# https://apps.fedoraproject.org/datagrepper/v2/id?id=b89c0a73-8d3d-4783-956e-ca352c9c7317&is_raw=true&size=extra-large
 
-# Mock Bodhi API response for FEDORA-2021-53a7dfa185
-NONRETRIGGERBODHI = {
-    "update": {
-        "alias": "FEDORA-2021-53a7dfa185",
-        "critpath": True,
-        "release": {
-            "branch": "f34",
-            "dist_tag": "f34",
-            "id_prefix": "FEDORA",
-            "long_name": "Fedora 34",
-            "name": "F34",
-            "version": "34"
-        },
-    },
-}
-
-# Bodhi 'update ready for testing' message which is a re-trigger
-# request, but not for a regular Fedora package update
-NONFRETRIGGER = Message(
-    topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
-    body={
-        "re-trigger": True,
-        "artifact": {
-          "release": "epel8",
-          "type": "koji-build-group",
-          "builds": [
-            {
-              "nvr": "libpinyin-epel-2.2.0-2.el8",
-              "task_id": 78921389,
-              "scratch": False,
-              "component": "libpinyin-epel",
-              "type": "koji-build",
-              "id": 1856264,
-              "issuer": "tdawson"
-            }
-          ],
-          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-EPEL-2021-049da15976",
-          "id": "FEDORA-EPEL-2021-049da15976-37a14b6e2476318d8338b1aa4a5a3190428eb328"
-        },
-        "contact": {
-          "docs": "https://docs.fedoraproject.org/en-US/ci/",
-          "team": "Fedora CI",
-          "email": "admin@fp.o",
-          "name": "Bodhi"
-        },
-        "version": "0.2.2",
-        "agent": "tdawson",
-        "generated_at": "2021-11-17T01:41:15.438773Z"
-    }
-)
-
-# Bodhi 'update ready for testing' message for ELN, which we should
-# ignore
-ELNREADY = Message(
+NONRETRIGGER = Message(
     topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
     body={
         "re-trigger": False,
         "artifact": {
-          "release": "eln",
+          "release": "f39",
           "type": "koji-build-group",
           "builds": [
             {
-              "component": "plasma-systemsettings",
-              "id": 1959017,
-              "issuer": "distrobuildsync-eln/jenkins-continuous-infra.apps.ci.centos.org",
-              "nvr": "plasma-systemsettings-5.24.4-1.eln118",
+              "component": "annobin",
+              "id": 2196428,
+              "issuer": "nickc",
+              "nvr": "annobin-12.10-2.fc39",
               "scratch": False,
-              "task_id": 86428034,
+              "task_id": 100764422,
               "type": "koji-build"
             }
           ],
-          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-2022-34ddfc814f",
-          "id": "FEDORA-2022-34ddfc814f-143513cf0c5a497b7eb940aa24879aba870fc111"
+          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-2023-1f3e17882f",
+          "id": "FEDORA-2023-1f3e17882f-498dd481bbc67cb52be72b2b43953ba15443e1d8",
         },
         "contact": {
           "docs": "https://docs.fedoraproject.org/en-US/ci/",
@@ -330,7 +229,128 @@ ELNREADY = Message(
         },
         "version": "0.2.2",
         "agent": "bodhi",
-        "generated_at": "2022-04-30T04:40:03.670552Z"
+        "generated_at": "2023-05-05T10:53:16.187839Z",
+        "update": {
+          "alias": "FEDORA-2023-1f3e17882f",
+          "critpath": True,
+          "critpath_groups": "critical-path-build",
+          "release": {
+            "branch": "rawhide",
+            "dist_tag": "f39",
+            "id_prefix": "FEDORA",
+            "long_name": "Fedora 39",
+            "name": "F39",
+            "version": "39"
+          }
+        }
+    }
+)
+
+# Bodhi 'update ready for testing' message which *is* a re-trigger
+# request (synthesized from NONRETRIGGER)
+RETRIGGER = copy.deepcopy(NONRETRIGGER)
+RETRIGGER.body["re-trigger"] = True
+RETRIGGER.body["agent"] = "adamwill"
+
+# Bodhi 'update ready for testing' message which is a re-trigger
+# request, but for EPEL stable (should be ignored)
+# Based on
+# https://apps.fedoraproject.org/datagrepper/v2/id?id=67221afc-de86-4917-a4ac-78dd7bb282e4&is_raw=true&size=extra-large
+# but edited to have re-trigger True
+NONFRETRIGGER = Message(
+    topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
+    body={
+        "re-trigger": True,
+        "artifact": {
+          "release": "epel7",
+          "type": "koji-build-group",
+          "builds": [
+            {
+              "component": "singularity-ce",
+              "id": 2196430,
+              "issuer": "dctrud",
+              "nvr": "singularity-ce-3.11.3-1.el7",
+              "scratch": False,
+              "task_id": 100764512,
+              "type": "koji-build"
+            }
+          ],
+          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-EPEL-2023-3b5f9c33da",
+          "id": "FEDORA-EPEL-2023-3b5f9c33da-eced24a9de809a343c2c5343c8ae0f80457eee41"
+        },
+        "contact": {
+          "docs": "https://docs.fedoraproject.org/en-US/ci/",
+          "team": "Fedora CI",
+          "email": "admin@fp.o",
+          "name": "Bodhi"
+        },
+        "version": "0.2.2",
+        "agent": "tdawson",
+        "generated_at": "2023-05-05T16:15:08.215338Z",
+        "update": {
+          "alias": "FEDORA-EPEL-2023-3b5f9c33da",
+          "critpath": False,
+          "critpath_groups": "",
+          "release": {
+            "branch": "epel7",
+            "dist_tag": "epel7",
+            "id_prefix": "FEDORA-EPEL",
+            "long_name": "Fedora EPEL 7",
+            "name": "EPEL-7",
+            "version": "7"
+          }
+        }
+    }
+)
+
+# Bodhi 'update ready for testing' message for ELN (should be ignored)
+# based on
+# https://apps.fedoraproject.org/datagrepper/v2/id?id=5db774c7-e064-4c88-ad0f-14cb1db63c9d&is_raw=true&size=extra-large
+# but tweaked to have critpath True, so it'd be more likely to get
+# wrongly scheduled if our code for filtering out ELN updates is bad
+ELNREADY = Message(
+    topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
+    body={
+        "re-trigger": False,
+        "artifact": {
+          "release": "eln",
+          "type": "koji-build-group",
+          "builds": [
+            {
+              "component": "flatseal",
+              "id": 2196491,
+              "issuer": "distrobuildsync-eln/jenkins-continuous-infra.apps.ci.centos.org",
+              "nvr": "flatseal-2.0.1-1.eln126",
+              "scratch": False,
+              "task_id": 100775538,
+              "type": "koji-build"
+            }
+          ],
+          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-2023-93373477e7",
+          "id": "FEDORA-2023-93373477e7-1a19d6c10fd4ec79f7e69e0705136b9bf422c828"
+        },
+        "contact": {
+          "docs": "https://docs.fedoraproject.org/en-US/ci/",
+          "team": "Fedora CI",
+          "email": "admin@fp.o",
+          "name": "Bodhi"
+        },
+        "version": "0.2.2",
+        "agent": "bodhi",
+        "generated_at": "2022-04-30T04:40:03.670552Z",
+        "update": {
+          "alias": "FEDORA-2023-93373477e7",
+          "critpath": True,
+          "critpath_groups": "critical-path-build",
+          "release": {
+            "branch": "eln",
+            "dist_tag": "eln",
+            "id_prefix": "FEDORA",
+            "long_name": "Fedora ELN",
+            "name": "ELN",
+            "version": "eln"
+          }
+        }
     }
 )
 
@@ -411,7 +431,6 @@ class TestConsumers:
     @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=('somecompose', [1]), autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1], autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_fcosbuild', return_value=[1], autospec=True)
-    @mock.patch('fedfind.helpers.download_json', return_value=NONRETRIGGERBODHI, autospec=True)
     @pytest.mark.parametrize(
         "consumer,oqah",
         [
@@ -457,9 +476,9 @@ class TestConsumers:
             (TLEDIT, False, {'server', 'server-upgrade', 'workstation-live-iso'}, None, None),
             # TLALLEDIT contains an 'all flavors'-listed package
             (TLALLEDIT, False, None, None, None),
-            (RETRIGGER, True, {'server', 'workstation'}, "FEDORA-2021-53a7dfa185", "34"),
+            (RETRIGGER, True, {'server', 'workstation'}, "FEDORA-2023-1f3e17882f", "39"),
             (RETRIGGER, False, False, None, None),
-            (NONRETRIGGER, True, None, "FEDORA-2021-53a7dfa185", "34"),
+            (NONRETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),
             (NONFRETRIGGER, True, False, None, None),
             (ELNREADY, True, False, None, None),
             (FCOSBUILD, False, None, None, None),
@@ -467,7 +486,7 @@ class TestConsumers:
             (FCOSBUILDNOTS, False, False, None, None)
         ]
     )
-    def test_scheduler(self, fake_download, fake_fcosbuild, fake_update, fake_schedule, consumer,
+    def test_scheduler(self, fake_fcosbuild, fake_update, fake_schedule, consumer,
                        oqah, message, gotjobs, flavors, advisory, version):
         """Test the job scheduling consumers do their thing. The
         parametrization pairs are:
