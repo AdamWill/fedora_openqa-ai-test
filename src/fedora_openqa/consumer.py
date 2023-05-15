@@ -111,15 +111,6 @@ class OpenQAScheduler(object):
             else:
                 self.logger.debug("No openQA jobs run, likely already tested")
 
-    def _get_existing_jobs(self, advisory):
-        """
-        Get existing openQA jobs for the update the message body
-        relates to. Used by _handle_retrigger and _consume_edit.
-        """
-        client = OpenQA_Client(self.openqa_hostname)
-        build = f"Update-{advisory}"
-        return client.openqa_request("GET", "jobs", params={"build": build, "latest": "1"})["jobs"]
-
     def _handle_retrigger(self, body):
         """
         Handle re-trigger request messages. These are published
@@ -134,7 +125,9 @@ class OpenQAScheduler(object):
         if not advisory or not version: # pragma: no cover
             self.logger.warning("Unable to find advisory or version, no jobs scheduled!")
             return
-        existjobs = self._get_existing_jobs(advisory)
+        client = OpenQA_Client(self.openqa_hostname)
+        build = f"Update-{advisory}"
+        existjobs = client.openqa_request("GET", "jobs", params={"build": build, "latest": "1"})["jobs"]
         flavors = [job.get("settings", {}).get("FLAVOR", "") for job in existjobs]
         # strip the updates- prefix and ignore empty strings
         flavors = [flavor.split("updates-")[-1] for flavor in flavors if flavor]
@@ -207,38 +200,11 @@ class OpenQAScheduler(object):
         update, we should test it again.
         """
         body = message.body
-        update = body.get("update", {})
-        advisory = update.get('alias')
-        if not advisory:    # pragma: no cover
-            self.logger.warning("Unable to find advisory, no jobs scheduled!")
-            return
-        try:
-            # all jobs from the same execution pass (the 'latest' jobs)
-            # should have the same ADVISORY_NVRS settings, so we can
-            # just take the first
-            existjob = self._get_existing_jobs(advisory)[0]
-        except IndexError:
-            # didn't find any existing jobs...
-            self.logger.debug("Didn't find any existing jobs for %s", advisory)
-            existjob = {}
-        counter = 1
-        testedbuilds = set()
-        settings = existjob.get("settings", {})
-        # 'and settings' skips this when we didn't find an existing job
-        while counter and settings:
-            gotbuilds = settings.get(f"ADVISORY_NVRS_{counter}")
-            if gotbuilds:
-                testedbuilds.update(gotbuilds.split())
-                counter += 1
-            else:
-                # end the loop
-                counter = 0
-        currentbuilds = {build["nvr"] for build in update.get("builds", [])}
-        if currentbuilds != testedbuilds:
-            self.logger.debug("Edit to %s changed builds, re-scheduling tests", advisory)
+        if message.body.get("new_builds") or message.body.get("removed_builds"):
+            self.logger.debug("Edit changed builds, re-scheduling tests")
             self._consume_update(message)
         else:
-            self.logger.debug("Edit to %s did not change builds, tests not re-scheduled", advisory)
+            self.logger.debug("Edit did not change builds, tests not re-scheduled")
 
     def _consume_update(self, message, force=True):
         """
