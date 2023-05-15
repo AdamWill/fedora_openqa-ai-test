@@ -332,7 +332,7 @@ class OpenQAWikiReporter(object):
 
 class OpenQAResultsDBReporter(object):
     """A fedora-messaging consumer that reports openQA results to
-    ResultsDB when a job completes.
+    ResultsDB when a job completes or is restarted.
     """
 
     def __init__(self):
@@ -346,14 +346,13 @@ class OpenQAResultsDBReporter(object):
         """Consume incoming message."""
         body = message.body
         if "restart" in message.topic:
-            ojob = body["id"]
-            job = body["result"][ojob]
+            newjobs = list(body["result"].values())
         else:
-            job = body["id"]
-        self.logger.info("reporting results for %s", job)
+            newjobs = [body["id"]]
+        self.logger.info("reporting results for %s", ", ".join(str(job) for job in newjobs))
         # pylint: disable=no-member
         report.resultsdb_report(
-            resultsdb_url=self.resultsdb_url, jobs=[job], do_report=self.do_report,
+            resultsdb_url=self.resultsdb_url, jobs=newjobs, do_report=self.do_report,
             openqa_hostname=self.openqa_hostname, openqa_baseurl=self.openqa_baseurl)
 
 # vim: set textwidth=120 ts=8 et sw=4:

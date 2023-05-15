@@ -68,7 +68,8 @@ RESTARTMSG = Message(
         "newbuild": None,
         "remaining": 23,
         "result": {
-            "71262": 71263
+            "71262": 71264,
+            "71263": 71265
         }
     }
 )
@@ -658,7 +659,7 @@ class TestConsumers:
         fake_report.reset_mock()
         consumer(RESTARTMSG)
         assert fake_report.call_count == 1
-        assert fake_report.call_args[1]['jobs'] == [71263]
+        assert fake_report.call_args[1]['jobs'] == [71264,71265]
         assert fake_report.call_args[1]['do_report'] == expected['report']
         assert fake_report.call_args[1]['openqa_hostname'] == expected['oqah']
         assert fake_report.call_args[1]['resultsdb_url'] == expected['rdburl']
