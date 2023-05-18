@@ -65,25 +65,31 @@ class OpenQAScheduler(object):
         so we'll run the tests only for whichever one we see first.
         """
         if 'pungi' in message.topic:
-            return self._consume_compose(message)
+            return self._consume_compose(message.body)
         elif 'coreos' in message.topic:
-            return self._consume_fcosbuild(message)
+            return self._consume_fcosbuild(message.body)
         elif 'bodhi.update.status.testing' in message.topic:
-            return self._consume_ready(message)
+            if message.body.get("re-trigger"):
+                return self._consume_retrigger(message.body)
+            # If it's not a re-trigger request, it should be an initial
+            # message for a new update. Use force=False to handle races
+            # with other messages and not double-schedule new updates
+            return self._consume_update(message.body, force=False)
         elif 'bodhi.update.edit' in message.topic:
-            return self._consume_edit(message)
+            if message.body.get("new_builds") or message.body.get("removed_builds"):
+                return self._consume_update(message.body, force=True)
         elif 'bodhi' in message.topic:
-            return self._consume_update(message, force=False)
+            return self._consume_update(message.body, force=False)
 
-    def _check_mainline(self, message):
+    def _check_mainline(self, body):
         """
         Given a message containing the standard Bodhi 'update' dict,
         decide whether it's for mainline Fedora or not. We have to do
         this on a couple of paths, so share the code.
         """
-        reldict = message.body.get("update", {}).get('release', {})
+        reldict = body.get("update", {}).get('release', {})
         if reldict.get('id_prefix') != 'FEDORA' or reldict.get('name') == 'ELN':
-            advisory = message.body.get("update", {}).get('alias')
+            advisory = body.get("update", {}).get('alias')
             self.logger.debug("%s doesn't look like a mainline Fedora update, no jobs scheduled", advisory)
             return False
         return True
@@ -111,14 +117,16 @@ class OpenQAScheduler(object):
             else:
                 self.logger.debug("No openQA jobs run, likely already tested")
 
-    def _handle_retrigger(self, body):
+    def _consume_retrigger(self, body):
         """
-        Handle re-trigger request messages. These are published
+        Consume a re-trigger request messages. These are published
         when someone clicks the Re-Trigger Tests button in Bodhi.
         Rather than re-deciding what tests to run, we'll see whether
         we already tested the update, and for what flavors if so, and
         re-test in that same context.
         """
+        if not self._check_mainline(body):
+            return
         update = body.get("update", {})
         advisory = update.get('alias')
         version = update.get('release', {}).get('version')
@@ -138,9 +146,8 @@ class OpenQAScheduler(object):
         else:
             self.logger.info("No existing jobs found, so not scheduling any!")
 
-    def _consume_compose(self, message):
+    def _consume_compose(self, body):
         """Consume a 'compose' type message."""
-        body = message.body
         status = body.get('status')
         location = body.get('location')
         compstr = body.get('compose_id', location)
@@ -160,9 +167,8 @@ class OpenQAScheduler(object):
             else:
                 self.logger.warning("No openQA jobs run!")
 
-    def _consume_fcosbuild(self, message):
+    def _consume_fcosbuild(self, body):
         """Consume an FCOS build state change message."""
-        body = message.body
         # this is intentionally written to blow up if required info is
         # missing from the message, as that would likely indicate a
         # message format change and we'd need to handle that
@@ -177,49 +183,18 @@ class OpenQAScheduler(object):
         else:
             self.logger.info("No openQA jobs run!")
 
-    def _consume_ready(self, message):
-        """
-        Consume a 'ready for testing' type message
-        (koji-build-group.build.complete)
-        """
-        body = message.body
-        if not self._check_mainline(message):
-            return
-        if body.get("re-trigger"):
-            self._handle_retrigger(body)
-        else:
-            # If it's not a re-trigger request, it should be an initial
-            # message for a new update. Use force=False to handle races
-            # with other messages and not double-schedule new updates
-            self._consume_update(message, force=False)
-
-    def _consume_edit(self, message):
-        """
-        Consume an 'update edited' type message
-        (bodhi.update.edit). If the edit changed the builds in the
-        update, we should test it again.
-        """
-        body = message.body
-        if message.body.get("new_builds") or message.body.get("removed_builds"):
-            self.logger.debug("Edit changed builds, re-scheduling tests")
-            self._consume_update(message)
-        else:
-            self.logger.debug("Edit did not change builds, tests not re-scheduled")
-
-    def _consume_update(self, message, force=True):
+    def _consume_update(self, body, force=True):
         """
         Given a message containing an "update" dict, decide whether
         we should schedule tests for it and for what flavors, then
         hand off scheduling to _update_schedule.
         """
-        update = message.body.get("update", {})
+        update = body.get("update", {})
         advisory = update.get('alias')
         critpath = update.get('critpath', False)
         reldict = update.get('release', {})
         version = reldict.get('version')
-        # bail if this isn't a mainline Fedora update
-        if reldict.get('id_prefix') != 'FEDORA' or reldict.get('name') == 'ELN':
-            self.logger.debug("%s doesn't look like a mainline Fedora update, no jobs scheduled", advisory)
+        if not self._check_mainline(body):
             return
         # list of flavors to run the tests for, starts empty. If set
         # to None, means 'run all tests'.
