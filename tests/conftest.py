@@ -441,6 +441,97 @@ def jobdict05():
     }
 
 @pytest.fixture(scope="function")
+def jobdict06():
+    """Another jobdict, for a Fedora ELN test.
+    """
+    return {
+        "assets": {
+            "iso": [
+                "Fedora-ELN-20230619.1-x86_64-boot.iso"
+            ]
+        },
+        "assigned_worker_id": 78,
+        "blocked_by_id": None,
+        "children": {
+            "Chained": [],
+            "Directly chained": [],
+            "Parallel": []
+        },
+        "clone_id": None,
+        "group": "fedora",
+        "group_id": 1,
+        "has_parents": 0,
+        "id": 1982167,
+        "modules": [
+            {
+                "category": "tests",
+                "flags": [
+                    "important",
+                    "fatal"
+                ],
+                "name": "_boot_to_anaconda",
+                "result": "passed"
+            }
+        ],
+        "name": "fedora-ELN-BaseOS-boot-iso-x86_64-BuildFedora-ELN-20230619.1-install_default@uefi",
+        "parents": {
+            "Chained": [],
+            "Directly chained": [],
+            "Parallel": []
+        },
+        "parents_ok": 1,
+        "priority": 50,
+        "result": "passed",
+        "settings": {
+            "ARCH": "x86_64",
+            "ARCH_BASE_MACHINE": "64bit",
+            "BACKEND": "qemu",
+            "BUILD": "Fedora-ELN-20230619.1",
+            "CURRREL": "38",
+            "DEPLOY_UPLOAD_TEST": "install_default_upload",
+            "DISTRI": "fedora",
+            "FLAVOR": "BaseOS-boot-iso",
+            "IMAGETYPE": "boot",
+            "ISO": "Fedora-ELN-20230619.1-x86_64-boot.iso",
+            "ISO_URL": "https://odcs.fedoraproject.org/composes/odcs-28282/compose/BaseOS/x86_64/iso/Fedora-ELN-20230619.1-x86_64-boot.iso",
+            "LABEL": "Alpha-0.1687161601",
+            "LOCATION": "https://odcs.fedoraproject.org/composes/odcs-28282/compose/",
+            "MACHINE": "uefi",
+            "NAME": "01982167-fedora-ELN-BaseOS-boot-iso-x86_64-BuildFedora-ELN-20230619.1-install_default@uefi",
+            "NICTYPE_USER_OPTIONS": "net=172.16.2.0/24",
+            "PACKAGE_SET": "default",
+            "PART_TABLE_TYPE": "gpt",
+            "POSTINSTALL": "_collect_data",
+            "QEMUCPU": "Haswell",
+            "QEMUCPUS": "2",
+            "QEMURAM": "3072",
+            "QEMU_HOST_IP": "172.16.2.2",
+            "QEMU_MAX_MIGRATION_TIME": "480",
+            "QEMU_VIDEO_DEVICE": "virtio-vga",
+            "QEMU_VIRTIO_RNG": "1",
+            "RAWREL": "39",
+            "SUBVARIANT": "BaseOS",
+            "TEST": "install_default",
+            "TEST_SUITE_NAME": "install_default",
+            "TEST_TARGET": "ISO",
+            "UEFI": "1",
+            "UEFI_PFLASH_CODE": "/usr/share/edk2/ovmf/OVMF_CODE.fd",
+            "UEFI_PFLASH_VARS": "/usr/share/edk2/ovmf/OVMF_VARS.fd",
+            "UP1REL": "38",
+            "UP2REL": "37",
+            "VERSION": "ELN",
+            "WORKER_CLASS": "qemu_x86_64",
+            "XRES": "1024",
+            "YRES": "768"
+        },
+        "state": "done",
+        "t_finished": "2023-06-19T16:54:22",
+        "t_started": "2023-06-19T16:43:01",
+        "test": "install_default"
+    }
+
+
+@pytest.fixture(scope="function")
 def ffimg01():
     """A pre-canned fedfind image dict, for the x86_64 Server DVD from
     the 20170207.n.0 Rawhide nightly.
@@ -466,6 +557,34 @@ def ffimg01():
         # pylint: disable=line-too-long
         "direct_url": "https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170207.n.0/compose/Server/x86_64/iso/Fedora-Server-dvd-x86_64-Rawhide-20170207.n.0.iso",
         "volume_id": "Fedora-S-dvd-x86_64-rawh"
+    }
+
+@pytest.fixture(scope="function")
+def ffimg02():
+    """A pre-canned fedfind image dict, for the x86_64 BaseOS DVD from
+    Fedora-ELN-20230619.1.
+    """
+    return {
+        "variant": "BaseOS",
+        "arch": "x86_64",
+        "bootable": True,
+        "checksums": {
+            "sha256": "d87a353dc1c68b5d6cfd381f5e68738f4435499a579020c3bb328bd27ddde0e2"
+        },
+        "disc_count": 1,
+        "disc_number": 1,
+        "format": "iso",
+        "implant_md5": "8351713601685df9bf5183792a9787ab",
+        "mtime": 1687162748,
+        "path": "BaseOS/x86_64/iso/Fedora-ELN-20230619.1-x86_64-boot.iso",
+        "size": 774379520,
+        "subvariant": "BaseOS",
+        "type": "boot",
+        # pylint: disable=line-too-long
+        "url": "https://odcs.fedoraproject.org/composes/odcs-28282/compose/BaseOS/x86_64/iso/Fedora-ELN-20230619.1-x86_64-boot.iso",
+        # pylint: disable=line-too-long
+        "direct_url": "https://odcs.fedoraproject.org/composes/odcs-28282/compose/BaseOS/x86_64/iso/Fedora-ELN-20230619.1-x86_64-boot.iso",
+        "volume_id": "Fedora-ELN-BaseOS-x86_64"
     }
 
 @pytest.fixture(scope="function")
@@ -498,20 +617,56 @@ def ffmd01():
         },
     }
 
+@pytest.fixture(scope="function")
+def ffmd02():
+    """Incomplete metadata dict for fedfind mocking; provides enough
+    data (on Fedora-ELN-20230619.1) to avoid round trips for
+    compose ID purposes.
+    """
+    return {
+        "composeinfo": {
+            "header": {
+                "type": "productmd.composeinfo",
+                "version": "1.2"
+            },
+            "payload": {
+                "compose": {
+                    "date": "20230619",
+                    "id": "Fedora-ELN-20230619.1",
+                    "respin": 1,
+                    "type": "production"
+                },
+                "release": {
+                    "internal": False,
+                    "name": "Fedora",
+                    "short": "Fedora",
+                    "type": "ga",
+                    "version": "ELN"
+                },
+            },
+        },
+    }
+
 @pytest.yield_fixture(scope="function")
 # pylint: disable=redefined-outer-name
-def ffmock(ffmd01, ffimg01):
+def ffmock(ffmd01, ffmd02, ffimg01, ffimg02):
     """Mock up fedfind metadata and all_images using the ffmd01 and
-    ffimg01 fixtures. Yield the current iteration of the dicts so the
-    test can modify them if it wants.
+    ffimg01/02 fixtures. Yield the current iteration of the dicts so
+    the test can modify them if it wants.
     """
     mdpatch = mock.patch.object(fedfind.release.RawhideNightly, 'metadata', ffmd01)
+    mdpatch2 = mock.patch.object(fedfind.release.ElnCompose, 'metadata', ffmd02)
     imgpatch = mock.patch.object(fedfind.release.RawhideNightly, 'all_images', [ffimg01])
+    imgpatch2 = mock.patch.object(fedfind.release.ElnCompose, 'all_images', [ffimg02])
     mdpatch.start()
+    mdpatch2.start()
     imgpatch.start()
+    imgpatch2.start()
     yield (ffmd01, ffimg01)
     mdpatch.stop()
+    mdpatch2.stop()
     imgpatch.stop()
+    imgpatch2.stop()
 
 @pytest.yield_fixture(scope="function")
 def ffmock02():

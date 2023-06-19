@@ -305,8 +305,12 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
     if not jobs:
         logger.debug("wiki_report: All jobs were update or Koji task jobs, no wiki reporting possible!")
         return []
-    # there are no CoreOS wiki validation events, currently
-    jobs = [job for job in jobs if "coreos" not in job['settings'].get("SUBVARIANT", "").lower()]
+    # there are no CoreOS or ELN wiki validation events, currently
+    jobs = [
+        job for job in jobs
+        if "coreos" not in job['settings'].get("SUBVARIANT", "").lower()
+        and job['settings']['VERSION'] != "ELN"
+    ]
     if not jobs:
         logger.debug("wiki_report: All jobs were CoreOS, update or Koji task jobs, no wiki reporting possible!")
         return []
@@ -490,7 +494,11 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                     tc_name='fcosbuild.' + tc_name
                 )
             else:
-                rdbpartial = partial(FedoraImageResult, imagename, build, tc_name='compose.' + tc_name)
+                locator = build
+                # special case: for ELN, the locator needs to be the compose URL
+                if version == "ELN":
+                    locator = job["settings"]["LOCATION"]
+                rdbpartial = partial(FedoraImageResult, imagename, locator, tc_name='compose.' + tc_name)
 
         elif ttarget == 'COMPOSE':
             # We have a non-image-specific compose test result
@@ -498,7 +506,11 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             if job["settings"].get("SUBVARIANT", "").lower() == "coreos":
                 rdbpartial = partial(FedoraCoreOSBuildResult, build, stream, tc_name='fcosbuild.' + tc_name)
             else:
-                rdbpartial = partial(FedoraComposeResult, build, tc_name='compose.' + tc_name)
+                locator = build
+                # special case: for ELN, the locator needs to be the compose URL
+                if version == "ELN":
+                    locator = job["settings"]["LOCATION"]
+                rdbpartial = partial(FedoraComposeResult, locator, tc_name='compose.' + tc_name)
 
         # don't report TEST_TARGET=NONE, non-update jobs that are
         # missing TEST_TARGET, or TEST_TARGET values we don't grok

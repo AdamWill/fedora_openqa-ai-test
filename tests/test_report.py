@@ -420,6 +420,19 @@ class TestWikiReport:
         assert mockinst.report_validation_results.call_args is None
         assert ret == []
 
+
+    def test_coreos_noreport(self, fake_getpassed, wikimock, oqaclientmock, jobdict06):
+        """Check we do no reporting for Fedora ELN jobs."""
+        # adjust the OpenQA_Client instance mock to return jobdict06
+        instmock = oqaclientmock[1]
+        instmock.get_jobs.return_value = [jobdict06]
+        (_, mockinst) = wikimock
+        ret = fosreport.wiki_report(jobs=[1])
+        # check results didn't happen
+        assert mockinst.report_validation_results.call_args is None
+        assert ret == []
+
+
     def test_no_jobs_noreport(self, fake_getpassed, wikimock, oqaclientmock):
         """Check we do no reporting if we find no jobs."""
         # adjust the OpenQA_Client instance mock to return nothing
@@ -492,6 +505,18 @@ class TestResultsDBReport:
         assert fakeres.call_args[1]['ref_url'] == "https://some.url/tests/48192"
         assert fakeres.call_args[1]['testcase']['name'] == "fcosbuild.base_services_start"
         assert fakeres.call_args[1]['firmware'] == "bios"
+        assert fakeres.call_args[1]['outcome'] == "PASSED"
+
+    def test_eln(self, fakeres, oqaclientmock, jobdict06):
+        """Check resultsdb_report behaviour with an ELN job."""
+        # adjust the OpenQA_Client instance mock to return jobdict06
+        instmock = oqaclientmock[1]
+        instmock.get_jobs.return_value = [jobdict06]
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['item'] == "Fedora-ELN-20230619.1-x86_64-boot.iso"
+        assert fakeres.call_args[1]['ref_url'] == "https://some.url/tests/1982167"
+        assert fakeres.call_args[1]['testcase']['name'] == "compose.install_default"
+        assert fakeres.call_args[1]['firmware'] == "uefi"
         assert fakeres.call_args[1]['outcome'] == "PASSED"
 
     def test_uefi(self, fakeres, oqaclientmock):
