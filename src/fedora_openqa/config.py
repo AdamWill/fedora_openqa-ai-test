@@ -117,6 +117,22 @@ WANTED = [
     },
     {
         "match": {
+            "subvariant": "BaseOS",
+            "type": "dvd",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
+            "subvariant": "BaseOS",
+            "type": "boot",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
             "subvariant": "Cloud_Base",
             "type": "qcow2",
             "format": "qcow2",

@@ -352,8 +352,8 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     # image. We want to schedule them when testing 'full' composes
     # that have a generic tree, but not when testing 'partial'
     # composes that only produce images. fedfind's https_url_generic
-    # is a good indicator of this.
-    if rel.https_url_generic:
+    # is a good indicator of this. we also don't schedule for ELN
+    if rel.https_url_generic and rel.release.lower() != "eln":
         images.extend(
             [
                 ("Workstation-upgrade", "x86_64", {}, "Workstation", "upgrade"),
@@ -399,7 +399,12 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     # don't do this for post-release nightlies that are *always*
     # candidates, though
     # using getattr as the 'respin' composes don't have these attrs
-    if getattr(rel, 'type', '') == 'production' and getattr(rel, 'product', '') == 'Fedora' and jobs:
+    if (
+        jobs
+        and getattr(rel, 'type', '') == 'production'
+        and getattr(rel, 'product', '') == 'Fedora'
+        and getattr(rel, 'release', '').lower() != 'eln'
+    ):
         client = OpenQA_Client(openqa_hostname)
         # we expect group 1 to be 'fedora'. I think this is reliable.
         params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
