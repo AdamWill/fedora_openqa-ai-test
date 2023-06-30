@@ -696,12 +696,12 @@ def jobs_from_update(
         # long values like https://progress.opensuse.org/issues/121054
         chunksize = 20
         chunked_nvrs = [nvrs[i:i+chunksize] for i in range(0, len(nvrs), chunksize)]
-        for (num, nvrs) in enumerate(chunked_nvrs, 1):
+        for (num, cnvrs) in enumerate(chunked_nvrs, 1):
             # we split the list across multiple settings because a
             # surprising amount of tricky bugs show up if a settings
             # value is very long, e.g.:
             # https://progress.opensuse.org/issues/121054
-            baseparams[f'ADVISORY_NVRS_{num}'] = ' '.join(nvrs)
+            baseparams[f'ADVISORY_NVRS_{num}'] = ' '.join(cnvrs)
         updimg = _build_update_image(arch, version, update, nvrs=nvrs)
 
     if extraparams:
