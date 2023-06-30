@@ -234,6 +234,11 @@ def _do_package_download(item, arch, targetdir):
     """Convenience download function for _build_update_image below,
     since we download stuff of different types twice.
     """
+    # this is a workaround for a weird issue on Fedora openQA stg
+    # where os.environ["HOME"] is somehow not set when this is run
+    # in a fedora-messaging consumer, and it blows up the bodhi CLI
+    if not "HOME" in os.environ:
+        os.environ["HOME"] = os.path.expanduser("~")
     if item.isdigit():
         # this will be a task ID
         args = ("koji", "download-task", f"--arch={arch}", "--arch=noarch", item)
