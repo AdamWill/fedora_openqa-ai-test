@@ -294,7 +294,7 @@ def _build_update_image(arch, release, advortask, nvrs=None, taskids=None, outpa
     nvrs (an iterable of...NVRs) or taskids (an iterable of Koji task
     IDs) must be passed.
     """
-    logger.info("Building update image for %s", advortask)
+    logger.info("Building update image for %s on %s", advortask, arch)
     failed = False
     # get the update/task packages
     topdir = f"/var/tmp/fedora_openqa/{advortask}/{arch}"
@@ -348,7 +348,7 @@ def _build_update_image(arch, release, advortask, nvrs=None, taskids=None, outpa
         pathlib.Path(f"{topdir}/updatepkgnames.txt").touch()
         conthash = "empty"
 
-    filename = f"{advortask}_{conthash}_updates.iso"
+    filename = f"{advortask}_{arch}_{conthash}_updates.iso"
     if os.path.exists(f"{outpath}/{filename}"):
         return filename
     args = ("genisoimage", "-o", filename, "-R", topdir)
@@ -365,7 +365,7 @@ def _build_workarounds_image(arch, release, outpath="/var/lib/openqa/share/facto
     (workdir, waconthash) = _update_workaround_dir(arch, release)
     if not workdir:
         return ""
-    filename = f"{waconthash}_workarounds.iso"
+    filename = f"{waconthash}_{arch}_workarounds.iso"
     if os.path.exists(f"{outpath}/{filename}"):
         return filename
     topdir = workdir.split("/workarounds_repo")[0]
