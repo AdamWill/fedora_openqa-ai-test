@@ -55,8 +55,8 @@ FORMAT_TO_PARAM = {
 }
 
 WORKAROUNDS = {
-    "37": [],
-    "38": [],
+    "37": ["FEDORA-2023-eeff822011"],
+    "38": ["FEDORA-2023-31e2ef80b9"],
     "39": [],
 }
 
