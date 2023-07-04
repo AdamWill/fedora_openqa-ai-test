@@ -137,16 +137,20 @@ class TestCommandUpdateTask:
     """Tests for the command_update_task function."""
     @pytest.mark.parametrize(
         "target",
-        # update ID or task ID (to test both paths)
-        ['FEDORA-2017-b07d628952', '32099714']
+        # update ID, task ID or tag (to test all paths)
+        ['FEDORA-2017-b07d628952', '32099714', 'f39-python']
     )
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1, 2], autospec=True)
     def test_command_update_task(self, fakejfu, target, capsys):
         """General tests for the command_update_task function."""
         if target.isdigit():
             testargs = ('task', target, '25')
-        else:
+        elif target.startswith("FEDORA"):
             testargs = ('update', '--release', '25', target)
+        else:
+            testargs = ('tag', target, '25')
+            # we munge the target a bit for tags
+            target = "TAG_" + target
         args = cli.parse_args(testargs)
         with pytest.raises(SystemExit) as excinfo:
             cli.command_update_task(args)

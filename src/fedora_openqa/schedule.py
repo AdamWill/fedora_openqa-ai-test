@@ -672,14 +672,26 @@ def jobs_from_update(
         # variable for the distri templates substitution, there's no mechanism to
         # do 'substitute for this var or this other var depending which exists'
         advkey = 'KOJITASK'
+        updrepo = "nfs://172.16.2.110:/mnt/updateiso/update_repo"
         baseparams = {}
         if not version:
             raise TriggerException("Must provide version when scheduling a Koji task!")
         updimg = _build_update_image(arch, version, update, taskids=[update])
+    elif update.startswith("TAG_"):
+        # we're testing a side tag
+        build = f"{update}-NOREPORT"
+        update = update[4:]
+        advkey = 'TAG'
+        baseparams = {}
+        updrepo = f"https://kojipkgs.fedoraproject.org/repos/{update}/latest/{arch}"
+        updimg = ""
+        if not version:
+            raise TriggerException("Must provide version when scheduling a Koji tag!")
     else:
         # normal update case
         build = 'Update-{0}'.format(update)
         advkey = 'ADVISORY'
+        updrepo = "nfs://172.16.2.110:/mnt/updateiso/update_repo"
         # now we retrieve the list of NVRs in the update as of right now and
         # include them as variables; the test will download and test those
         # NVRs. We do this instead of the test just using bodhi CLI to get
@@ -718,15 +730,17 @@ def jobs_from_update(
         'BUILD': build,
         advkey: update,
         'ADVISORY_OR_TASK': update,
+        'UPDATE_OR_TAG_REPO': updrepo,
         # only obsolete pending jobs for same BUILD (i.e. update)
         '_OBSOLETE': '1',
         '_ONLY_OBSOLETE_SAME_BUILD': '1',
         'START_AFTER_TEST': '',
         'QEMU_HOST_IP': '172.16.2.2',
         'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
-        'ISO_2': updimg,
     })
     waimg = _build_workarounds_image(arch, version)
+    if updimg:
+        baseparams["ISO_2"] = updimg
     if waimg:
         baseparams["ISO_3"] = waimg
 

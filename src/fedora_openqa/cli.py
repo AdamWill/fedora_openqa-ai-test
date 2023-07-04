@@ -99,6 +99,8 @@ def command_update_task(args):
             logger.error("Koji task ID must be all digits!")
             sys.exit(1)
         buildarg = args.task
+    elif hasattr(args, 'tag'):
+        buildarg = f"TAG_{args.tag}"
     else:
         buildarg = args.update
     jobs = schedule.jobs_from_update(buildarg, version=args.release, flavors=flavors, force=args.force,
@@ -203,11 +205,17 @@ def parse_args(args=None):
     parser_task = subparsers.add_parser('task', description="Schedule jobs for a specific Koji task.")
     parser_task.add_argument('task', help="The task ID (e.g. '32099714')", metavar='TASK')
     parser_task.add_argument('release', help="The release the task is for (e.g. '25')", type=int, metavar="NN")
-    for updtaskparser in [parser_update, parser_task]:
+    parser_tag = subparsers.add_parser('tag', description="Schedule jobs for a specific Koji tag.")
+    parser_tag.add_argument('tag', help="The tag (e.g. 'f39-python')", metavar='TAG')
+    parser_tag.add_argument('release', help="The release the task is for (e.g. '25')", type=int, metavar="NN")
+
+    for updtaskparser in [parser_update, parser_task, parser_tag]:
         if updtaskparser is parser_update:
             targetstr = 'update'
-        else:
+        elif updtaskparser is parser_task:
             targetstr = 'task'
+        else:
+            targetstr = 'tag'
         updtaskparser.add_argument('--flavor', help="A single flavor to schedule jobs for (e.g. 'server'), "
                                    "otherwise jobs will be scheduled for all update flavors")
         updtaskparser.add_argument(
@@ -220,6 +228,7 @@ def parse_args(args=None):
             "for the {0} for that flavor".format(targetstr), action='store_true')
     parser_update.set_defaults(func=command_update_task)
     parser_task.set_defaults(func=command_update_task)
+    parser_tag.set_defaults(func=command_update_task)
 
     parser_fcosbuild = subparsers.add_parser(
         "fcosbuild", description="Schedule jobs for a Fedora CoreOS build stream."
