@@ -7,12 +7,10 @@ This repository does not contain the actual Fedora openQA tests. Those can be fo
 
 For general information on openQA in Fedora, including an overview of the system and how to install your own instance for testing, please see [the Fedora openQA wiki page](https://fedoraproject.org/wiki/openQA).
 
-Issues
-------
+Issues and contributions
+------------------------
 
-[Issues](https://pagure.io/fedora-qa/fedora_openqa/issues) and [pull requests](https://pagure.io/fedora-qa/fedora_openqa/pull-requests) are tracked in [fedora_openqa Pagure](https://pagure.io/fedora-qa/fedora_openqa). Pagure uses a Github-like pull request workflow, so if you're familiar with that, you can easily submit Pagure pull requests. If not, you can read up in the [Pagure documentation](https://docs.pagure.org/pagure/usage/index.html).
-
-Note that this repository does not use the 'gitflow' system, so the main development branch is `master`: please branch from `master` and submit diffs against it. Running the unit tests is not yet integrated into the diff process, so you do not have to follow the instructions regarding `virtualenv`, but please do run the tests manually to check any diffs you submit if possible.
+[Issues](https://pagure.io/fedora-qa/fedora_openqa/issues) and [pull requests](https://pagure.io/fedora-qa/fedora_openqa/pull-requests) are tracked in [fedora_openqa Pagure](https://pagure.io/fedora-qa/fedora_openqa). Pagure uses a Github-like pull request workflow, so if you're familiar with that, you can easily submit Pagure pull requests. If not, you can read up in the [Pagure documentation](https://docs.pagure.org/pagure/usage/index.html). CI is enabled for the repository, so pull requests are automatically tested. To run the tests locally, just run `tox`.
 
 Requirements
 ------------
@@ -39,8 +37,8 @@ You can install these dependencies system-wide by running `sudo python setup.py 
 
 Then you could do this, from `/home/someuser/local/fedora_openqa`:
 
-    ln -s /home/someuser/local/resultsdb_conventions/resultsdb_conventions .
-    ln -s /home/someuser/local/openQA-python-client/openqa_client .
+    ln -s /home/someuser/local/resultsdb_conventions/src/resultsdb_conventions src/
+    ln -s /home/someuser/local/openQA-python-client/src/openqa_client src/
 
 You can then run `./fedora-openqa.py` from `/home/someuser/local/fedora_openqa` to use the CLI tool.
 
@@ -50,13 +48,15 @@ CLI usage
 Simple usages are:
 
     ./fedora-openqa.py compose https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20170214.n.0/compose/
-    ./fedora-openqa.py update https://bodhi.fedoraproject.org/updates/FEDORA-2020-424d2b310e 32
-    ./fedora-openqa.py report Fedora-Rawhide-20170214.n.0
-    ./fedora-openqa.py report 1 2 3 4 5
+    ./fedora-openqa.py update https://bodhi.fedoraproject.org/updates/FEDORA-2020-424d2b310e
+    ./fedora-openqa.py task 12345678 39
+    ./fedora-openqa.py tag a-tag-name 39
+    ./fedora-openqa.py report --wiki Fedora-Rawhide-20170214.n.0
+    ./fedora-openqa.py report --resultsdb 1 2 3 4 5
 
-The first schedules jobs for a particular compose, the second for a particular update. The third reports results for all jobs for a given compose. The third and fourth provides result reporting information for (respectively) a compose or some job IDs (the script will figure out whether you're passing it a compose ID or job ID(s)). Note that no actual reporting to Wikitcms or ResultsDB will be done unless `--wiki` or `--resultsdb` is also passed (instead, a list of passed Wikitcms test cases will be printed to the console).
+The `compose` subcommand schedules jobs for a particular compose, `update` for a particular update. `task` schedules the update jobs for a Koji task instead of an update (this is mainly useful for testing scratch builds). `tag` schedules the update jobs for a tag; in this case, instead of using an additional repo containing the packages from the update or task, the tests will configure the Koji repo for the specified tag as an additional repo. Note `update` does not require a release number (it will be deduced from the update's properties), but `task` and `tag` require you to specify the release to test on, as we cannot easily deduce it. For testing on Rawhide, pass the currently-corresponding release number. The first `report` command reports results for all jobs for a given compose to the wiki. The second reports results for the specified jobs to ResultsDB. You can use `report` without `--wiki` or `--resultsdb` to produce a list of passed Wikitcms test cases without reporting them anywhere.
 
-See the command's help (and the help for the subcommands, `schedule` and `report`) for more details on usage.
+See the command's help (and the help for the subcommands) for more details on usage.
 
 Installation
 ------------
