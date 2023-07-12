@@ -401,6 +401,11 @@ ELNCOMPOSENOTDONE.body["compose"]["state"] = 3
 ODCSCOMPOSENOTELN = copy.deepcopy(ELNCOMPOSE)
 ODCSCOMPOSENOTELN.body["compose"]["pungi_compose_id"] = "odcs-28283-1-20230619.t.0"
 
+# ODCS compose message with the compose ID set to None - this broke
+# us in the real world, once
+ODCSCOMPOSENOCID = copy.deepcopy(ELNCOMPOSE)
+ODCSCOMPOSENOCID.body["compose"]["pungi_compose_id"] = None
+
 # Successful FCOS build message
 FCOSBUILD = Message(
     topic="org.fedoraproject.prod.coreos.build.state.change",
@@ -535,6 +540,7 @@ class TestConsumers:
             (ELNCOMPOSENOTSC, True, False, None, None),
             (ELNCOMPOSENOTDONE, True, False, None, None),
             (ODCSCOMPOSENOTELN, True, False, None, None),
+            (ODCSCOMPOSENOCID, True, False, None, None),
             (FCOSBUILD, False, None, None, None),
             (FCOSBUILDNOTF, False, False, None, None),
             (FCOSBUILDNOTS, False, False, None, None)

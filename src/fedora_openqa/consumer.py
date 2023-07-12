@@ -202,8 +202,8 @@ class OpenQAScheduler(object):
         if body["event"] != "state-changed":
             self.logger.debug("Not a state change message, ignoring")
             return
-        cid = body["compose"].get("pungi_compose_id", "")
-        if cid is not None and not cid.startswith("Fedora-ELN"):
+        cid = body["compose"].get("pungi_compose_id") or ""
+        if not cid.startswith("Fedora-ELN"):
             self.logger.debug("Not an ELN compose, ignoring")
             return
         url = body["compose"]["toplevel_url"]
