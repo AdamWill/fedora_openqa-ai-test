@@ -350,11 +350,13 @@ def _build_update_image(arch, release, advortask, nvrs=None, taskids=None, outpa
 
     filename = f"{advortask}_{arch}_{conthash}_updates.iso"
     if os.path.exists(f"{outpath}/{filename}"):
+        shutil.rmtree(topdir, ignore_errors=True)
         return filename
     args = ("genisoimage", "-o", filename, "-R", topdir)
     ret = subprocess.run(args, cwd=outpath, encoding="utf-8", capture_output=True)
     if ret.returncode:
         raise TriggerException(f"genisoimage failed for {advortask}: {ret.stderr}")
+    shutil.rmtree(topdir, ignore_errors=True)
     return filename
 
 def _build_workarounds_image(arch, release, outpath="/var/lib/openqa/share/factory/iso"):
