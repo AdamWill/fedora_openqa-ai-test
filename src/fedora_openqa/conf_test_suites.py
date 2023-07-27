@@ -1396,10 +1396,15 @@ TESTSUITES = {
     # GNOME app tests that aren't in the matrix
     "archiver": [],
     "calculator": [],
+    "characters": [],
     "clocks": [],
     "contacts": [],
+    "disks": [],
+    "fonts": [],
+    "gnome-panel": [],
     "maps": [],
     "sysmon": [],
+    "tour": [],
     "weather": [],
 }
 
