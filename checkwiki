@@ -297,8 +297,8 @@ def check_wiki_mapping(templates, modules):
             cands = [cand for cand in row.results.keys() if restup.env.lower() in cand.lower()]
             # we should have *exactly one* cand
             if len(cands) == 0:
-                if restup.env == "CoreOS":
-                    # we don't track coreos results in wiki
+                if restup.env  == "CoreOS":
+                    # we don't track coreos or ELN (BaseOS) results in wiki
                     pass
                 else:
                     print("Env {0} not found in ResultRow: case {1}, name {2}, section {3}, "
@@ -313,8 +313,8 @@ def check_wiki_mapping(templates, modules):
             if restup.env == 'Everything' and restup.testcase == 'QA:Testcase_base_startup':
                 # this is fine. I am OK with the events that are occurring
                 pass
-            elif restup.env == "CoreOS" or restup.testname == "CoreOS_colive":
-                # we don't track coreos results in wiki
+            elif any(skp in restup.env or skp in restup.testname for skp in ("BaseOS", "CoreOS")):
+                # we don't track coreos or ELN (BaseOS) results in wiki
                 pass
             else:
                 print("No ResultRow found for {0}".format(restup))
