@@ -616,26 +616,6 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Server",
     },
-    "QA:Testcase_Modularity_module_list": {
-        "section": "Modularity",
-        "env": "Result",
-        "type": "Base",
-    },
-    "QA:Testcase_Modularity_enable-disable_module": {
-        "section": "Modularity",
-        "env": "Result",
-        "type": "Base",
-    },
-    "QA:Testcase_Modularity_install_module": {
-        "section": "Modularity",
-        "env": "Result",
-        "type": "Base",
-    },
-    "QA:Testcase_Modularity_update_without_repos": {
-        "section": "Modularity",
-        "env": "Result",
-        "type": "Base",
-    },
     "QA:Testcase_Podman": {
         "env": "$RUNARCH$",
         # if we run this on anything but IoT, we may need to change this
@@ -1374,12 +1354,6 @@ TESTSUITES = {
         "QA:Testcase_partitioning_guided_empty",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_base_initial_setup",
-    ],
-    "modularity_tests": [
-        "QA:Testcase_Modularity_module_list",
-        "QA:Testcase_Modularity_enable-disable_module",
-        "QA:Testcase_Modularity_install_module",
-        "QA:Testcase_Modularity_update_without_repos",
     ],
     "cloud_autocloud": [
         "QA:Testcase_base_startup",
