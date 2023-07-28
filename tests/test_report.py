@@ -51,6 +51,7 @@ def test_uniqueres_replacements(jobdict01):
         "fs": "$FS$",
         "desktop": "$DESKTOP$",
         "app": "$APP$",
+        "ipaorad": "$FREEIPA_OR_AD$",
     }
     origbase = copy.deepcopy(basedict)
     ret = fosreport._uniqueres_replacements(jobdict01, basedict)
@@ -59,6 +60,8 @@ def test_uniqueres_replacements(jobdict01):
     assert ret['firmware'] == "BIOS"
     assert ret['subvariant'] == "Server"
     assert ret['imagetype'] == "dvd"
+    # this is the default value
+    assert ret['ipaorad'] == "FreeIPA"
     # shouldn't crash, or anything
     assert ret['desktop'] == ''
     assert ret['app'] == ''
@@ -101,6 +104,11 @@ def test_uniqueres_replacements(jobdict01):
         with mock.patch.dict(jobdict01, {"test": tname}):
             ret = fosreport._uniqueres_replacements(jobdict01, basedict)
         assert ret["app"] == expected
+
+    # sensible value for 'AD' check
+    with mock.patch.dict(jobdict01, {'test': 'realmd_join_sssd_ad'}):
+        ret = fosreport._uniqueres_replacements(jobdict01, basedict)
+    assert ret['ipaorad'] == 'Active Directory'
 
 
 class TestGetPassedTcNames:

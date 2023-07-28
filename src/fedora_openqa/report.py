@@ -86,6 +86,9 @@ def _uniqueres_replacements(job, tcdict):
         "help_viewer": "help viewer",
     }
     app = apps.get(job["test"], "")
+    ipaorad = "FreeIPA"
+    if job['test'].endswith("_ad"):
+        ipaorad = "Active Directory"
 
     # We effectively deep copy the `tcdict` dict here; if we just modified it directly
     # we'd actually be changing it in TESTCASES, so the results for later jobs in this run
@@ -103,6 +106,7 @@ def _uniqueres_replacements(job, tcdict):
         value = value.replace('$SUBVARIANT_OR_LOCAL$', subvariant_or_local)
         value = value.replace('$CLOUD_OR_BASE$', cloud_or_base)
         value = value.replace('$APP$', app)
+        value = value.replace('$FREEIPA_OR_AD$', ipaorad)
         changed[key] = value
 
     return changed

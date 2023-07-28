@@ -40,6 +40,7 @@ TESTCASES = {
     #   $FS$                  - filesystem: "ext3", "btrfs"... expected to be last element of openQA test name
     #   $DESKTOP$             - desktop: just the DESKTOP openQA setting
     #   $APP$                 - application, for desktop_app_basic: derived from test suite name
+    #   $FREEIPA_OR_AD$       - "FreeIPA" or "Active Directory", derived from test suite name
 
     "QA:Testcase_Mediakit_Repoclosure": {
         "env": "$SUBVARIANT$",
@@ -504,24 +505,24 @@ TESTCASES = {
     "QA:Testcase_realmd_join_kickstart": {
         # the section name here is pretty funky and I might change it,
         # so we'll intentionally use an inexact match
-        "section": "FreeIPA",
+        "section": "$FREEIPA_OR_AD$",
         "env": "Result",
         "type": "Server",
     },
     "QA:Testcase_realmd_join_cockpit": {
-        "section": "FreeIPA",
+        "section": "$FREEIPA_OR_AD$",
         "env": "Result",
         "type": "Server",
     },
     "QA:Testcase_realmd_join_sssd": {
-        "section": "FreeIPA",
+        "section": "$FREEIPA_OR_AD$",
         "env": "Result",
         "type": "Server",
     },
     "QA:Testcase_domain_client_authenticate": {
         "env": "Result",
         "type": "Server",
-        "name": "(FreeIPA)",
+        "name": "($FREEIPA_OR_AD$)",
     },
     "QA:Testcase_FreeIPA_realmd_login": {
         "env": "Result",
@@ -1225,9 +1226,17 @@ TESTSUITES = {
         "QA:Testcase_freeipa_trust_server_installation",
         "QA:Testcase_freeipa_trust_server_uninstallation",
     ],
+    # we don't have a wiki test case for this yet as it's not a
+    # release-blocking requirement in itself, just a precursor for
+    # the client tests
+    "server_samba_domain_controller": [],
     "server_realmd_join_kickstart": [
         "QA:Testcase_realmd_join_kickstart",
         "QA:Testcase_FreeIPA_realmd_login",
+        "QA:Testcase_domain_client_authenticate",
+    ],
+    "server_realmd_join_kickstart_ad": [
+        "QA:Testcase_realmd_join_kickstart",
         "QA:Testcase_domain_client_authenticate",
     ],
     "desktop_terminal": [
@@ -1331,9 +1340,17 @@ TESTSUITES = {
             "modules": ["freeipa_password_change"],
         },
     },
+    "realmd_join_cockpit_ad": [
+        "QA:Testcase_realmd_join_cockpit",
+        "QA:Testcase_domain_client_authenticate",
+    ],
     "realmd_join_sssd": [
         "QA:Testcase_realmd_join_sssd",
         "QA:Testcase_FreeIPA_realmd_login",
+        "QA:Testcase_domain_client_authenticate",
+    ],
+    "realmd_join_sssd_ad": [
+        "QA:Testcase_realmd_join_sssd",
         "QA:Testcase_domain_client_authenticate",
     ],
     "server_freeipa_replication_master": {
