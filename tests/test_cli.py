@@ -138,13 +138,15 @@ class TestCommandUpdateTask:
     @pytest.mark.parametrize(
         "target",
         # update ID, task ID or tag (to test all paths)
-        ['FEDORA-2017-b07d628952', '32099714', 'f39-python']
+        ['FEDORA-2017-b07d628952', '32099714', '32099714,32099715', 'f39-python']
     )
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1, 2], autospec=True)
     def test_command_update_task(self, fakejfu, target, capsys):
         """General tests for the command_update_task function."""
-        if target.isdigit():
+        if target.replace(",", "0").isdigit():
             testargs = ('task', target, '25')
+            # we parse the target a bit for tasks
+            target = target.split(",")
         elif target.startswith("FEDORA"):
             testargs = ('update', '--release', '25', target)
         else:

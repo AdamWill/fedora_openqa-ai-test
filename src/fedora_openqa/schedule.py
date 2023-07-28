@@ -664,9 +664,14 @@ def jobs_from_update(
     if not arch:
         # set a default in a way that works neatly with the CLI bits
         arch = 'x86_64'
-    if update.isdigit():
+    if isinstance(update, str) and update.isdigit():
+        update = [update]
+    if isinstance(update, list):
+        if not all(item.isdigit() for item in update):
+            raise TriggerException("Can only pass multiple Koji tasks, not updates or side tags!")
+        idstring = "_".join(update)
         # Koji task ID: treat as a non-reported scratch build test
-        build = "Kojitask-{0}-NOREPORT".format(update)
+        build = f"Kojitask-{idstring}-NOREPORT"
         # we'll set ADVISORY and ADVISORY_OR_TASK for updates, and KOJITASK and
         # ADVISORY_OR_TASK for Koji tasks. I'd probably have designed this more
         # cleanly if doing it from scratch, but we started with updates and added
@@ -674,16 +679,18 @@ def jobs_from_update(
         # variable for the distri templates substitution, there's no mechanism to
         # do 'substitute for this var or this other var depending which exists'
         advkey = 'KOJITASK'
+        advval = idstring
         updrepo = "nfs://172.16.2.110:/mnt/updateiso/update_repo"
         baseparams = {}
         if not version:
             raise TriggerException("Must provide version when scheduling a Koji task!")
-        updimg = _build_update_image(arch, version, update, taskids=[update])
+        updimg = _build_update_image(arch, version, idstring, taskids=update)
     elif update.startswith("TAG_"):
         # we're testing a side tag
         build = f"{update}-NOREPORT"
         update = update[4:]
         advkey = 'TAG'
+        advval = update
         baseparams = {}
         updrepo = f"https://kojipkgs.fedoraproject.org/repos/{update}/latest/{arch}"
         updimg = ""
@@ -693,6 +700,7 @@ def jobs_from_update(
         # normal update case
         build = 'Update-{0}'.format(update)
         advkey = 'ADVISORY'
+        advval = update
         updrepo = "nfs://172.16.2.110:/mnt/updateiso/update_repo"
         # now we retrieve the list of NVRs in the update as of right now and
         # include them as variables; the test will download and test those
@@ -730,8 +738,8 @@ def jobs_from_update(
         'VERSION': version,
         'ARCH': arch,
         'BUILD': build,
-        advkey: update,
-        'ADVISORY_OR_TASK': update,
+        advkey: advval,
+        'ADVISORY_OR_TASK': advval,
         'UPDATE_OR_TAG_REPO': updrepo,
         # only obsolete pending jobs for same BUILD (i.e. update)
         '_OBSOLETE': '1',
@@ -791,7 +799,7 @@ def jobs_from_update(
             currjobs = [cjob for cjob in currjobs if cjob['settings']['FLAVOR'] == fullflav]
             if currjobs:
                 logger.info("jobs_from_update: Existing jobs found for update/task %s flavor %s arch %s, "
-                            "and force not set! No jobs scheduled.", update, flavor, arch)
+                            "and force not set! No jobs scheduled.", advval, flavor, arch)
                 continue
         # we start from the relparams, as we want later-read param
         # dicts to override them sometimes

@@ -933,9 +933,29 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs, fakebui, fa
         'UP1REL': '27',
         'UP2REL': '26',
     }
+    # multiple task case
+    fakeinst.reset_mock()
+    ret = schedule.jobs_from_update(['32099714', '32099715'], version='28', flavors=['everything-boot-iso'])
+    # should get one job for one flavor
+    assert ret == [1]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # one flavor, one call
+    assert len(posts) == 1
+    parmdict = posts[0][1]["data"]
+    assert parmdict["KOJITASK"] == "32099714_32099715"
+    assert parmdict["ADVISORY_OR_TASK"] == "32099714_32099715"
+    assert parmdict["BUILD"] == "Kojitask-32099714_32099715-NOREPORT"
     # check we error out if no release is passed
     with pytest.raises(schedule.TriggerException):
         ret = schedule.jobs_from_update('32099714', flavors=['everything-boot-iso'])
+    # check we error out if we try to pass non-task IDs in a list
+    with pytest.raises(schedule.TriggerException):
+        ret = schedule.jobs_from_update(
+            ['32099714', 'FEDORA-2017-b07d628952'],
+            version='28',
+            flavors=['everything-boot-iso']
+        )
 
 @mock.patch('fedora_openqa.schedule._build_workarounds_image', return_value="dummyhash_workarounds.iso")
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])

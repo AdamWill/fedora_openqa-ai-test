@@ -95,10 +95,11 @@ def command_update_task(args):
     if args.flavor:
         flavors = [args.flavor]
     if hasattr(args, 'task'):
-        if not args.task.isdigit():
-            logger.error("Koji task ID must be all digits!")
+        tasks = args.task.split(",")
+        if not all(task.isdigit() for task in tasks):
+            logger.error("Koji task ID(s) must be all digits!")
             sys.exit(1)
-        buildarg = args.task
+        buildarg = tasks
     elif hasattr(args, 'tag'):
         buildarg = f"TAG_{args.tag}"
     else:
@@ -203,7 +204,7 @@ def parse_args(args=None):
     parser_update.add_argument('--release', help="The release the update is for (e.g. '25'), automatically "
                                "determined if omitted", type=int, metavar="NN")
     parser_task = subparsers.add_parser('task', description="Schedule jobs for a specific Koji task.")
-    parser_task.add_argument('task', help="The task ID (e.g. '32099714')", metavar='TASK')
+    parser_task.add_argument('task', help="The task ID(s), comma-separated (e.g. '32099714')", metavar='TASK')
     parser_task.add_argument('release', help="The release the task is for (e.g. '25')", type=int, metavar="NN")
     parser_tag = subparsers.add_parser('tag', description="Schedule jobs for a specific Koji tag.")
     parser_tag.add_argument('tag', help="The tag (e.g. 'f39-python')", metavar='TAG')
