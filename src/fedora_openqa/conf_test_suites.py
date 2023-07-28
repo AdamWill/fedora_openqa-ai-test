@@ -1123,6 +1123,14 @@ TESTSUITES = {
         "QA:Testcase_partitioning_guided_encrypted",
         "QA:Testcase_Asian_Language_Install",
     ],
+    "install_turkish_language": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_guided_empty",
+        "QA:Testcase_Anaconda_User_Interface_Graphical",
+        "QA:Testcase_Anaconda_user_creation",
+        "QA:Testcase_Package_Sets_Minimal_Package_Install",
+        "QA:Testcase_partitioning_guided_encrypted",
+    ],
     "install_xfs": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_standard_partition_xfs",
