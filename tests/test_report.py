@@ -555,6 +555,10 @@ class TestResultsDBReport:
         fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_args[1]['outcome'] == 'NEEDS_INSPECTION'
 
+        jobdict['result'] = 'incomplete'
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_args[1]['outcome'] == 'CRASHED'
+
         # now test the non-completed outcomes...
         jobdict['result'] = 'none'
 
@@ -577,6 +581,57 @@ class TestResultsDBReport:
         jobdict['state'] = 'uploading'
         fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_args[1]['outcome'] == 'RUNNING'
+
+    def test_kids(self, fakeres, oqaclientmock):
+        """
+        Check resultsdb_report handles chained children of failed
+        tests.
+        """
+        fakeres.reset_mock()
+        pjobdict1 = copy.deepcopy(oqaclientmock[2])
+        pjobdict1['settings']['TEST'] = pjobdict1['test'] = "install_default_update_ostree"
+        pjobdict1['result'] = 'failed'
+        pjobdict1['children']['Chained'] = [2,3]
+        pjobdict1['children']['Directly chained'] = [4]
+        cjobdict2 = copy.deepcopy(oqaclientmock[2])
+        cjobdict2['settings']['TEST'] = cjobdict2['test'] = "rpmostree_rebase"
+        cjobdict2['id'] = 2
+        cjobdict2['result'] = "skipped"
+        cjobdict2['state'] = "cancelled"
+        cjobdict3 = copy.deepcopy(oqaclientmock[2])
+        cjobdict3['settings']['TEST'] = cjobdict3['test'] = "rpmostree_overlay"
+        cjobdict3['id'] = 3
+        cjobdict3['result'] = "skipped"
+        cjobdict3['state'] = "cancelled"
+        cjobdict4 = copy.deepcopy(oqaclientmock[2])
+        cjobdict4['settings']['TEST'] = cjobdict4['test'] = "rpmostree_somethingelse"
+        cjobdict4['id'] = 4
+        cjobdict4['result'] = "skipped"
+        cjobdict4['state'] = "cancelled"
+        # this is the instance, we need to tweak the return value:
+        # first call to get_jobs should return our parent job with
+        # its children and the first child job (since we asked for
+        # it), second call should return the other two child jobs
+        # (and *not* return the first child job again)
+        oqaclientmock[1].get_jobs.return_value = None
+        oqaclientmock[1].get_jobs.side_effect = [[pjobdict1, cjobdict2], [cjobdict3, cjobdict4]]
+        fosreport.resultsdb_report(jobs=[1, 2])
+        # check we *actually* asked get_jobs for the right job ids -
+        # i.e. we didn't ask for 2 again the second time
+        assert oqaclientmock[1].get_jobs.call_count == 2
+        assert oqaclientmock[1].get_jobs.call_args_list[0][1]['jobs'] == [1, 2]
+        assert oqaclientmock[1].get_jobs.call_args_list[1][1]['jobs'] == [3, 4]
+        assert fakeres.call_count == 4
+        # all results should be FAILED as we translate 'skipped' to
+        # FAILED
+        assert fakeres.call_args_list[0][1]['testcase']['name'] == "compose.install_default_update_ostree"
+        assert fakeres.call_args_list[0][1]['outcome'] == "FAILED"
+        assert fakeres.call_args_list[1][1]['testcase']['name'] == "compose.rpmostree_rebase"
+        assert fakeres.call_args_list[1][1]['outcome'] == "FAILED"
+        assert fakeres.call_args_list[2][1]['testcase']['name'] == "compose.rpmostree_overlay"
+        assert fakeres.call_args_list[2][1]['outcome'] == "FAILED"
+        assert fakeres.call_args_list[3][1]['testcase']['name'] == "compose.rpmostree_somethingelse"
+        assert fakeres.call_args_list[3][1]['outcome'] == "FAILED"
 
     def test_test_target(self, fakeres, ffmock, oqaclientmock):
         """Check resultsdb_report TEST_TARGET behaviour."""

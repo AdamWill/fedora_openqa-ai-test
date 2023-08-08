@@ -373,7 +373,7 @@ def get_scenario_string(job):
     return '.'.join(job['settings'][key] for key in scenkeys)
 
 def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
-                     openqa_hostname=None, openqa_baseurl=None):
+                     openqa_hostname=None, openqa_baseurl=None, err_raise=True):
     """Report results from openQA jobs to ResultsDB. Either jobs (an
     iterable of job IDs) or build (an openQA BUILD string, usually a
     Fedora compose ID or Fedora CoreOS version) is required (if neither
@@ -422,7 +422,15 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
     # specific compose test
     image_target_regex = re.compile(r"^(ISO|HDD)(_\d+)?$")
 
+    # children of failed jobs that we want to report after we're done
+    kids = []
+    # this will be the last error we encountered in the parent run
+    err = None
+
     for (idx, job) in enumerate(jobs, start=1):
+        # drop job from kids so we don't double-report
+        if job['id'] in kids:
+            kids.remove(job['id'])
         # don't report jobs that have clone or user-cancelled jobs, or were obsoleted
         if job['clone_id'] is not None or job['result'] == "user_cancelled" or job['result'] == 'obsoleted':
             continue
@@ -544,11 +552,23 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                 'passed': "PASSED",
                 'failed': "FAILED",
                 'parallel_failed': "FAILED",
-                'softfailed': "INFO"
+                # we get 'skipped' when a chained parent fails and the
+                # child never starts. it seems best to treat this as a
+                # failure
+                'skipped': "FAILED",
+                'softfailed': "INFO",
+                'incomplete': "CRASHED",
             }.get(job['result'], 'NEEDS_INSPECTION')
         job_url = "%s/tests/%s" % (openqa_baseurl, job['id'])
         if job["result"] in ["passed", "softfailed"]:
             kwargs["tc_url"] = job_url  # point testcase url to latest passed test
+        if job["result"] == "failed":
+            # we need to try and file results for children of this job
+            # that might have been cancelled with no event emitted:
+            # https://pagure.io/fedora-qa/fedora_openqa/issue/107
+            kids.extend(
+                job.get("children", {}).get("Chained", []) + job.get("children", {}).get("Directly chained", [])
+            )
         kwargs["ref_url"] = job_url
         kwargs["source"] = "openqa"
 
@@ -603,7 +623,6 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
 
         # report result, retrying with a delay on failure
         tries = 40
-        err = None
         while tries:
             try:
                 rdb_object.report(rdb_instance)
@@ -622,8 +641,19 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         if err:
             logger.error("ResultsDB reporting for job %d failed after multiple retries! Giving up.",
                          job['id'])
-            # if this was the last (or only) job, we can raise the error
-            if idx == len(jobs):
-                raise err
+
+    if kids:
+        resultsdb_report(
+            resultsdb_url=resultsdb_url,
+            jobs=kids,
+            build=build,
+            do_report=do_report,
+            openqa_hostname=openqa_hostname,
+            openqa_baseurl=None,
+            err_raise=False
+        )
+
+    if err and err_raise:
+        raise err
 
 # vim: set textwidth=120 ts=8 et sw=4:
