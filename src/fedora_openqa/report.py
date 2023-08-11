@@ -649,7 +649,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             build=build,
             do_report=do_report,
             openqa_hostname=openqa_hostname,
-            openqa_baseurl=None,
+            openqa_baseurl=openqa_baseurl,
             err_raise=False
         )
 
