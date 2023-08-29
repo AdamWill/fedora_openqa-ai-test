@@ -644,6 +644,11 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "General",
     },
+    "QA:Testcase_toolbox": {
+        "section": "$RUNARCH$",
+        "env": "$SUBVARIANT$",
+        "type": "Base",
+    },
     #        "": {
     #            "name": "", # optional, use when same testcase occurs on multiple rows with different link text
     #            "section": "", # optional, some result pages have no sections
@@ -1409,6 +1414,9 @@ TESTSUITES = {
     "iot_zezere_server": [],
     "iot_zezere_ignition": [
         "QA:Testcase_Zezere_Ignition",
+    ],
+    "toolbox": [
+        "QA:Testcase_toolbox",
     ],
     # these are support tests for other tests
     "support_server": [],
