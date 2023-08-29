@@ -55,9 +55,9 @@ FORMAT_TO_PARAM = {
 }
 
 WORKAROUNDS = {
-    "37": ["FEDORA-2023-a7b180d862", "FEDORA-2023-eabbf4ca4d"],
+    "37": [],
     "38": [],
-    "39": ["FEDORA-2023-eba4fbf4e7", "FEDORA-2023-987f389eae"],
+    "39": [],
 }
 
 # flavors to schedule update tests for; we put it here so the tests
