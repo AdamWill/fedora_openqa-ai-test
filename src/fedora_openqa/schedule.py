@@ -58,7 +58,7 @@ WORKAROUNDS = {
     "37": [],
     "38": [],
     "39": [],
-    "40": ["FEDORA-2023-f9ee5cc955", "FEDORA-2023-f921ac3f80", "FEDORA-2023-1e90d85652", "FEDORA-2023-aafc7d7f2b", "FEDORA-2023-eb3f9e1a05"]
+    "40": []
 }
 
 # flavors to schedule update tests for; we put it here so the tests
