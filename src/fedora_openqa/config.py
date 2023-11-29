@@ -254,45 +254,15 @@ WANTED = [
 ]
 
 # List of non-critpath package names to run update tests on.
-# Dict keys are the package names, value is either an iterable of the
-# flavor(s) of update tests to run for that package or can just be
-# None (or anything else false-y) which means "run all the flavors".
+# Dict keys are the package names, value is an iterable of the
+# flavor(s) of update tests to run for that package
 UPDATETL = {
     # FreeIPA-related bits
-    '389-ds': ('server', 'server-upgrade'),
-    '389-ds-base': ('server', 'server-upgrade'),
-    'bind': ('server', 'server-upgrade'),
-    'bind-dyndb-ldap': ('server', 'server-upgrade'),
-    'certmonger': ('server', 'server-upgrade'),
-    'ding-libs': ('server', 'server-upgrade'),
-    'freeipa': ('server', 'server-upgrade'),
-    'httpd': ('server', 'server-upgrade'),
-    'jss': ('server', 'server-upgrade'),
-    'krb5': ('server', 'server-upgrade'),
     'pki-core': ('server', 'server-upgrade'),
-    'sssd': ('server', 'server-upgrade'),
-    'tomcat': ('server', 'server-upgrade'),
-    'python-ldap': ('server', 'server-upgrade'),
     'python-pyldap': ('server', 'server-upgrade'),
-    'softhsm': ('server', 'server-upgrade'),
-    'libldb': ('server', 'server-upgrade'),
-    'samba': ('server', 'server-upgrade'),
-    'opendnssec': ('server', 'server-upgrade'),
-    # this is involved in FreeIPA and of course regular use too. It
-    # is missing from Bodhi's stale critpath definition
-    'authselect': None,
-    # Cockpit-related bits
-    'cockpit': ('server',),
-    # PostgreSQL is a release-blocking server role
-    'postgresql': ('server',),
-    # Bits of GNOME that aren't in critpath
-    'gnome-software': ('workstation', 'workstation-live-iso'),
-    'accountsservice': ('workstation', 'workstation-upgrade', 'workstation-live-iso'),
-    'gnome-initial-setup': ('workstation-live-iso',),
     # Since we have background tests, makes sense to do these
     'desktop-backgrounds': ('kde', 'workstation'),
     # printing related stuff (printing tests are gating)
-    'cups': ('kde', 'workstation'),
     'ghostscript': ('kde', 'workstation'),
     # non-critpath container-y packages to run container tests on
     'podman': ('container',),
