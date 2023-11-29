@@ -138,11 +138,6 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
-    "QA:Testcase_Anaconda_help": {
-        "section": "Miscellaneous",
-        "env": "Result",
-        "type": "Installation",
-    },
     "QA:Testcase_kickstart_user_creation": {
         "section": "Kickstart",
         "env": "Result",
@@ -1176,9 +1171,6 @@ TESTSUITES = {
     "install_pxeboot": [
         "QA:Testcase_Boot_Methods_Pxeboot",
         "QA:Testcase_Kickstart_File_Path_Ks_Cfg",
-    ],
-    "anaconda_help": [
-        "QA:Testcase_Anaconda_help",
     ],
     "base_selinux": [
         "QA:Testcase_base_selinux",
