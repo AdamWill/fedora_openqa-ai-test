@@ -43,7 +43,7 @@ import fedfind.release
 from openqa_client.client import OpenQA_Client
 
 # Internal dependencies
-from .config import WANTED, CONFIG
+from .config import WANTED, CONFIG, UPDATETL
 
 logger = logging.getLogger(__name__)
 
@@ -116,6 +116,7 @@ UPDATE_FLAVORS = {
     "critical-path-kde": ("kde", "kde-live-iso"),
     "critical-path-server": ("server", "server-upgrade"),
 }
+
 
 class TriggerException(Exception):
     pass
@@ -630,38 +631,66 @@ def jobs_from_fcosbuild(buildurl, flavors=None, force=False, extraparams=None, o
     return jobs
 
 
+def get_critpath_flavors(updic):
+    """Given the dict for an update, determine the critical path
+    flavors.
+    """
+    flavors = set()
+    cpgroups = updic.get("critpath_groups")
+    if cpgroups:
+        cpgroups = cpgroups.split(" ")
+        for cpgroup in cpgroups:
+            flavors.update(UPDATE_FLAVORS.get(cpgroup, tuple()))
+    return flavors
+
+
+def get_testlist_flavors(updic):
+    """Given the dict for an update, determine any flavors from
+    the UPDATETL config list.
+    """
+    flavors = set()
+    for build in updic.get('builds', []):
+        # get just the package name by splitting the NVR. This
+        # assumes all NVRs actually contain a V and an R.
+        # Happily, RPM rejects dashes in version or release.
+        pkgname = build['nvr'].rsplit('-', 2)[0]
+        # now check the list and adjust flavors
+        if pkgname in UPDATETL:
+            flavors.update(UPDATETL[pkgname])
+    return flavors
+
+
 def jobs_from_update(
-        update, version=None, flavors=None, force=False, extraparams=None, openqa_hostname=None, arch=None
+        update,
+        version=None,
+        flavors=None,
+        force=False,
+        extraparams=None,
+        openqa_hostname=None,
+        arch=None,
+        updic=None
     ):
     """Schedule jobs for a specific Fedora update (or scratch build).
-    update is the advisory ID or task ID. version is the release
-    number; for updates it will be discovered from Bodhi if not
-    specified, for tasks it must be specified. flavors defines which
-    update tests should be run (valid values are the 'flavdict' keys).
-    force, extraparams and openqa_hostname are as for
-    jobs_from_compose. To explain the HDD_1 and START_AFTER_TEST
-    settings: most tests in the 'update' scenario are shared with the
-    'compose' scenario. Many of them specify START_AFTER_TEST as
-    'install_default_upload' and HDD_1 as the disk image that
-    install_default_upload creates, so that in the compose scenario,
-    these tests run after install_default_upload and use the image it
-    creates. For update testing, there is no install_default_upload
-    test; we instead want to run these tests using the pre-existing
-    createhdds-created base image. So here, we specify the appropriate
-    HDD_1 value, and an empty value for START_AFTER_TEST, so the
-    scheduler will not try to create a dependency on the non-existent
-    install_default_upload test, and the correct disk image will be
-    used. There are a *few* tests where we do *not* want to override
-    these values, however: the tests where there really is a
-    dependency in both scenarios (e.g. the cockpit_basic test has to
-    run after the cockpit_default test and use the disk image it
-    uploads). For these tests, we specify the values in the templates
-    as +START_AFTER_TEST and +HDD_1; the + makes those values win over
-    the ones we pass in here.
+
+    update (str): advisory ID, task ID, or side tag name
+    version (str or None): the release number; for updates will be
+    discovered from Bodhi if not given, for tasks it must be given
+    flavors (iter of strs or None): defines which update tests should
+    be run (valid values are the 'flavdict' keys). If None, will
+    schedule all flavors
+    force (bool): see jobs_from_compose
+    extraparams (dict): see jobs_from_compose
+    openqa_hostname (str or None): see jobs_from_compose
+    arch (str): arch to schedule for
+    updic (dict or None): the Bodhi update dict, from the message or
+    the web API. Must be provided to schedule update jobs
     """
-    critpathgroups = []
     if version:
         version = str(version)
+    if not flavors:
+        flavors = set()
+        for flavlist in UPDATE_FLAVORS.values():
+            flavors.update(flavlist)
     if not arch:
         # set a default in a way that works neatly with the CLI bits
         arch = 'x86_64'
@@ -709,16 +738,13 @@ def jobs_from_update(
         # whatever's in the update at the time the test runs so we can publish
         # correct CI Messages:
         # https://pagure.io/fedora-qa/fedora_openqa/issue/78
-        url = 'https://bodhi.fedoraproject.org/updates/' + update
-        updjson = fedfind.helpers.download_json(url)
-        critpathgroups = updjson["update"].get("critpath_groups", "")
-        if critpathgroups:
-            critpathgroups = critpathgroups.split(" ")
-        builds = updjson['update']['builds']
+        if not updic:
+            raise ValueError("Update dict must be provided to schedule update jobs!")
+        builds = updic['builds']
         nvrs = [build['nvr'] for build in builds]
         if not version:
             # find version in update data
-            version = updjson['update']['release']['version']
+            version = updic['release']['version']
         baseparams = {}
         # chunk the nvr list, to avoid awkward problems with very
         # long values like https://progress.opensuse.org/issues/121054
@@ -745,6 +771,13 @@ def jobs_from_update(
         # only obsolete pending jobs for same BUILD (i.e. update)
         '_OBSOLETE': '1',
         '_ONLY_OBSOLETE_SAME_BUILD': '1',
+        # many update tests are shared with compose and specify
+        # START_AFTER_TEST as '%DEPLOY_UPLOAD_TEST%', so for compose
+        # they run after an initial install. For updates we mainly
+        # want to run these tests using a base image, hence this empty
+        # value for START_AFTER_TEST. For a few update tests which do
+        # have a deployment step, we specify +START_AFTER_TEST in the
+        # templates; the + makes that value win over this one.
         'START_AFTER_TEST': '',
         'QEMU_HOST_IP': '172.16.2.2',
         'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
@@ -775,16 +808,6 @@ def jobs_from_update(
         oldest = 0
     client = OpenQA_Client(openqa_hostname)
     jobs = []
-
-    if not flavors:
-        flavors = set()
-        if critpathgroups:
-            for cpgroup in critpathgroups:
-                flavors.update(UPDATE_FLAVORS.get(cpgroup, tuple()))
-        else:
-            for flavlist in UPDATE_FLAVORS.values():
-                flavors.update(flavlist)
-
 
     for flavor in flavors:
         if int(version) == oldest and 'upgrade' in flavor:

@@ -30,7 +30,6 @@ import fedora_messaging.config
 from openqa_client.client import OpenQA_Client
 
 # internal imports
-from .config import UPDATETL
 from . import schedule
 from . import report
 
@@ -96,20 +95,26 @@ class OpenQAScheduler(object):
             return False
         return True
 
-    def _update_schedule(self, advisory, version, flavors, force=True):
+    # pylint: disable=too-many-arguments
+    def _update_schedule(self, advisory, version, flavors, force=True, updic=None):
         """
         Shared schedule, log, return code for _handle_retrigger and
         _consume_update.
         """
-        # flavors
-        # being None here results in our desired behaviour (jobs will
-        # be created for *all* flavors)
         jobs = []
         # pylint: disable=no-member
         for arch in self.update_arches:
-            jobs.extend(schedule.jobs_from_update(
-                advisory, version, flavors=flavors,
-                openqa_hostname=self.openqa_hostname, force=force, arch=arch))
+            jobs.extend(
+                schedule.jobs_from_update(
+                    advisory,
+                    version,
+                    flavors=flavors,
+                    openqa_hostname=self.openqa_hostname,
+                    force=force,
+                    arch=arch,
+                    updic=updic
+                )
+            )
         if jobs:
             self.logger.info("openQA jobs run on update %s: "
                       "%s", advisory, ' '.join(str(job) for job in jobs))
@@ -161,7 +166,7 @@ class OpenQAScheduler(object):
         flavors = set(flavors)
         if flavors:
             self.logger.info("Re-running tests for update %s, flavors %s", advisory, ", ".join(flavors))
-            self._update_schedule(advisory, version, flavors, force=True)
+            self._update_schedule(advisory, version, flavors, force=True, updic=update)
         else:
             self.logger.info("No existing jobs found, so not scheduling any!")
 
@@ -217,53 +222,40 @@ class OpenQAScheduler(object):
         hand off scheduling to _update_schedule.
         """
         update = body.get("update", {})
-        advisory = update.get('alias')
-        critpath = update.get('critpath', False)
-        reldict = update.get('release', {})
-        version = reldict.get('version')
-        if not self._check_mainline(body):
+        advisory = update.get("alias")
+        reldict = update.get("release", {})
+        version = reldict.get("version")
+        if not self._check_mainline(body) or not advisory or not version:
             return
-        # list of flavors to run the tests for, starts empty. If set
-        # to None, means 'run all tests'.
+        # list of flavors to run the tests for, starts empty
         flavors = []
 
-        # if update is critpath, just let the scheduler handle it
-        if critpath and advisory and version:
+        # check the list of non-critpath packages we test
+        self.logger.debug("Checking non-critpath test list for update %s", advisory)
+        flavors.extend(schedule.get_testlist_flavors(update))
+
+        # get the critpath flavors
+        cpflavors = schedule.get_critpath_flavors(update)
+        if cpflavors or update.get("critpath"):
             self.logger.info("Scheduling openQA jobs for critical path update %s", advisory)
-            flavors = None
+            if cpflavors:
+                flavors.extend(cpflavors)
+            else:
+                # if we know update is critpath but we don't know the
+                # groups, schedule all flavors
+                flavors = None
 
-        # otherwise check the list of non-critpath packages we test
-        elif advisory and version:
-            self.logger.debug("Checking non-critpath test list for update %s", advisory)
-            for build in update.get('builds', []):
-                # get just the package name by splitting the NVR. This
-                # assumes all NVRs actually contain a V and an R.
-                # Happily, RPM rejects dashes in version or release.
-                pkgname = build['nvr'].rsplit('-', 2)[0]
-                # now check the list and adjust flavors
-                if pkgname in UPDATETL:
-                    if not UPDATETL[pkgname]:
-                        # this means *all* flavors, and we can short
-                        self.logger.info("Running ALL openQA tests for update %s", advisory)
-                        flavors = None
-                        break
-                    else:
-                        flavors.extend(UPDATETL[pkgname])
-
-        if flavors:
-            # let's remove dupes
-            flavors = set(flavors)
-            # this means we have a list of flavors, not None indicating
-            # *all* flavors, let's log that
-            tmpl = "Running update tests for flavors %s for update %s"
-            self.logger.info(tmpl, ', '.join(flavors), advisory)
-        elif flavors == []:
+        if flavors == []:
             # This means we ain't running nothin'
             self.logger.debug("Update is not critical path and no packages in test list, no jobs scheduled")
             return
 
-        # Finally, now we've decided on flavors, run the jobs.
-        self._update_schedule(advisory, version, flavors, force=force)
+        if flavors:
+            # let's remove dupes
+            flavors = set(flavors)
+            tmpl = "Running update tests for flavors %s for update %s"
+            self.logger.info(tmpl, ', '.join(flavors), advisory)
+        self._update_schedule(advisory, version, flavors, force=force, updic=update)
 
 
 # WIKI REPORTER

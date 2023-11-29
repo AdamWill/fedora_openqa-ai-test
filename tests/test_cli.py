@@ -26,6 +26,7 @@ from __future__ import unicode_literals
 from __future__ import print_function
 
 # stdlib imports
+import copy
 from unittest import mock
 
 # external imports
@@ -33,6 +34,23 @@ import pytest
 
 # 'internal' imports
 import fedora_openqa.cli as cli
+
+UPDATEJSON = {
+    'update': {
+        'builds': [
+            {
+                'nvr': 'cockpit-129-1.fc25',
+                'release_id': 15,
+                'signed': True,
+                'type': 'rpm',
+                'epoch': 0
+            },
+        ],
+        'release': {
+            'version': '25'
+        }
+    }
+}
 
 
 @mock.patch('fedora_openqa.schedule.jobs_from_compose', return_value=[None, (1, 2)], autospec=True)
@@ -140,8 +158,9 @@ class TestCommandUpdateTask:
         # update ID, task ID or tag (to test all paths)
         ['FEDORA-2017-b07d628952', '32099714', '32099714,32099715', 'f39-python']
     )
+    @mock.patch('fedfind.helpers.download_json', return_value=UPDATEJSON, autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1, 2], autospec=True)
-    def test_command_update_task(self, fakejfu, target, capsys):
+    def test_command_update_task(self, fakejfu, fakejson, target, capsys):
         """General tests for the command_update_task function."""
         if target.replace(",", "0").isdigit():
             testargs = ('task', target, '25')
@@ -169,6 +188,21 @@ class TestCommandUpdateTask:
         assert not excinfo.value.code
         # shouldn't force
         assert fakejfu.call_args[1]['force'] is False
+
+        if testargs[0] == 'update':
+            # check critpath update restricts flavors
+            modupd = copy.deepcopy(UPDATEJSON)
+            modupd["update"]["critpath_groups"] = "critical-path-kde"
+            fakejson.return_value = modupd
+            with pytest.raises(SystemExit) as excinfo:
+                cli.command_update_task(args)
+            assert fakejfu.call_args[1]['flavors'] == {'kde', 'kde-live-iso'}
+            # check critpath plus updatetl
+            modupd["update"]["builds"][0]["nvr"] = "podman-4.1.1-3.fc36"
+            with pytest.raises(SystemExit) as excinfo:
+                cli.command_update_task(args)
+            assert fakejfu.call_args[1]['flavors'] == {'container', 'kde', 'kde-live-iso'}
+            fakejson.return_value = UPDATEJSON
 
         # check 'flavor'
         args = cli.parse_args(
@@ -200,8 +234,9 @@ class TestCommandUpdateTask:
         assert not excinfo.value.code
         assert fakejfu.call_args[1]['openqa_hostname'] == 'openqa.example'
 
+    @mock.patch('fedfind.helpers.download_json', return_value=UPDATEJSON, autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1, 2], autospec=True)
-    def test_command_update_norelease(self, fakejfu, capsys):
+    def test_command_update_norelease(self, fakejfu, fakejson, capsys):
         """Test update is OK with no release number."""
         args = cli.parse_args(('update', 'FEDORA-2017-b07d628952'))
         with pytest.raises(SystemExit) as excinfo:

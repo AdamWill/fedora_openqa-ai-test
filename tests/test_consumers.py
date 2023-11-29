@@ -149,7 +149,13 @@ NONCRITCREATE.body['update']['critpath'] = False
 # Non-critpath, one-flavor-listed update creation message
 TLCREATE = copy.deepcopy(CRITPATHCREATE)
 TLCREATE.body['update']['critpath'] = False
-TLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "freeipa-4.4.4-1.fc24", "signed": False}]
+TLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "pki-core-10.3.5-11.fc24", "signed": False}]
+
+# Creation message with one critpath group, and a package that's
+# in UPDATEDL for a *different* flavor
+CPTLCREATE = copy.deepcopy(TLCREATE)
+CPTLCREATE.body['update']['critpath_groups'] = "critical-path-server"
+CPTLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "podman-4.1.1-3.fc26", "signed": False}]
 
 # Critpath EPEL update creation message
 EPELCREATE = copy.deepcopy(CRITPATHCREATE)
@@ -202,14 +208,9 @@ NONCRITEDIT.body['update']['critpath'] = False
 TLEDIT = copy.deepcopy(CRITPATHEDIT)
 TLEDIT.body['update']['critpath'] = False
 TLEDIT.body['update']['builds'] = [
-    {"epoch": 0, "nvr": "freeipa-4.4.4-1.fc26", "signed": False},
-    {"epoch": 0, "nvr": "gnome-initial-setup-3.24.1-1.fc24", "signed": False},
+    {"epoch": 0, "nvr": "pki-core-10.3.5-11.fc26", "signed": False},
+    {"epoch": 0, "nvr": "podman-4.1.1-3.fc26", "signed": False},
 ]
-
-# Non-critpath, all-flavors-listed update edit message
-TLALLEDIT = copy.deepcopy(CRITPATHEDIT)
-TLALLEDIT.body['update']['critpath'] = False
-TLALLEDIT.body['update']['builds'] = [{"epoch": 0, "nvr": "authselect-4.10.12-100.fc24", "signed": False}]
 
 # Critpath EPEL update edit message
 EPELEDIT = copy.deepcopy(CRITPATHEDIT)
@@ -528,9 +529,10 @@ class TestConsumers:
             (TLCREATE, False, {'server', 'server-upgrade'}, None, None),
             # TLEDIT contains both 'server' and 'workstation-live-iso'-listed
             # packages
-            (TLEDIT, False, {'server', 'server-upgrade', 'workstation-live-iso'}, None, None),
-            # TLALLEDIT contains an 'all flavors'-listed package
-            (TLALLEDIT, False, None, None, None),
+            (TLEDIT, False, {'server', 'server-upgrade', 'container'}, None, None),
+            # CPTLCREATE contains a critpath group package and a
+            # package in the TL list for an additional flavor
+            (CPTLCREATE, False, {'server', 'server-upgrade', 'container'}, None, None),
             (RETRIGGER, True, {'server', 'workstation'}, "FEDORA-2023-1f3e17882f", "39"),
             (RETRIGGER, False, False, None, None),
             (NONRETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),

@@ -18,7 +18,7 @@
 # Author:   Adam Williamson <awilliam@redhat.com>
 
 # these are all kinda inappropriate for pytest patterns
-# pylint: disable=no-init, protected-access, no-self-use, unused-argument, too-many-lines
+# pylint: disable=protected-access, unused-argument, too-many-lines, too-many-locals, too-many-statements
 
 """Tests for the scheduling code."""
 
@@ -68,19 +68,17 @@ UPDATENVRS_1 = (
 )
 UPDATENVRS_2 = ('python-yattag-1.9.2-1.fc25',)
 UPDATEJSON = {
-    'update': {
-        'builds': [
-            {
-                'nvr': nvr,
-                'release_id': 15,
-                'signed': True,
-                'type': 'rpm',
-                'epoch': 0
-            } for nvr in UPDATENVRS_1 + UPDATENVRS_2
-        ],
-        'release': {
-            'version': '25'
-        }
+    'builds': [
+        {
+            'nvr': nvr,
+            'release_id': 15,
+            'signed': True,
+            'type': 'rpm',
+            'epoch': 0
+        } for nvr in UPDATENVRS_1 + UPDATENVRS_2
+    ],
+    'release': {
+        'version': '25'
     }
 }
 # trimmed CoreOS build metadata JSON, used for scheduling CoreOS jobs
@@ -659,11 +657,10 @@ def test_jobs_from_compose_unsupported(fakerun):
 
 @mock.patch('fedora_openqa.schedule._build_workarounds_image', return_value="dummyhash_workarounds.iso")
 @mock.patch('fedora_openqa.schedule._build_update_image', return_value="FEDORA-2017-b07d628952_dummyhash_updates.iso")
-@mock.patch('fedfind.helpers.download_json', return_value=UPDATEJSON)
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[24, 25])
 @mock.patch('fedfind.helpers.get_current_release', return_value=25)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, fakebwi):
+def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakebui, fakebwi):
     """Tests for jobs_from_update."""
     # many assertions below depend on the number of update flavors
     # we have; instead of changing them all every time we change
@@ -678,7 +675,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, f
     # the post request)
     fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
     # simple case, using release detection
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', updic=UPDATEJSON)
     # should get as many jobs (all with id 1 due to the mock return
     # value) as we have flavors
     assert ret == [1 for i in range(numflavors)]
@@ -727,7 +724,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, f
     # fakecurrr returns 25 as the 'branched release' so code thinks
     # 'rawhide release' is 26
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26', updic=UPDATEJSON)
     assert ret == [1 for i in range(numflavors)]
     # check we got all the posts and set version to the number
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
@@ -742,21 +739,21 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, f
     fakeinst.openqa_request.reset_mock()
     fakecurrs.side_effect = ValueError("Well, that was unfortunate")
     fakecurrr.side_effect = ValueError("Well, that was unfortunate")
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26', updic=UPDATEJSON)
     assert ret == [1 for i in range(numflavors)]
     fakecurrs.side_effect = None
 
     # check we don't schedule upgrade jobs when update is for oldest
     # stable release
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='24')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='24', updic=UPDATEJSON)
     # upgrade flavors skipped, so numflavors - 2 jobs (there are two
     # upgrade flavors)
     assert ret == [1 for i in range(numflavors - 2)]
 
     # test 'flavors'
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', flavors=['server'])
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', flavors=['server'], updic=UPDATEJSON)
     # should get one job
     assert ret == [1]
     # find the POST calls
@@ -819,7 +816,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, f
         ],
         'ids': [1],
     }
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', updic=UPDATEJSON)
     # should get one job, for workstation (the only flavor we don't
     # have a 'dupe' for)
     assert ret == [1]
@@ -831,7 +828,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, f
     assert posts[0][1]['data']['FLAVOR'] == 'updates-workstation'
     # now try with force=True
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', force=True)
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', force=True, updic=UPDATEJSON)
     # should get numflavors jobs this time
     assert ret == [1 for i in range(numflavors)]
 
@@ -842,7 +839,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, f
     # we intentionally test 'version' as a positional arg here to make
     # sure it isn't moved; it should never be moved as it was required
     # for a long time
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', flavors=['server'], extraparams={'FOO': 'bar'})
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', '25', flavors=['server'], extraparams={'FOO': 'bar'},
+                                    updic=UPDATEJSON)
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     # check parm dict values
@@ -850,12 +848,13 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, f
     assert posts[0][1]['data']['FOO'] == 'bar'
 
     # test openqa_hostname
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', openqa_hostname='openqa.example')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', openqa_hostname='openqa.example',
+                                    updic=UPDATEJSON)
     assert fakeclient.call_args[0][0] == 'openqa.example'
 
     # test arch
     fakeinst.openqa_request.reset_mock()
-    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', arch='ppc64le')
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='25', arch='ppc64le', updic=UPDATEJSON)
     # find the POST calls
     posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
     # check parm dict values. They should have correct arch, if they
@@ -866,28 +865,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakejson, fakebui, f
             assert post[1]['data']['HDD_1'] in ['disk_f25_server_3_ppc64le.qcow2',
                                            'disk_f25_desktop_4_ppc64le.qcow2',
                                            'disk_f25_kde_4_ppc64le.qcow2']
-
-    # test critpath group handling: if the update lists what critpath
-    # groups it is part of, we should only schedule a subset of flavs
-    fakeinst.openqa_request.reset_mock()
-    modupdate = dict(UPDATEJSON)
-    modupdate["update"] = dict(UPDATEJSON["update"])
-    modupdate["update"]["critpath_groups"] = "critical-path-apps critical-path-gnome"
-    fakejson.return_value = modupdate
-    groupflavors = set()
-    for cgroup in ("critical-path-apps", "critical-path-gnome"):
-        groupflavors.update(UPDATE_FLAVORS[cgroup])
-    ret = schedule.jobs_from_update("FEDORA-2017-b07d628952")
-    # should get as many jobs (all with id 1 due to the mock return
-    # value) as we have flavors for those critpath groups
-    assert ret == [1 for i in range(len(groupflavors))]
-    # find the POST calls
-    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
-    # should be as many calls as we have flavors
-    assert len(posts) == len(groupflavors)
-    parmdicts = [call[1]["data"] for call in posts]
-    for parmdict in parmdicts:
-        assert parmdict["FLAVOR"].split("updates-")[1] in groupflavors
 
 @mock.patch('fedora_openqa.schedule._build_workarounds_image', return_value="dummyhash_workarounds.iso")
 @mock.patch('fedora_openqa.schedule._build_update_image', return_value="32099714_dummyhash_updates.iso")

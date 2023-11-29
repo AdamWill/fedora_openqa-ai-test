@@ -30,6 +30,7 @@ import logging
 import sys
 
 # External dependencies
+import fedfind.helpers
 from resultsdb_api import ResultsDBapiException
 
 # Internal dependencies
@@ -91,7 +92,8 @@ def command_fcosbuild(args):
 
 def command_update_task(args):
     """Schedule openQA jobs for a specified update or task."""
-    flavors = []
+    updic = None
+    flavors = None
     if args.flavor:
         flavors = [args.flavor]
     if hasattr(args, 'task'):
@@ -104,8 +106,18 @@ def command_update_task(args):
         buildarg = f"TAG_{args.tag}"
     else:
         buildarg = args.update
+        url = 'https://bodhi.fedoraproject.org/updates/' + args.update
+        updic = fedfind.helpers.download_json(url)["update"]
+        if not flavors:
+            # if the update is critical path, we'll schedule for the
+            # critpath groups; if not, we'll fall back to all groups
+            flavors = schedule.get_critpath_flavors(updic)
+            if flavors:
+                # also add updatetl flavors if we limited to critpath
+                # flavors
+                flavors.update(schedule.get_testlist_flavors(updic))
     jobs = schedule.jobs_from_update(buildarg, version=args.release, flavors=flavors, force=args.force,
-                                     openqa_hostname=args.openqa_hostname, arch=args.arch)
+                                     openqa_hostname=args.openqa_hostname, arch=args.arch, updic=updic)
     print("Scheduled jobs: {0}".format(', '.join((str(job) for job in jobs))))
     sys.exit()
 
@@ -218,7 +230,9 @@ def parse_args(args=None):
         else:
             targetstr = 'tag'
         updtaskparser.add_argument('--flavor', help="A single flavor to schedule jobs for (e.g. 'server'), "
-                                   "otherwise jobs will be scheduled for all update flavors")
+                                   "otherwise jobs will be scheduled for relevant critpath groups and flavors "
+                                   "listed in the UPDATETL list (for updates on the critical path) or all "
+                                   "flavors (for non-critpath updates, tasks and tags)")
         updtaskparser.add_argument(
             "--openqa-hostname", help="openQA host to schedule jobs on (default: client library "
             "default)", metavar='HOSTNAME')
