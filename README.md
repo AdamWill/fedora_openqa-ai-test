@@ -57,11 +57,6 @@ By default the CLI will use the *first* openQA server specified in this config f
 
 If you wish to forward results to [Wikitcms](https://fedoraproject.org/wiki/Wikitcms), you must either authenticate interactively via a browser (which requires a graphical environment) periodically - each time you do this, a token will be kept for around a week, during which time reporting will work non-interactively, until one day you'll be prompted to authenticate again - or request a special non-expiring token from the wiki administrator. Please be careful before doing this, as usually only the official Fedora openQA systems should report results to Wikitcms. Ideally this should be a dedicated account for the purpose of reporting test results.
 
-    sudo su
-    mkdir /etc/fedora
-    echo "fas_username fas_password" > /etc/fedora/credentials
-    chmod 0600 /etc/fedora/credentials
-
 This tool has its own configuration file which can be installed to `/etc/fedora-openqa/schedule.conf` or `~/.config/fedora-openqa/schedule.conf`. In this config file you can specify the locations of the wiki and ResultsDB instance that will be used when reporting results with `fedora-openqa report`; by default, results will be reported to the [staging wiki](https://stg.fedoraproject.org/wiki/) and to a ResultsDB instance running on localhost port 5001 (which is what you get if you follow the instructions to do a local deployment of ResultsDB for testing). A sample config file is provided as `sample-configs/schedule.conf.sample`, which you can copy into place and modify.
 
 You can configure the set of images from each compose which will be downloaded and tested. For more details on this, see the comments in `sample-configs/images.json.sample`.
