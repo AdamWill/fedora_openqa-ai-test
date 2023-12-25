@@ -19,7 +19,7 @@ Requirements
 
 To use the `fedora-openqa` CLI, you do not have to do a system install, you can run it directly from the source tree. However, you do need to ensure some dependencies are available. Most of them are available as packages on Fedora, and can be installed as follows:
 
-    dnf install python3-setuptools python3-six python3-requests python3-fedfind python3-wikitcms python3-fedora-messaging python3-resultsdb_conventions python3-openqa_client
+    dnf install python3-setuptools python3-six python3-requests python3-fedfind python3-wikitcms python3-fedora-messaging python3-resultsdb_conventions-fedora python3-openqa_client
 
 You can then run `./fedora-openqa.py` from `/home/someuser/local/fedora_openqa` to use the CLI tool.
 
