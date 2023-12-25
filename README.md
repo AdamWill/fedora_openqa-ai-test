@@ -19,26 +19,7 @@ Requirements
 
 To use the `fedora-openqa` CLI, you do not have to do a system install, you can run it directly from the source tree. However, you do need to ensure some dependencies are available. Most of them are available as packages on Fedora, and can be installed as follows:
 
-    dnf install python-setuptools python-six python-requests python-fedfind python-wikitcms python-fedmsg-core python-resultsdb_api
-
-A couple of dependencies are not available as packages, and must be checked out from git (to wherever you like):
-
-    git clone https://github.com/os-autoinst/openQA-python-client.git
-    git clone https://pagure.io/taskotron/resultsdb_conventions.git
-
-You can install these dependencies system-wide by running `sudo python setup.py install` from the checkout, or alternatively, you can just symlink the library directory into the `fedora_openqa` directory. For instance, if you have the projects checked out like this:
-
-    home/
-        someuser/
-            local/
-                fedora_openqa/
-                openQA-python-client/
-                resultsdb_conventions/
-
-Then you could do this, from `/home/someuser/local/fedora_openqa`:
-
-    ln -s /home/someuser/local/resultsdb_conventions/src/resultsdb_conventions src/
-    ln -s /home/someuser/local/openQA-python-client/src/openqa_client src/
+    dnf install python3-setuptools python3-six python3-requests python3-fedfind python3-wikitcms python3-fedora-messaging python3-resultsdb_conventions python3-openqa_client
 
 You can then run `./fedora-openqa.py` from `/home/someuser/local/fedora_openqa` to use the CLI tool.
 
@@ -61,7 +42,7 @@ See the command's help (and the help for the subcommands) for more details on us
 Installation
 ------------
 
-You can install the library and CLI systemwide if you choose to. After installing all the dependencies, just run `sudo python setup.py install`. You must install systemwide if you wish to use the fedora-messaging consumers to trigger jobs automatically.
+You can install the library and CLI systemwide if you choose to. After installing all the dependencies, just run `pip install ./`. You must install systemwide if you wish to use the fedora-messaging consumers to trigger jobs automatically.
 
 Configuration
 -------------
