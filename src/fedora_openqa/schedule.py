@@ -24,13 +24,8 @@ job scheduling go here.
 """
 
 # Standard libraries
-import glob
-import hashlib
 import logging
-import pathlib
-import os
-import shutil
-import subprocess
+import os.path
 
 # External dependencies
 try:
@@ -52,13 +47,6 @@ FORMAT_TO_PARAM = {
     # let's connect it as second HDD - we can then use NUMDISKS=1 when we don't need it connected
     "raw.xz": "HDD_2_DECOMPRESS_URL",
     "qcow2": "HDD_2_URL",
-}
-
-WORKAROUNDS = {
-    "37": [],
-    "38": [],
-    "39": ["FEDORA-2023-f97b3c0aca"],
-    "40": []
 }
 
 # flavors to schedule update tests for; we put it here so the tests
@@ -232,155 +220,6 @@ def _get_releases(release):
     }
 
 
-def _do_package_download(item, arch, targetdir):
-    """Convenience download function for _build_update_image below,
-    since we download stuff of different types twice.
-    """
-    # this is a workaround for a weird issue on Fedora openQA stg
-    # where os.environ["HOME"] is somehow not set when this is run
-    # in a fedora-messaging consumer, and it blows up the bodhi CLI
-    if not "HOME" in os.environ:
-        os.environ["HOME"] = os.path.expanduser("~")
-    if item.isdigit():
-        # this will be a task ID
-        args = ("koji", "download-task", f"--arch={arch}", "--arch=noarch", item)
-    elif item.startswith("FEDORA-"):
-        # this is a Bodhi update ID
-        args = ("bodhi", "updates", "download", "--arch", arch, "--updateid", item)
-    else:
-        # assume it's an NVR
-        args = ("koji", "download-build", f"--arch={arch}", "--arch=noarch", item)
-    # do the download and check for failure
-    ret = subprocess.run(args, cwd=targetdir, capture_output=True, encoding="utf-8")
-    if ret.returncode:
-        # "No .*available for {nvr}" indicates there are no
-        # packages for this arch in the build
-        if not f"available for {item}" in ret.stderr:
-            raise TriggerException("Download of %s failed: %s", item, ret.stderr)
-
-
-def _update_workaround_dir(arch, release):
-    """Check and if necessary update the cached workarounds directory
-    for the appropriate arch and release.
-    """
-    workarounds = WORKAROUNDS.get(release, [])
-    if not workarounds:
-        return (None, None)
-    workdir = f"/var/tmp/fedora_openqa/workarounds/{release}/{arch}/workarounds_repo"
-    if os.path.exists(f"{workdir}/walist.txt"):
-        with open(f"{workdir}/walist.txt", "r", encoding="utf-8") as wlfh:
-            currwas = wlfh.read()
-        if workarounds == currwas.split():
-            conthash = hashlib.md5(currwas.encode("utf-8")).hexdigest()
-            return (workdir, conthash)
-    shutil.rmtree(workdir, ignore_errors=True)
-    os.makedirs(workdir)
-    for workaround in WORKAROUNDS.get(release, []):
-        ret = _do_package_download(workaround, arch, workdir)
-        if ret:
-            raise TriggerException(f"Failed to download workaround {workaround}: {ret.stderr}")
-    args = ("createrepo", ".")
-    ret = subprocess.run(args, cwd=workdir, capture_output=True, encoding="utf-8")
-    if ret.returncode:
-        raise TriggerException(f"Failed to create workaround {workaround} repo metadata: {ret.stdrr}")
-    contents = " ".join(WORKAROUNDS.get(release, []))
-    conthash = hashlib.md5(contents.encode("utf-8")).hexdigest()
-    with open(f"{workdir}/walist.txt", "w", encoding="utf-8") as wlfh:
-        wlfh.write(contents)
-    return (workdir, conthash)
-
-
-def _build_update_image(arch, release, advortask, nvrs=None, taskids=None, outpath="/var/lib/openqa/share/factory/iso"):
-    """Create an ISO image containing the packages from the update or
-    task to be tested, and any workaround packages. Exactly one of
-    nvrs (an iterable of...NVRs) or taskids (an iterable of Koji task
-    IDs) must be passed.
-    """
-    logger.info("Building update image for %s on %s", advortask, arch)
-    failed = False
-    # get the update/task packages
-    topdir = f"/var/tmp/fedora_openqa/{advortask}/{arch}"
-    updatedir = f"{topdir}/update_repo"
-    shutil.rmtree(updatedir, ignore_errors=True)
-    os.makedirs(updatedir)
-    for nvr in (nvrs or []):
-        _do_package_download(nvr, arch, updatedir)
-    for taskid in (taskids or []):
-        _do_package_download(taskid, arch, updatedir)
-    # create metadata
-    args = ("createrepo", ".")
-    ret = subprocess.run(args, cwd=updatedir, capture_output=True, encoding="utf-8")
-    if ret.returncode:
-        raise TriggerException(f"Failed to create {advortask} repo metadata: {ret.stdrr}")
-    # record package info
-    if glob.glob(f"{updatedir}/*.rpm"):
-        args = (
-            "rpm",
-            "-qp",
-            "*.rpm",
-            "--qf",
-            "%{SOURCERPM} %{NAME} %{EPOCHNUM} %{VERSION} %{RELEASE}\n"
-        )
-        ret = subprocess.run(args, cwd=updatedir, capture_output=True, encoding="utf-8")
-        if ret.returncode:
-            raise TriggerException(f"rpm -qp on downloaded updates failed for {advortask}: {ret.stderr}")
-        out = sorted(set(ret.stdout.splitlines()))
-        # there is no security concern here, this hash is just so
-        # we get a filename dependent on the current update content
-        conthash = hashlib.md5(" ".join(out).encode("utf-8")).hexdigest()
-        with open(f"{topdir}/updatepkgs.txt", "w", encoding="utf-8") as outfh:
-            outfh.write("\n".join(out))
-        args = (
-            "rpm",
-            "-qp",
-            "*.rpm",
-            "--qf",
-            "%{NAME} "
-        )
-        ret = subprocess.run(args, cwd=updatedir, capture_output=True, encoding="utf-8")
-        if ret.returncode:
-            raise TriggerException(f"rpm -qp on downloaded updates failed for {advortask}: {ret.stderr}")
-        with open(f"{topdir}/updatepkgnames.txt", "w", encoding="utf-8") as outfh:
-            outfh.write(ret.stdout)
-    else:
-        # write dummy files - this is for the case where we downloaded
-        # no files because the update contains none for arches we test
-        # or the workarounds-only image we build for composes
-        pathlib.Path(f"{topdir}/updatepkgs.txt").touch()
-        pathlib.Path(f"{topdir}/updatepkgnames.txt").touch()
-        conthash = "empty"
-
-    filename = f"{advortask}_{arch}_{conthash}_updates.iso"
-    if os.path.exists(f"{outpath}/{filename}"):
-        shutil.rmtree(topdir, ignore_errors=True)
-        return filename
-    args = ("genisoimage", "-o", filename, "-R", topdir)
-    ret = subprocess.run(args, cwd=outpath, encoding="utf-8", capture_output=True)
-    if ret.returncode:
-        raise TriggerException(f"genisoimage failed for {advortask}: {ret.stderr}")
-    shutil.rmtree(topdir, ignore_errors=True)
-    return filename
-
-def _build_workarounds_image(arch, release, outpath="/var/lib/openqa/share/factory/iso"):
-    """Similar to _build_update_image, but builds an image with only
-    a workaround repo, for the compose upgrade tests. If there are
-    no workarounds for the release, will return empty string.
-    """
-    (workdir, waconthash) = _update_workaround_dir(arch, release)
-    if not workdir:
-        return ""
-    filename = f"{waconthash}_{arch}_workarounds.iso"
-    if os.path.exists(f"{outpath}/{filename}"):
-        return filename
-    topdir = workdir.split("/workarounds_repo")[0]
-    args = ("genisoimage", "-o", filename, "-R", topdir)
-    ret = subprocess.run(args, cwd=outpath, encoding="utf-8", capture_output=True)
-    if ret.returncode:
-        raise TriggerException(f"_build_workarounds_image: genisoimage failed for {arch} {release}: {ret.stderr}")
-    return filename
-
-
-
 def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, version,
                     location, force=False, extraparams=None, openqa_hostname=None, label=""):
     """# run OpenQA 'isos' job on ISO at urls from 'param_urls', with
@@ -421,15 +260,6 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
     if label:
         params["LABEL"] = label
     params.update(_get_releases(release=version))
-
-    if flavor == "universal" or "upgrade" in flavor:
-        # we need a workarounds image for upgrade tests
-        vernum = version
-        if version.lower() == "rawhide":
-            vernum = params["RAWREL"]
-        waimg = _build_workarounds_image(arch, vernum)
-        if waimg:
-            params['ISO_3'] = waimg
 
     if extraparams:
         params.update(extraparams)
@@ -710,11 +540,10 @@ def jobs_from_update(
         # do 'substitute for this var or this other var depending which exists'
         advkey = 'KOJITASK'
         advval = idstring
-        updrepo = "nfs://172.16.2.110:/mnt/updateiso/update_repo"
+        updrepo = "nfs://172.16.2.110:/mnt/update_repo"
         baseparams = {}
         if not version:
             raise TriggerException("Must provide version when scheduling a Koji task!")
-        updimg = _build_update_image(arch, version, idstring, taskids=update)
     elif update.startswith("TAG_"):
         # we're testing a side tag
         build = f"{update}-NOREPORT"
@@ -723,7 +552,6 @@ def jobs_from_update(
         advval = update
         baseparams = {}
         updrepo = f"https://kojipkgs.fedoraproject.org/repos/{update}/latest/{arch}"
-        updimg = ""
         if not version:
             raise TriggerException("Must provide version when scheduling a Koji tag!")
     else:
@@ -731,7 +559,7 @@ def jobs_from_update(
         build = 'Update-{0}'.format(update)
         advkey = 'ADVISORY'
         advval = update
-        updrepo = "nfs://172.16.2.110:/mnt/updateiso/update_repo"
+        updrepo = "nfs://172.16.2.110:/mnt/update_repo"
         # now we retrieve the list of NVRs in the update as of right now and
         # include them as variables; the test will download and test those
         # NVRs. We do this instead of the test just using bodhi CLI to get
@@ -756,7 +584,6 @@ def jobs_from_update(
             # value is very long, e.g.:
             # https://progress.opensuse.org/issues/121054
             baseparams[f'ADVISORY_NVRS_{num}'] = ' '.join(cnvrs)
-        updimg = _build_update_image(arch, version, update, nvrs=nvrs)
 
     if extraparams:
         build = '{0}-EXTRA'.format(build)
@@ -782,11 +609,6 @@ def jobs_from_update(
         'QEMU_HOST_IP': '172.16.2.2',
         'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
     })
-    waimg = _build_workarounds_image(arch, version)
-    if updimg:
-        baseparams["ISO_2"] = updimg
-    if waimg:
-        baseparams["ISO_3"] = waimg
 
     # get the release params
     relparams = _get_releases(release=version)

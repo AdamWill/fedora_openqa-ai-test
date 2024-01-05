@@ -348,11 +348,10 @@ def test_find_duplicate_jobs():
     assert len(ret) == 0
 
 
-@mock.patch('fedora_openqa.schedule._build_workarounds_image', return_value="dummyhash_workarounds.iso")
 @mock.patch('fedfind.helpers.get_current_release', return_value=38, autospec=True)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
 @mock.patch('fedora_openqa.schedule._find_duplicate_jobs', return_value=[], autospec=True)
-def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, fakebwi, ffmock02):
+def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     """Tests for run_openqa_jobs."""
     # get our expected images from the ffmock02 image list.
     rel = fedfind.release.get_release(cid='Fedora-Rawhide-20230502.n.0')
@@ -434,20 +433,6 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, fakebwi, ffmock02):
         param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location)
     assert instance.openqa_request.call_count == 1
     assert instance.openqa_request.call_args[0][2]['CURRREL'] == 'FEDFINDERROR'
-
-    # check we do the workarounds image stuff for upgrade flavors
-    instance.reset_mock()
-    flavor = "universal"
-    schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location
-    )
-    assert instance.openqa_request.call_args[0][2]['ISO_3'] == 'dummyhash_workarounds.iso'
-    instance.reset_mock()
-    flavor = "Workstation-upgrade"
-    schedule.run_openqa_jobs(
-        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location
-    )
-    assert instance.openqa_request.call_args[0][2]['ISO_3'] == 'dummyhash_workarounds.iso'
 
 
 @mock.patch('fedfind.helpers.get_current_release', return_value=25)
@@ -655,12 +640,10 @@ def test_jobs_from_compose_unsupported(fakerun):
     ret = schedule.jobs_from_compose('https://kojipkgs.fedoraproject.org/compose/updates/Fedora-Atomic-27-updates-testing-20180123.0/compose/')
     assert ret == ('', [])
 
-@mock.patch('fedora_openqa.schedule._build_workarounds_image', return_value="dummyhash_workarounds.iso")
-@mock.patch('fedora_openqa.schedule._build_update_image', return_value="FEDORA-2017-b07d628952_dummyhash_updates.iso")
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[24, 25])
 @mock.patch('fedfind.helpers.get_current_release', return_value=25)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakebui, fakebwi):
+def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
     """Tests for jobs_from_update."""
     # many assertions below depend on the number of update flavors
     # we have; instead of changing them all every time we change
@@ -698,8 +681,6 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakebui, fakebwi):
             'VERSION': '25',
             'ARCH': 'x86_64',
             'BUILD': 'Update-FEDORA-2017-b07d628952',
-            'ISO_2': 'FEDORA-2017-b07d628952_dummyhash_updates.iso',
-            'ISO_3': 'dummyhash_workarounds.iso',
             'ADVISORY': 'FEDORA-2017-b07d628952',
             'ADVISORY_NVRS_1': advisories1,
             'ADVISORY_NVRS_2': advisories2,
@@ -866,12 +847,10 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakebui, fakebwi):
                                            'disk_f25_desktop_4_ppc64le.qcow2',
                                            'disk_f25_kde_4_ppc64le.qcow2']
 
-@mock.patch('fedora_openqa.schedule._build_workarounds_image', return_value="dummyhash_workarounds.iso")
-@mock.patch('fedora_openqa.schedule._build_update_image', return_value="32099714_dummyhash_updates.iso")
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])
 @mock.patch('fedfind.helpers.get_current_release', return_value=29)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs, fakebui, fakebwi):
+def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
     """Test jobs_from_update works as expected when passed a Koji task
     ID. We don't need to recheck everything, just the differing vars.
     """
@@ -894,8 +873,6 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs, fakebui, fa
         'VERSION': '28',
         'ARCH': 'x86_64',
         'BUILD': 'Kojitask-32099714-NOREPORT',
-        'ISO_2': '32099714_dummyhash_updates.iso',
-        'ISO_3': 'dummyhash_workarounds.iso',
         'KOJITASK': '32099714',
         'ADVISORY_OR_TASK': '32099714',
         'UPDATE_OR_TAG_REPO': 'nfs://172.16.2.110:/mnt/updateiso/update_repo',
@@ -934,11 +911,10 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs, fakebui, fa
             flavors=['everything-boot-iso']
         )
 
-@mock.patch('fedora_openqa.schedule._build_workarounds_image', return_value="dummyhash_workarounds.iso")
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])
 @mock.patch('fedfind.helpers.get_current_release', return_value=29)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-def test_jobs_from_update_kojitag(fakeclient, fakecurrr, fakecurrs, fakebwi):
+def test_jobs_from_update_kojitag(fakeclient, fakecurrr, fakecurrs):
     """Test jobs_from_update works as expected when passed a Koji tag
     name. We don't need to recheck everything, just the differing vars.
     """
@@ -961,7 +937,6 @@ def test_jobs_from_update_kojitag(fakeclient, fakecurrr, fakecurrs, fakebwi):
         'VERSION': '28',
         'ARCH': 'x86_64',
         'BUILD': 'TAG_f39-python-NOREPORT',
-        'ISO_3': 'dummyhash_workarounds.iso',
         'TAG': 'f39-python',
         'ADVISORY_OR_TASK': 'f39-python',
         'UPDATE_OR_TAG_REPO': 'https://kojipkgs.fedoraproject.org/repos/f39-python/latest/x86_64',
