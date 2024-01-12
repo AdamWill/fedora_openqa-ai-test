@@ -535,6 +535,32 @@ class TestResultsDBReport:
         fosreport.resultsdb_report(jobs=[1])
         assert fakeres.call_args[1]['firmware'] == 'uefi'
 
+    @mock.patch("time.sleep")
+    def test_retry(self, fakesleep, fakeres, oqaclientmock):
+        """
+        Check resultsdb_report with a RETRY test. It should wait
+        and then re-get the job dict.
+        """
+        instmock = oqaclientmock[1]
+        # modify the job dict used by the mock fixture
+        jobdict = oqaclientmock[2]
+        jobdict['settings']['RETRY'] = '1'
+        fosreport.resultsdb_report(jobs=[1])
+        # check the sleep call
+        assert fakesleep.call_count == 1
+        assert fakesleep.call_args[0] == (3,)
+        # check we called get_jobs twice
+        assert instmock.get_jobs.call_count == 2
+        # as the fake job doesn't have origin_id, it should report
+        assert fakeres.call_count == 1
+        clonejobdict = copy.deepcopy(jobdict)
+        clonejobdict['clone_id'] = 2
+        instmock.get_jobs.side_effect = [[jobdict], [clonejobdict]]
+        # now we get clone_id the second time, it should not report
+        fakeres.reset_mock()
+        fosreport.resultsdb_report(jobs=[1])
+        assert fakeres.call_count == 0
+
     def test_outcome(self, fakeres, oqaclientmock):
         "Check resultsdb_report outcome."""
         jobdict = oqaclientmock[2]

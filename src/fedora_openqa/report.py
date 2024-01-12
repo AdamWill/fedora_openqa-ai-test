@@ -431,6 +431,13 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
         # drop job from kids so we don't double-report
         if job['id'] in kids:
             kids.remove(job['id'])
+        if job['settings'].get("RETRY") and not job.get('origin_id'):
+            # this looks like a test that should get retried. wait
+            # a few secs then re-get the job dict, this should wait
+            # until it's been retried and we have a clone_id. see
+            # https://pagure.io/fedora-qa/fedora_openqa/issue/105
+            time.sleep(3)
+            job = client.get_jobs(jobs=[job['id']], filter_dupes=False)[0]
         # don't report jobs that have clone or user-cancelled jobs, or were obsoleted
         if job['clone_id'] is not None or job['result'] == "user_cancelled" or job['result'] == 'obsoleted':
             continue
