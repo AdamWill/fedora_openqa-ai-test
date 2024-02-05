@@ -542,9 +542,11 @@ class TestResultsDBReport:
         and then re-get the job dict.
         """
         instmock = oqaclientmock[1]
-        # modify the job dict used by the mock fixture
+        # modify the job dict used by the mock fixture to have RETRY
+        # set and to look like it failed
         jobdict = oqaclientmock[2]
         jobdict['settings']['RETRY'] = '1'
+        jobdict['result'] = "failed"
         fosreport.resultsdb_report(jobs=[1])
         # check the sleep call
         assert fakesleep.call_count == 1
