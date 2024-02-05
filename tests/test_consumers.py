@@ -114,113 +114,14 @@ FINCOMPLETE = Message(
     }
 )
 
-# Critpath update creation message. These are huge, so this is heavily
-# edited.
-CRITPATHCREATE = Message(
-    topic="org.fedoraproject.prod.bodhi.update.request.testing",
-    body={
-        "agent": "msekleta",
-        "update": {
-            "alias": "FEDORA-2017-ea07abb5d5",
-            "builds": [
-                {
-                    "epoch": 0,
-                    "nvr": "systemd-231-14.fc24",
-                    "signed": False
-                }
-            ],
-            "critpath": True,
-            "release": {
-                "branch": "f24",
-                "dist_tag": "f24",
-                "id_prefix": "FEDORA",
-                "long_name": "Fedora 24",
-                "name": "F24",
-                "version": "24"
-            },
-        },
-    }
-)
-
-# Non-critpath, non-listed update creation message
-NONCRITCREATE = copy.deepcopy(CRITPATHCREATE)
-NONCRITCREATE.body['update']['critpath'] = False
-
-# Non-critpath, one-flavor-listed update creation message
-TLCREATE = copy.deepcopy(CRITPATHCREATE)
-TLCREATE.body['update']['critpath'] = False
-TLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "pki-core-10.3.5-11.fc24", "signed": False}]
-
-# Creation message with one critpath group, and a package that's
-# in UPDATEDL for a *different* flavor
-CPTLCREATE = copy.deepcopy(TLCREATE)
-CPTLCREATE.body['update']['critpath_groups'] = "critical-path-server"
-CPTLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "podman-4.1.1-3.fc26", "signed": False}]
-
-# Critpath EPEL update creation message
-EPELCREATE = copy.deepcopy(CRITPATHCREATE)
-EPELCREATE.body['update']['release']['id_prefix'] = 'FEDORA-EPEL'
-
-# Critpath update edit message (with new/removed builds)
-CRITPATHEDIT = Message(
-    topic="org.fedoraproject.prod.bodhi.update.edit",
-    body={
-        "agent": "hobbes1069",
-        "update": {
-            "alias": "FEDORA-2017-e6d7184200",
-            "critpath": True,
-            "release": {
-                "branch": "f24",
-                "dist_tag": "f24",
-                "id_prefix": "FEDORA",
-                "long_name": "Fedora 24",
-                "name": "F24",
-                "version": "24"
-            },
-            "builds": [
-                {
-                    "epoch": 0,
-                    "nvr": "codec2-0.6-1.fc24",
-                    "signed": False
-                },
-                {
-                    "epoch": 0,
-                    "nvr": "freedv-1.2-1.fc24",
-                    "signed": False
-                }
-            ]
-        },
-        "new_builds": ["codec2-0.6-1.fc24"],
-        "removed_builds": ["codec2-0.5-1.fc24"]
-    }
-)
-
-# Critpath update edit message (without new/removed builds)
-CRITPATHEDITUC = copy.deepcopy(CRITPATHEDIT)
-CRITPATHEDITUC.body["new_builds"] = []
-CRITPATHEDITUC.body["removed_builds"] = []
-
-# Non-critpath, non-listed update edit message
-NONCRITEDIT = copy.deepcopy(CRITPATHEDIT)
-NONCRITEDIT.body['update']['critpath'] = False
-
-# Non-critpath, two-flavors-listed update edit message
-TLEDIT = copy.deepcopy(CRITPATHEDIT)
-TLEDIT.body['update']['critpath'] = False
-TLEDIT.body['update']['builds'] = [
-    {"epoch": 0, "nvr": "pki-core-10.3.5-11.fc26", "signed": False},
-    {"epoch": 0, "nvr": "podman-4.1.1-3.fc26", "signed": False},
-]
-
-# Critpath EPEL update edit message
-EPELEDIT = copy.deepcopy(CRITPATHEDIT)
-EPELEDIT.body['update']['release']['id_prefix'] = 'FEDORA-EPEL'
-
 # Bodhi 'update ready for testing' message which is not a re-trigger
 # request for a Fedora update
 # Edited from
 # https://apps.fedoraproject.org/datagrepper/v2/id?id=b89c0a73-8d3d-4783-956e-ca352c9c7317&is_raw=true&size=extra-large
-
+# critpath groups removed to test the codepath that handles messages
+# with no critpath groups
+# As of Bodhi 8, this is our 'main' scheduling message, we expect to
+# see this on update creation, edit-with-changed-builds, and retrigger
 NONRETRIGGER = Message(
     topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
     body={
@@ -254,7 +155,6 @@ NONRETRIGGER = Message(
         "update": {
           "alias": "FEDORA-2023-1f3e17882f",
           "critpath": True,
-          "critpath_groups": "critical-path-build",
           "release": {
             "branch": "rawhide",
             "dist_tag": "f39",
@@ -267,14 +167,41 @@ NONRETRIGGER = Message(
     }
 )
 
-# Bodhi 'update ready for testing' message which *is* a re-trigger
-# request (synthesized from NONRETRIGGER)
+# Non-critpath, non-listed update message
+NONCRITCREATE = copy.deepcopy(NONRETRIGGER)
+NONCRITCREATE.body['update']['critpath'] = False
+
+# Non-critpath, one-flavor-listed update message
+TLCREATE = copy.deepcopy(NONRETRIGGER)
+TLCREATE.body['update']['critpath'] = False
+TLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "pki-core-10.3.5-11.fc24", "signed": False}]
+
+# Non-critpath, two-flavors-listed update message
+TL2CREATE = copy.deepcopy(NONRETRIGGER)
+TL2CREATE.body['update']['critpath'] = False
+TL2CREATE.body['update']['builds'] = [
+    {"epoch": 0, "nvr": "pki-core-10.3.5-11.fc26", "signed": False},
+    {"epoch": 0, "nvr": "podman-4.1.1-3.fc26", "signed": False},
+]
+
+# Message with one critpath group, and a package that's in UPDATEDL
+# for a *different* flavor
+CPTLCREATE = copy.deepcopy(TLCREATE)
+CPTLCREATE.body['update']['critpath_groups'] = "critical-path-server"
+CPTLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "podman-4.1.1-3.fc26", "signed": False}]
+
+# Critpath EPEL update message
+EPELCREATE = copy.deepcopy(NONRETRIGGER)
+EPELCREATE.body['update']['release']['id_prefix'] = 'FEDORA-EPEL'
+
+# Message which *is* a re-trigger request. These used to be handled
+# differently, we may as well keep the test to make sure we don't
+# handle them differently any more
 RETRIGGER = copy.deepcopy(NONRETRIGGER)
 RETRIGGER.body["re-trigger"] = True
 RETRIGGER.body["agent"] = "adamwill"
 
-# Bodhi 'update ready for testing' message which is a re-trigger
-# request, but for EPEL stable (should be ignored)
+# Message which is for EPEL stable (should be ignored)
 # Based on
 # https://apps.fedoraproject.org/datagrepper/v2/id?id=67221afc-de86-4917-a4ac-78dd7bb282e4&is_raw=true&size=extra-large
 # but edited to have re-trigger True
@@ -324,7 +251,7 @@ NONFRETRIGGER = Message(
     }
 )
 
-# Bodhi 'update ready for testing' message for ELN (should be ignored)
+# Message for ELN (should be ignored)
 # based on
 # https://apps.fedoraproject.org/datagrepper/v2/id?id=5db774c7-e064-4c88-ad0f-14cb1db63c9d&is_raw=true&size=extra-large
 # but tweaked to have critpath True, so it'd be more likely to get
@@ -374,6 +301,75 @@ ELNREADY = Message(
         }
     }
 )
+
+# Critpath "request testing" message. These are huge, so this is heavily
+# edited. Since Bodhi 8, we should *not* trigger on these
+CRITPATHRT = Message(
+    topic="org.fedoraproject.prod.bodhi.update.request.testing",
+    body={
+        "agent": "msekleta",
+        "update": {
+            "alias": "FEDORA-2017-ea07abb5d5",
+            "builds": [
+                {
+                    "epoch": 0,
+                    "nvr": "systemd-231-14.fc24",
+                    "signed": False
+                }
+            ],
+            "critpath": True,
+            "release": {
+                "branch": "f24",
+                "dist_tag": "f24",
+                "id_prefix": "FEDORA",
+                "long_name": "Fedora 24",
+                "name": "F24",
+                "version": "24"
+            },
+        },
+    }
+)
+
+# Critpath update edit message (with new/removed builds)
+# Since Bodhi 8, we should *not* trigger on these
+CRITPATHEDIT = Message(
+    topic="org.fedoraproject.prod.bodhi.update.edit",
+    body={
+        "agent": "hobbes1069",
+        "update": {
+            "alias": "FEDORA-2017-e6d7184200",
+            "critpath": True,
+            "release": {
+                "branch": "f24",
+                "dist_tag": "f24",
+                "id_prefix": "FEDORA",
+                "long_name": "Fedora 24",
+                "name": "F24",
+                "version": "24"
+            },
+            "builds": [
+                {
+                    "epoch": 0,
+                    "nvr": "codec2-0.6-1.fc24",
+                    "signed": False
+                },
+                {
+                    "epoch": 0,
+                    "nvr": "freedv-1.2-1.fc24",
+                    "signed": False
+                }
+            ]
+        },
+        "new_builds": ["codec2-0.6-1.fc24"],
+        "removed_builds": ["codec2-0.5-1.fc24"]
+    }
+)
+
+# Critpath update edit message (without new/removed builds)
+# Since Bodhi 8, we should *not* trigger on these
+CRITPATHEDITUC = copy.deepcopy(CRITPATHEDIT)
+CRITPATHEDITUC.body["new_builds"] = []
+CRITPATHEDITUC.body["removed_builds"] = []
 
 # ELN successful compose message. Tests should run
 ELNCOMPOSE = Message(
@@ -503,8 +499,9 @@ class TestConsumers:
             # None means "run tests for all flavors").
             # if 'gotjobs' is True, we mock a query of existing jobs to
             # return some. otherwise, we mock it to return nothing. This
-            # is for testing re-trigger request scheduling in both cases.
-            # it is irrelevant to handling of other messages.
+            # used to affect how re-trigger requests were handled, but
+            # no longer does; we now use it to test handling is the same
+            # regardless
             # if "advisory" and/or "version" is a string, we'll check
             # that value is used in the update scheduling request. This is
             # for re-trigger request handling, where we do non-trivial
@@ -514,30 +511,29 @@ class TestConsumers:
             (FINISHEDCOMPOSE, False, True, None, None),
             (FINCOMPLETE, False, True, None, None),
             # for all critpath updates we should schedule for all flavors
-            (CRITPATHCREATE, False, None, None, None),
-            (CRITPATHEDIT, False, None, None, None),
-            (CRITPATHEDIT, True, None, None, None),
-            # when it looks like no builds changed in the update, we should
-            # not re-schedule
-            (CRITPATHEDITUC, False, False, None, None),
-            (CRITPATHEDITUC, True, False, None, None),
+            (NONRETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),
+            # not critpath and not listed, so no jobs
             (NONCRITCREATE, False, False, None, None),
-            (NONCRITEDIT, False, False, None, None),
-            (EPELCREATE, False, False, None, None),
-            (EPELEDIT, False, False, None, None),
             # TLCREATE contains only a 'server'-listed package
             (TLCREATE, False, {'server', 'server-upgrade'}, None, None),
-            # TLEDIT contains both 'server' and 'workstation-live-iso'-listed
+            # TL2CREATE contains both 'server' and 'container'-listed
             # packages
-            (TLEDIT, False, {'server', 'server-upgrade', 'container'}, None, None),
+            (TL2CREATE, False, {'server', 'server-upgrade', 'container'}, None, None),
             # CPTLCREATE contains a critpath group package and a
             # package in the TL list for an additional flavor
             (CPTLCREATE, False, {'server', 'server-upgrade', 'container'}, None, None),
-            (RETRIGGER, True, {'server', 'workstation'}, "FEDORA-2023-1f3e17882f", "39"),
-            (RETRIGGER, False, False, None, None),
-            (NONRETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),
+            (EPELCREATE, False, False, None, None),
+            (RETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),
+            (RETRIGGER, False, None, "FEDORA-2023-1f3e17882f", "39"),
             (NONFRETRIGGER, True, False, None, None),
             (ELNREADY, True, False, None, None),
+            # we should never schedule for 'request.testing' or 'update.edit'
+            # messages since Bodhi 8
+            (CRITPATHRT, False, False, None, None),
+            (CRITPATHEDIT, False, False, None, None),
+            (CRITPATHEDIT, True, False, None, None),
+            (CRITPATHEDITUC, False, False, None, None),
+            (CRITPATHEDITUC, True, False, None, None),
             (ELNCOMPOSE, True, None, None, None),
             (ELNCOMPOSENOTSC, True, False, None, None),
             (ELNCOMPOSENOTDONE, True, False, None, None),

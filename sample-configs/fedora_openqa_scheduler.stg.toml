@@ -46,8 +46,6 @@ exchange = "amq.topic"
 # we subscribe to prod not staging keys here as per above.
 routing_keys = ["org.fedoraproject.prod.pungi.compose.status.change",
                 "org.fedoraproject.prod.coreos.build.state.change",
-                "org.fedoraproject.prod.bodhi.update.request.testing",
-                "org.fedoraproject.prod.bodhi.update.edit",
                 "org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
                 "org.fedoraproject.prod.odcs.compose.state-changed"]
 # need this to receive messages from ZMQ->AMQP bridge
@@ -57,8 +55,6 @@ exchange = "zmq.topic"
 # we subscribe to prod not staging keys here as per above.
 routing_keys = ["org.fedoraproject.prod.pungi.compose.status.change",
                 "org.fedoraproject.prod.coreos.build.state.change",
-                "org.fedoraproject.prod.bodhi.update.request.testing",
-                "org.fedoraproject.prod.bodhi.update.edit",
                 "org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
                 "org.fedoraproject.prod.odcs.compose.state-changed"]
 

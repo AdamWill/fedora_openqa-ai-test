@@ -70,17 +70,9 @@ class OpenQAScheduler(object):
         elif 'odcs' in message.topic:
             return self._consume_odcs(message.body)
         elif 'bodhi.update.status.testing' in message.topic:
-            if message.body.get("re-trigger"):
-                return self._consume_retrigger(message.body)
-            # If it's not a re-trigger request, it should be an initial
-            # message for a new update. Use force=False to handle races
-            # with other messages and not double-schedule new updates
-            return self._consume_update(message.body, force=False)
-        elif 'bodhi.update.edit' in message.topic:
-            if message.body.get("new_builds") or message.body.get("removed_builds"):
-                return self._consume_update(message.body, force=True)
-        elif 'bodhi' in message.topic:
-            return self._consume_update(message.body, force=False)
+            # from Bodhi 8.0 onwards, this message should always and
+            # only be published when we want to run tests:
+            return self._consume_update(message.body, force=True)
 
     def _check_mainline(self, body):
         """
@@ -140,35 +132,6 @@ class OpenQAScheduler(object):
                       "%s", compose, ' '.join(str(job) for job in jobs))
         else:
             self.logger.warning("No openQA jobs run!")
-
-    def _consume_retrigger(self, body):
-        """
-        Consume a re-trigger request messages. These are published
-        when someone clicks the Re-Trigger Tests button in Bodhi.
-        Rather than re-deciding what tests to run, we'll see whether
-        we already tested the update, and for what flavors if so, and
-        re-test in that same context.
-        """
-        if not self._check_mainline(body):
-            return
-        update = body.get("update", {})
-        advisory = update.get('alias')
-        version = update.get('release', {}).get('version')
-        if not advisory or not version: # pragma: no cover
-            self.logger.warning("Unable to find advisory or version, no jobs scheduled!")
-            return
-        client = OpenQA_Client(self.openqa_hostname)
-        build = f"Update-{advisory}"
-        existjobs = client.openqa_request("GET", "jobs", params={"build": build, "latest": "1"})["jobs"]
-        flavors = [job.get("settings", {}).get("FLAVOR", "") for job in existjobs]
-        # strip the updates- prefix and ignore empty strings
-        flavors = [flavor.split("updates-")[-1] for flavor in flavors if flavor]
-        flavors = set(flavors)
-        if flavors:
-            self.logger.info("Re-running tests for update %s, flavors %s", advisory, ", ".join(flavors))
-            self._update_schedule(advisory, version, flavors, force=True, updic=update)
-        else:
-            self.logger.info("No existing jobs found, so not scheduling any!")
 
     def _consume_compose(self, body):
         """Consume a 'compose' type message."""
