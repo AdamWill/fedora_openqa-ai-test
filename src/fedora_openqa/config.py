@@ -93,6 +93,14 @@ WANTED = [
     },
     {
         "match": {
+            "subvariant": "Workstation",
+            "type": "live-osbuild",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
             "subvariant": "KDE",
             "type": "live",
             "format": "iso",

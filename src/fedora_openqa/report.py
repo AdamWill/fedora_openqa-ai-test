@@ -242,6 +242,13 @@ def get_passed_testcases(jobs, client=None):
     """
     passed_testcases = set()
     for job in jobs:
+        # don't report any results for Workstation-live_osbuild-iso,
+        # it's an experimental alternative to Workstation-live-iso
+        # and we don't want any passes from it if the real Workstation
+        # ISO failed the test
+        if job['settings']['FLAVOR'] == "Workstation-live_osbuild-iso":
+            logger.debug("Job %d is for Workstation-live_osbuild-iso, will not report", job['id'])
+            continue
         # it's wikitcms' job to take a compose ID and figure out
         # what the validation event for it is.
         composeid = job['settings']['BUILD']

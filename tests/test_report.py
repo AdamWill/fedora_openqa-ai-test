@@ -356,6 +356,13 @@ class TestGetPassedTestcases:
         ret = fosreport.get_passed_testcases([jobdict01])
         assert len(ret) == 0
 
+    def test_wslive_osbuild_noreport(self, jobdict01):
+        """Check we don't report anything when the job was for the
+        osbuild-built Workstation live ISO.
+        """
+        jobdict01['settings']['FLAVOR'] = 'Workstation-live_osbuild-iso'
+        ret = fosreport.get_passed_testcases([jobdict01])
+        assert len(ret) == 0
 
 @mock.patch('fedora_openqa.report.get_passed_testcases', return_value=['atest'], autospec=True)
 @pytest.mark.usefixtures("oqaclientmock")

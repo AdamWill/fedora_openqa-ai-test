@@ -129,6 +129,7 @@ def fake_jobs(templates, modules):
             # universal
             imagetype = "universal"
         job = {
+            'id': 1,
             'settings': {
                 'ARCH': jobtemp['arch'],
                 'FLAVOR': jobtemp['flavor'],
