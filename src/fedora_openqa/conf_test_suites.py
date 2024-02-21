@@ -1282,10 +1282,13 @@ TESTSUITES = {
             "modules": ["workstation_core_applications"],
         },
     },
+    "archiver": [
+        "QA:Testcase_desktop_app_basic",
+    ],
     "nautilus": [
         "QA:Testcase_desktop_app_basic",
     ],
-    "eog": [
+    "loupe": [
         "QA:Testcase_desktop_app_basic",
     ],
     "evince": [
@@ -1419,12 +1422,12 @@ TESTSUITES = {
     "unwanted_packages": [],
     "desktop_fprint": [],
     # GNOME app tests that aren't in the matrix
-    "archiver": [],
     "calculator": [],
     "characters": [],
     "clocks": [],
     "contacts": [],
     "disks": [],
+    "flatpak": [],
     "fonts": [],
     "gnome-panel": [],
     "maps": [],

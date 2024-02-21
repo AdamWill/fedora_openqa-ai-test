@@ -78,9 +78,10 @@ def _uniqueres_replacements(job, tcdict):
     # desktop apps: the test suite names the app, the matrix has
     # descriptions like "file manager". so we need to map
     apps = {
+        "archiver": "archive manager",
         "evince": "document viewer",
         "gnome_text_editor": "text editor",
-        "eog": "image viewer",
+        "loupe": "image viewer",
         "desktop_terminal": "terminal emulator",
         "nautilus": "file manager",
         "help_viewer": "help viewer",
