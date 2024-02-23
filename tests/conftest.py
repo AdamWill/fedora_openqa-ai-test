@@ -672,7 +672,10 @@ def ffmock(ffmd01, ffmd02, ffimg01, ffimg02):
 def ffmock02():
     """Alternative fedfind mock using some real metadata files (from
     the Fedora-Rawhide-20230502.n.0 compose), for tests that need more
-    complete metadata.
+    complete metadata. The images.json is edited slightly to add
+    toolbox images that were introduced since we started using this
+    data (I just copied the dicts from a recent compose's images.json
+    and changed the dates).
     """
     cifile = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'data', 'composeinfo.json')
     with open(cifile, 'r') as cifh:

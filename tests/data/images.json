@@ -243,6 +243,23 @@
                         "subvariant": "Container_Minimal_Base",
                         "type": "docker",
                         "volume_id": null
+                    },
+                    {
+                        "arch": "aarch64",
+                        "bootable": false,
+                        "checksums": {
+                            "sha256": "f2224e067a59348a0d0c5f11811423bd27ab0b45b5e618ad4c0539477601b2a8"
+                        },
+                        "disc_count": 1,
+                        "disc_number": 1,
+                        "format": "tar.xz",
+                        "implant_md5": null,
+                        "mtime": 1708417427,
+                        "path": "Container/aarch64/images/Fedora-Container-Toolbox-Rawhide-20230502.n.0.aarch64.tar.xz",
+                        "size": 176035868,
+                        "subvariant": "Container_Toolbox",
+                        "type": "docker",
+                        "volume_id": null
                     }
                 ],
                 "ppc64le": [
@@ -277,6 +294,23 @@
                         "path": "Container/ppc64le/images/Fedora-Container-Minimal-Base-Rawhide-20230502.n.0.ppc64le.tar.xz",
                         "size": 30544292,
                         "subvariant": "Container_Minimal_Base",
+                        "type": "docker",
+                        "volume_id": null
+                    },
+                    {
+                        "arch": "ppc64le",
+                        "bootable": false,
+                        "checksums": {
+                            "sha256": "6b932a0474a96974a0c3151f91cb85a2b96b71781671669fa922ccf6fba6d228"
+                        },
+                        "disc_count": 1,
+                        "disc_number": 1,
+                        "format": "tar.xz",
+                        "implant_md5": null,
+                        "mtime": 1708417241,
+                        "path": "Container/ppc64le/images/Fedora-Container-Toolbox-Rawhide-20230502.n.0.ppc64le.tar.xz",
+                        "size": 177534088,
+                        "subvariant": "Container_Toolbox",
                         "type": "docker",
                         "volume_id": null
                     }
@@ -315,6 +349,23 @@
                         "subvariant": "Container_Minimal_Base",
                         "type": "docker",
                         "volume_id": null
+                    },
+                    {
+                        "arch": "s390x",
+                        "bootable": false,
+                        "checksums": {
+                            "sha256": "bac2dd3d2f465e4de27cb3db8535ba0eb65e2f16bcc2bfc4754656ef7d740049"
+                        },
+                        "disc_count": 1,
+                        "disc_number": 1,
+                        "format": "tar.xz",
+                        "implant_md5": null,
+                        "mtime": 1708417162,
+                        "path": "Container/s390x/images/Fedora-Container-Toolbox-Rawhide-20230502.n.0.s390x.tar.xz",
+                        "size": 161877856,
+                        "subvariant": "Container_Toolbox",
+                        "type": "docker",
+                        "volume_id": null
                     }
                 ],
                 "x86_64": [
@@ -349,6 +400,23 @@
                         "path": "Container/x86_64/images/Fedora-Container-Minimal-Base-Rawhide-20230502.n.0.x86_64.tar.xz",
                         "size": 28446896,
                         "subvariant": "Container_Minimal_Base",
+                        "type": "docker",
+                        "volume_id": null
+                    },
+                    {
+                        "arch": "x86_64",
+                        "bootable": false,
+                        "checksums": {
+                            "sha256": "b9b2220d9fcaf9d55d3975256b9e1c920dd5fef394837b1f321664d26c235060"
+                        },
+                        "disc_count": 1,
+                        "disc_number": 1,
+                        "format": "tar.xz",
+                        "implant_md5": null,
+                        "mtime": 1708416945,
+                        "path": "Container/x86_64/images/Fedora-Container-Toolbox-Rawhide-20230502.n.0.x86_64.tar.xz",
+                        "size": 196816344,
+                        "subvariant": "Container_Toolbox",
                         "type": "docker",
                         "volume_id": null
                     }

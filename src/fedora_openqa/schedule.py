@@ -114,6 +114,12 @@ def _get_images(rel, wanted=None):
     """Given a fedfind Release instance, this returns a list of (flavor, arch, {param: url},
     subvariant, imagetype) tuples for images to be tested.
     """
+    toolboxes = {
+        img["arch"]: img["direct_url"] for img in rel.all_images
+        if img["subvariant"] == "Container_Toolbox"
+        and img["type"] == "docker"
+        and img["format"] == "tar.xz"
+    }
     if not wanted:
         wanted = WANTED
     images = []
@@ -136,9 +142,10 @@ def _get_images(rel, wanted=None):
             param_urls = {
                 FORMAT_TO_PARAM[foundimg['format']]: url
             }
+            if arch in toolboxes:
+                param_urls["TOOLBOX_IMAGE"] = toolboxes[arch]
             images.append((flavor, arch, param_urls, subvariant, imagetype))
     return images
-
 
 def _find_duplicate_jobs(client, build, param_urls, flavor):
     """Check if we have any existing non-cancelled jobs for this

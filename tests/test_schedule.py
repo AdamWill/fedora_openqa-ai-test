@@ -104,12 +104,16 @@ class TestGetImages:
         """
         rel = fedfind.release.get_release(cid='Fedora-Rawhide-20230502.n.0')
         ret = schedule._get_images(rel)
+        toolboxx64 = f"{COMPURL}Container/x86_64/images/Fedora-Container-Toolbox-{COMPVR}.x86_64.tar.xz"
+        toolboxa64 = toolboxx64.replace("x86_64", "aarch64")
+        toolboxppc = toolboxx64.replace("x86_64", "ppc64le")
         assert ret == [
             (
                 "Server-boot-iso",
                 "x86_64",
                 {
-                    "ISO_URL": f"{COMPURL}Server/x86_64/iso/Fedora-Server-netinst-x86_64-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Server/x86_64/iso/Fedora-Server-netinst-x86_64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxx64
                 },
                 "Server",
                 "boot"
@@ -118,7 +122,8 @@ class TestGetImages:
                 "Server-dvd-iso",
                 "x86_64",
                 {
-                    "ISO_URL": f"{COMPURL}Server/x86_64/iso/Fedora-Server-dvd-x86_64-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Server/x86_64/iso/Fedora-Server-dvd-x86_64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxx64
                 },
                 "Server",
                 "dvd"
@@ -127,7 +132,8 @@ class TestGetImages:
                 "Everything-boot-iso",
                 "x86_64",
                 {
-                    "ISO_URL": f"{COMPURL}Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Everything/x86_64/iso/Fedora-Everything-netinst-x86_64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxx64
                 },
                 "Everything",
                 "boot"
@@ -136,7 +142,8 @@ class TestGetImages:
                 "Workstation-live-iso",
                 "x86_64",
                 {
-                    "ISO_URL": f"{COMPURL}Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Workstation/x86_64/iso/Fedora-Workstation-Live-x86_64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxx64
                 },
                 "Workstation",
                 "live"
@@ -145,7 +152,8 @@ class TestGetImages:
                 "KDE-live-iso",
                 "x86_64",
                 {
-                    "ISO_URL": f"{COMPURL}Spins/x86_64/iso/Fedora-KDE-Live-x86_64-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Spins/x86_64/iso/Fedora-KDE-Live-x86_64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxx64
                 },
                 "KDE",
                 "live"
@@ -154,7 +162,8 @@ class TestGetImages:
                 "Silverblue-dvd_ostree-iso",
                 "x86_64",
                 {
-                    "ISO_URL": f"{COMPURL}Silverblue/x86_64/iso/Fedora-Silverblue-ostree-x86_64-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Silverblue/x86_64/iso/Fedora-Silverblue-ostree-x86_64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxx64
                 },
                 "Silverblue",
                 "dvd-ostree"
@@ -163,7 +172,8 @@ class TestGetImages:
                 "Cloud_Base-qcow2-qcow2",
                 "x86_64",
                 {
-                    "HDD_2_URL": f"{COMPURL}Cloud/x86_64/images/Fedora-Cloud-Base-{COMPVR}.x86_64.qcow2"
+                    "HDD_2_URL": f"{COMPURL}Cloud/x86_64/images/Fedora-Cloud-Base-{COMPVR}.x86_64.qcow2",
+                    "TOOLBOX_IMAGE": toolboxx64
                 },
                 "Cloud_Base",
                 "qcow2"
@@ -172,7 +182,8 @@ class TestGetImages:
                 "Everything-boot-iso",
                 "ppc64le",
                 {
-                    "ISO_URL": f"{COMPURL}Everything/ppc64le/iso/Fedora-Everything-netinst-ppc64le-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Everything/ppc64le/iso/Fedora-Everything-netinst-ppc64le-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxppc
                 },
                 "Everything",
                 "boot"
@@ -181,7 +192,8 @@ class TestGetImages:
                 "Workstation-live-iso",
                 "ppc64le",
                 {
-                    "ISO_URL": f"{COMPURL}Workstation/ppc64le/iso/Fedora-Workstation-Live-ppc64le-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Workstation/ppc64le/iso/Fedora-Workstation-Live-ppc64le-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxppc
                 },
                 "Workstation",
                 "live"
@@ -190,7 +202,8 @@ class TestGetImages:
                 "Server-boot-iso",
                 "ppc64le",
                 {
-                    "ISO_URL": f"{COMPURL}Server/ppc64le/iso/Fedora-Server-netinst-ppc64le-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Server/ppc64le/iso/Fedora-Server-netinst-ppc64le-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxppc
                 },
                 "Server",
                 "boot"
@@ -199,7 +212,8 @@ class TestGetImages:
                 "Server-dvd-iso",
                 "ppc64le",
                 {
-                    "ISO_URL": f"{COMPURL}Server/ppc64le/iso/Fedora-Server-dvd-ppc64le-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Server/ppc64le/iso/Fedora-Server-dvd-ppc64le-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxppc
                 },
                 "Server",
                 "dvd"
@@ -208,7 +222,8 @@ class TestGetImages:
                 "Cloud_Base-qcow2-qcow2",
                 "ppc64le",
                 {
-                    "HDD_2_URL": f"{COMPURL}Cloud/ppc64le/images/Fedora-Cloud-Base-{COMPVR}.ppc64le.qcow2"
+                    "HDD_2_URL": f"{COMPURL}Cloud/ppc64le/images/Fedora-Cloud-Base-{COMPVR}.ppc64le.qcow2",
+                    "TOOLBOX_IMAGE": toolboxppc
                 },
                 "Cloud_Base",
                 "qcow2"
@@ -217,7 +232,8 @@ class TestGetImages:
                 "Silverblue-dvd_ostree-iso",
                 "ppc64le",
                 {
-                    "ISO_URL": f"{COMPURL}Silverblue/ppc64le/iso/Fedora-Silverblue-ostree-ppc64le-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Silverblue/ppc64le/iso/Fedora-Silverblue-ostree-ppc64le-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxppc
                 },
                 "Silverblue",
                 "dvd-ostree"
@@ -226,7 +242,8 @@ class TestGetImages:
                 "Minimal-raw_xz-raw.xz",
                 "aarch64",
                 {
-                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Spins/aarch64/images/Fedora-Minimal-{COMPVR}.aarch64.raw.xz"
+                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Spins/aarch64/images/Fedora-Minimal-{COMPVR}.aarch64.raw.xz",
+                    "TOOLBOX_IMAGE": toolboxa64
                 },
                 "Minimal",
                 "raw-xz"
@@ -235,7 +252,8 @@ class TestGetImages:
                 "Server-boot-iso",
                 "aarch64",
                 {
-                    "ISO_URL": f"{COMPURL}Server/aarch64/iso/Fedora-Server-netinst-aarch64-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Server/aarch64/iso/Fedora-Server-netinst-aarch64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxa64
                 },
                 "Server",
                 "boot"
@@ -244,7 +262,8 @@ class TestGetImages:
                 "Server-dvd-iso",
                 "aarch64",
                 {
-                    "ISO_URL": f"{COMPURL}Server/aarch64/iso/Fedora-Server-dvd-aarch64-{COMPVR}.iso"
+                    "ISO_URL": f"{COMPURL}Server/aarch64/iso/Fedora-Server-dvd-aarch64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxa64
                 },
                 "Server",
                 "dvd"
@@ -253,7 +272,8 @@ class TestGetImages:
                 "Server-raw_xz-raw.xz",
                 "aarch64",
                 {
-                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Server/aarch64/images/Fedora-Server-{COMPVR}.aarch64.raw.xz"
+                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Server/aarch64/images/Fedora-Server-{COMPVR}.aarch64.raw.xz",
+                    "TOOLBOX_IMAGE": toolboxa64
                 },
                 "Server",
                 "raw-xz"
@@ -263,7 +283,8 @@ class TestGetImages:
                 "aarch64",
                 {
                     # pylint: disable=line-too-long
-                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Workstation/aarch64/images/Fedora-Workstation-{COMPVR}.aarch64.raw.xz"
+                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Workstation/aarch64/images/Fedora-Workstation-{COMPVR}.aarch64.raw.xz",
+                    "TOOLBOX_IMAGE": toolboxa64
                 },
                 "Workstation",
                 "raw-xz"
@@ -272,7 +293,8 @@ class TestGetImages:
                 "Cloud_Base-qcow2-qcow2",
                 "aarch64",
                 {
-                    "HDD_2_URL": f"{COMPURL}Cloud/aarch64/images/Fedora-Cloud-Base-{COMPVR}.aarch64.qcow2"
+                    "HDD_2_URL": f"{COMPURL}Cloud/aarch64/images/Fedora-Cloud-Base-{COMPVR}.aarch64.qcow2",
+                    "TOOLBOX_IMAGE": toolboxa64
                 },
                 "Cloud_Base",
                 "qcow2"
@@ -297,7 +319,11 @@ class TestGetImages:
             (
                 "Minimal-raw_xz-raw.xz",
                 "aarch64",
-                {"HDD_2_DECOMPRESS_URL": f"{COMPURL}Spins/aarch64/images/Fedora-Minimal-{COMPVR}.aarch64.raw.xz"},
+                {
+                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Spins/aarch64/images/Fedora-Minimal-{COMPVR}.aarch64.raw.xz",
+                    # pylint: disable=line-too-long
+                    "TOOLBOX_IMAGE": f"{COMPURL}Container/aarch64/images/Fedora-Container-Toolbox-{COMPVR}.aarch64.tar.xz"
+                },
                 "Minimal",
                 "raw-xz"
             ),
