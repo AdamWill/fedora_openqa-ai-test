@@ -183,11 +183,6 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
-    "QA:Testcase_additional_repository_metalink_graphical": {
-        "section": "Installation repositories",
-        "env": "Result",
-        "type": "Installation",
-    },
     "QA:Testcase_Package_Sets_Minimal_Package_Install": {
         "section": "Package sets",
         "env": "Result",
@@ -840,14 +835,6 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_install_repository_Hard_drive_variation",
-        "QA:Testcase_Package_Sets_Minimal_Package_Install",
-    ],
-    "install_addrepo_metalink_graphical": [
-        "QA:Testcase_install_to_VirtIO",
-        "QA:Testcase_partitioning_guided_empty",
-        "QA:Testcase_Anaconda_User_Interface_Graphical",
-        "QA:Testcase_Anaconda_user_creation",
-        "QA:Testcase_additional_repository_metalink_graphical",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
     "install_simple_encrypted": [
