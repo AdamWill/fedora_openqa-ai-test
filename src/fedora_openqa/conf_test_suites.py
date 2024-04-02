@@ -892,15 +892,15 @@ TESTSUITES = {
         "QA:Testcase_kickstart_user_creation",
         "QA:Testcase_Kickstart_Nfs_Server_Path_Ks_Cfg",
     ],
-    "upgrade_minimal_64bit": [
+    "upgrade_minimal": [
         "QA:Testcase_upgrade_dnf_current_minimal",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
-    "upgrade_minimal_uefi": [
+    "upgrade_minimal_bios": [
         "QA:Testcase_upgrade_dnf_current_minimal",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
-    "upgrade_desktop_64bit": [
+    "upgrade_desktop": [
         "QA:Testcase_upgrade_dnf_current_workstation",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
@@ -908,35 +908,35 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_current_workstation_encrypted",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
-    "upgrade_server_64bit": [
+    "upgrade_server": [
         "QA:Testcase_upgrade_dnf_current_server",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
-    "upgrade_kde_64bit": [
+    "upgrade_kde": [
         "QA:Testcase_upgrade_dnf_current_kde",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
-    "upgrade_2_minimal_64bit": [
+    "upgrade_2_minimal": [
         "QA:Testcase_upgrade_dnf_previous_minimal",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
-    "upgrade_2_minimal_uefi": [
+    "upgrade_2_minimal_bios": [
         "QA:Testcase_upgrade_dnf_previous_minimal",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
-    "upgrade_2_desktop_64bit": [
+    "upgrade_2_desktop": [
         "QA:Testcase_upgrade_dnf_previous_workstation",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
-    "upgrade_2_desktop_encrypted_64bit": [
+    "upgrade_2_desktop_encrypted": [
         "QA:Testcase_upgrade_dnf_previous_workstation_encrypted",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
-    "upgrade_2_server_64bit": [
+    "upgrade_2_server": [
         "QA:Testcase_upgrade_dnf_previous_server",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
-    "upgrade_2_kde_64bit": [
+    "upgrade_2_kde": [
         "QA:Testcase_upgrade_dnf_previous_kde",
         "QA:Testcase_upgrade_dnf_previous_any",
     ],
@@ -997,7 +997,7 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
-    "install_btrfs_preserve_home_uefi": [
+    "install_btrfs_preserve_home_bios": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_custom_btrfs_preserve_home",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
@@ -1018,7 +1018,7 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
     ],
-    "install_blivet_btrfs_preserve_home_uefi": [
+    "install_blivet_btrfs_preserve_home_bios": [
         "QA:Testcase_install_to_VirtIO",
         "QA:Testcase_partitioning_blivet_btrfs_preserve_home",
         "QA:Testcase_Anaconda_User_Interface_Graphical",
@@ -1421,6 +1421,9 @@ TESTSUITES = {
     "sysmon": [],
     "tour": [],
     "weather": [],
+    # we don't have a wiki test that exactly matches this, though
+    # possibly we should
+    "secure_boot_fallback": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
