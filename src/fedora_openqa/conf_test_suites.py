@@ -1424,6 +1424,9 @@ TESTSUITES = {
     # we don't have a wiki test that exactly matches this, though
     # possibly we should
     "secure_boot_fallback": [],
+    # this test implements QA:Testcase_window_manager but so far only
+    # partially, so we can't mark it as passed
+    "navigation": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
