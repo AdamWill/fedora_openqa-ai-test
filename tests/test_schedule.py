@@ -642,6 +642,24 @@ def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     assert reqargs[1]['params'] == {'text': 'tag:Fedora-Rawhide-20230502.n.0:important:candidate'}
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
+@mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
+@mock.patch.object(fedfind.release.RawhideNightly, 'type', 'production')
+def test_jobs_from_compose_tag_comment_failed(fakeclient, fakerun, ffmock02):
+    """Check that we handle the candidate compose comment failing."""
+    # reset this in case previous test failed partway through
+    schedule.CONFIG.set("schedule", "arches", "x86_64")
+    # set a side effect on the openqa_request mock
+    fakeclient.return_value.openqa_request.side_effect=openqa_client.exceptions.RequestError(
+        "POST",
+        "https://openqa.example/api/v1/groups/1/comments?text=tag%3AFedora-40-20240410.1%3Aimportant%3Acandidate",
+        404,
+        "{'error':'Job group 1 does not exist'}"
+    )
+    ret = schedule.jobs_from_compose(COMPURL)
+    # this shouldn't error out
+    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(9)])
+
+@mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
 @mock.patch.object(fedfind.release.RawhideNightly, 'label', 'RC-1.5')
 def test_jobs_from_compose_label(fakerun, ffmock02):
     """Check that we pass compose label through to run_openqa_jobs if

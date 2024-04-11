@@ -36,6 +36,7 @@ except ImportError:
 import fedfind.helpers
 import fedfind.release
 from openqa_client.client import OpenQA_Client
+import openqa_client.exceptions
 
 # Internal dependencies
 from .config import WANTED, CONFIG, UPDATETL
@@ -415,9 +416,15 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
         and getattr(rel, 'release', '').lower() != 'eln'
     ):
         client = OpenQA_Client(openqa_hostname)
-        # we expect group 1 to be 'fedora'. I think this is reliable.
+        # we expect group 1 to be 'fedora', this is the case on both
+        # Fedora instances, but may not be on pet instances if you did
+        # not create the groups in the 'normal' order
         params = {'text': "tag:{0}:important:candidate".format(rel.cid)}
-        client.openqa_request('POST', 'groups/1/comments', params=params)
+        # just in case group 1 doesn't even exist...
+        try:
+            client.openqa_request('POST', 'groups/1/comments', params=params)
+        except openqa_client.exceptions.RequestError:
+            logger.warning("Adding comment to mark compose as 'candidate' failed! 'fedora' group is not 1?")
 
     return (rel.cid, jobs)
 
