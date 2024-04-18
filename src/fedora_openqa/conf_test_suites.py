@@ -363,6 +363,21 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
+    "QA:Testcase_upgrade_gnome-software_current_workstation": {
+        "section": "Upgrade",
+        "env": "$RUNARCH$",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_gnome-software_previous_workstation": {
+        "section": "Upgrade",
+        "env": "$RUNARCH$",
+        "type": "Installation",
+    },
+    "QA:Testcase_upgrade_plasma-discover_current_kde": {
+        "section": "Upgrade",
+        "env": "$RUNARCH$",
+        "type": "Installation",
+    },
     "QA:Testcase_Anaconda_updates.img_via_local_media": {
         "section": "Miscellaneous",
         "env": "Result",
@@ -908,6 +923,9 @@ TESTSUITES = {
         "QA:Testcase_upgrade_dnf_current_workstation_encrypted",
         "QA:Testcase_upgrade_dnf_current_any",
     ],
+    "upgrade_desktop_graphical": [
+        "QA:Testcase_upgrade_gnome-software_current_workstation",
+    ],
     "upgrade_server": [
         "QA:Testcase_upgrade_dnf_current_server",
         "QA:Testcase_upgrade_dnf_current_any",
@@ -915,6 +933,9 @@ TESTSUITES = {
     "upgrade_kde": [
         "QA:Testcase_upgrade_dnf_current_kde",
         "QA:Testcase_upgrade_dnf_current_any",
+    ],
+    "upgrade_kde_graphical": [
+        "QA:Testcase_upgrade_plasma-discover_current_kde",
     ],
     "upgrade_2_minimal": [
         "QA:Testcase_upgrade_dnf_previous_minimal",
@@ -931,6 +952,9 @@ TESTSUITES = {
     "upgrade_2_desktop_encrypted": [
         "QA:Testcase_upgrade_dnf_previous_workstation_encrypted",
         "QA:Testcase_upgrade_dnf_previous_any",
+    ],
+    "upgrade_2_desktop_graphical": [
+        "QA:Testcase_upgrade_gnome-software_previous_workstation",
     ],
     "upgrade_2_server": [
         "QA:Testcase_upgrade_dnf_previous_server",
