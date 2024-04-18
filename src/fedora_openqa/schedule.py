@@ -96,6 +96,8 @@ UPDATE_FLAVORS = {
         "silverblue-dvd_ostree-iso",
     ),
     "critical-path-compose": (
+        # podman and its deps are in this group
+        "container",
         "everything-boot-iso",
         "kde-live-iso",
         "silverblue-dvd_ostree-iso",
