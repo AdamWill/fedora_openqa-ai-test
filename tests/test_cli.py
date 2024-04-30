@@ -198,7 +198,7 @@ class TestCommandUpdateTask:
                 cli.command_update_task(args)
             assert fakejfu.call_args[1]['flavors'] == {'kde', 'kde-live-iso'}
             # check critpath plus updatetl
-            modupd["update"]["builds"][0]["nvr"] = "podman-4.1.1-3.fc36"
+            modupd["update"]["builds"][0]["nvr"] = "containernetworking-plugins-4.1.1-3.fc36"
             with pytest.raises(SystemExit) as excinfo:
                 cli.command_update_task(args)
             assert fakejfu.call_args[1]['flavors'] == {'container', 'kde', 'kde-live-iso'}

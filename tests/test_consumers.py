@@ -181,14 +181,14 @@ TL2CREATE = copy.deepcopy(NONRETRIGGER)
 TL2CREATE.body['update']['critpath'] = False
 TL2CREATE.body['update']['builds'] = [
     {"epoch": 0, "nvr": "pki-core-10.3.5-11.fc26", "signed": False},
-    {"epoch": 0, "nvr": "podman-4.1.1-3.fc26", "signed": False},
+    {"epoch": 0, "nvr": "containernetworking-plugins-4.1.1-3.fc26", "signed": False},
 ]
 
 # Message with one critpath group, and a package that's in UPDATEDL
 # for a *different* flavor
 CPTLCREATE = copy.deepcopy(TLCREATE)
 CPTLCREATE.body['update']['critpath_groups'] = "critical-path-server"
-CPTLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "podman-4.1.1-3.fc26", "signed": False}]
+CPTLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "containernetworking-plugins-4.1.1-3.fc26", "signed": False}]
 
 # Critpath EPEL update message
 EPELCREATE = copy.deepcopy(NONRETRIGGER)
