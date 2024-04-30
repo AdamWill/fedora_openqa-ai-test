@@ -156,7 +156,7 @@ class TestCommandUpdateTask:
     @pytest.mark.parametrize(
         "target",
         # update ID, task ID or tag (to test all paths)
-        ['FEDORA-2017-b07d628952', '32099714', '32099714,32099715', 'f39-python']
+        ['FEDORA-2017-b07d628952', '32099714', '32099714,32099715', 'f39-python', 'foo/somecopr']
     )
     @mock.patch('fedfind.helpers.download_json', return_value=UPDATEJSON, autospec=True)
     @mock.patch('fedora_openqa.schedule.jobs_from_update', return_value=[1, 2], autospec=True)
@@ -168,10 +168,14 @@ class TestCommandUpdateTask:
             target = target.split(",")
         elif target.startswith("FEDORA"):
             testargs = ('update', '--release', '25', target)
-        else:
+        elif target.startswith("f39"):
             testargs = ('tag', target, '25')
             # we munge the target a bit for tags
             target = "TAG_" + target
+        elif target.startswith("foo"):
+            testargs = ('copr', target, '25')
+            # we munge the target a bit for COPRs
+            target = "COPR_" + target
         args = cli.parse_args(testargs)
         with pytest.raises(SystemExit) as excinfo:
             cli.command_update_task(args)

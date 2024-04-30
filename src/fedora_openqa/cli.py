@@ -91,7 +91,7 @@ def command_fcosbuild(args):
     sys.exit()
 
 def command_update_task(args):
-    """Schedule openQA jobs for a specified update or task."""
+    """Schedule openQA jobs for a specified update, task, tag, or COPR."""
     updic = None
     flavors = None
     if args.flavor:
@@ -104,6 +104,8 @@ def command_update_task(args):
         buildarg = tasks
     elif hasattr(args, 'tag'):
         buildarg = f"TAG_{args.tag}"
+    elif hasattr(args, 'copr'):
+        buildarg = f"COPR_{args.copr}"
     else:
         buildarg = args.update
         url = 'https://bodhi.fedoraproject.org/updates/' + args.update
@@ -210,7 +212,7 @@ def parse_args(args=None):
         "all flavors will be scheduled)", metavar='FLAVORS')
     parser_compose.set_defaults(func=command_compose)
 
-    # parser_update and parser_task are nearly the same, so...
+    # update, task, tag and COPR handling are all similar
     parser_update = subparsers.add_parser('update', description="Schedule jobs for a specific update.")
     parser_update.add_argument('update', help="The update ID (e.g. 'FEDORA-2017-b07d628952')", metavar='UPDATE')
     parser_update.add_argument('--release', help="The release the update is for (e.g. '25'), automatically "
@@ -220,15 +222,17 @@ def parse_args(args=None):
     parser_task.add_argument('release', help="The release the task is for (e.g. '25')", type=int, metavar="NN")
     parser_tag = subparsers.add_parser('tag', description="Schedule jobs for a specific Koji tag.")
     parser_tag.add_argument('tag', help="The tag (e.g. 'f39-python')", metavar='TAG')
-    parser_tag.add_argument('release', help="The release the task is for (e.g. '25')", type=int, metavar="NN")
+    parser_tag.add_argument('release', help="The release the tag is for (e.g. '25')", type=int, metavar="NN")
+    parser_copr = subparsers.add_parser('copr', description="Schedule jobs for a specific COPR repository.")
+    parser_copr.add_argument('copr', help="The COPR spec (e.g. '@python/python3.13')", metavar='COPR')
+    parser_copr.add_argument('release', help="The release to test the COPR for (e.g. '25')", type=int, metavar="NN")
 
-    for updtaskparser in [parser_update, parser_task, parser_tag]:
-        if updtaskparser is parser_update:
-            targetstr = 'update'
-        elif updtaskparser is parser_task:
-            targetstr = 'task'
-        else:
-            targetstr = 'tag'
+    for (updtaskparser, targetstr) in (
+        (parser_update, 'update'),
+        (parser_task, 'task'),
+        (parser_tag, 'tag'),
+        (parser_copr, 'COPR')
+    ):
         updtaskparser.add_argument('--flavor', help="A single flavor to schedule jobs for (e.g. 'server'), "
                                    "otherwise jobs will be scheduled for relevant critpath groups and flavors "
                                    "listed in the UPDATETL list (for updates on the critical path) or all "
@@ -241,9 +245,11 @@ def parse_args(args=None):
         updtaskparser.add_argument(
             '--force', '-f', help="For each flavor, schedule jobs even if there are existing, non-cancelled jobs "
             "for the {0} for that flavor".format(targetstr), action='store_true')
+
     parser_update.set_defaults(func=command_update_task)
     parser_task.set_defaults(func=command_update_task)
     parser_tag.set_defaults(func=command_update_task)
+    parser_copr.set_defaults(func=command_update_task)
 
     parser_fcosbuild = subparsers.add_parser(
         "fcosbuild", description="Schedule jobs for a Fedora CoreOS build stream."

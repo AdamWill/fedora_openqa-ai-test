@@ -542,9 +542,10 @@ def jobs_from_update(
         arch = 'x86_64'
     if isinstance(update, str) and update.isdigit():
         update = [update]
+
     if isinstance(update, list):
         if not all(item.isdigit() for item in update):
-            raise TriggerException("Can only pass multiple Koji tasks, not updates or side tags!")
+            raise TriggerException("Can only pass multiple Koji tasks, not updates or side tags or COPRs!")
         idstring = "_".join(update)
         # Koji task ID: treat as a non-reported scratch build test
         build = f"Kojitask-{idstring}-NOREPORT"
@@ -558,6 +559,7 @@ def jobs_from_update(
         advval = idstring
         updrepo = "nfs://172.16.2.110:/mnt/update_repo"
         baseparams = {}
+        secboot = False
         if not version:
             raise TriggerException("Must provide version when scheduling a Koji task!")
     elif update.startswith("TAG_"):
@@ -567,9 +569,28 @@ def jobs_from_update(
         advkey = 'TAG'
         advval = update
         baseparams = {}
+        secboot = True
         updrepo = f"https://kojipkgs.fedoraproject.org/repos/{update}/latest/{arch}"
         if not version:
             raise TriggerException("Must provide version when scheduling a Koji tag!")
+    elif update.startswith("COPR_"):
+        # we're testing a COPR
+        build = f"{update}-NOREPORT"
+        update = update[5:]
+        relver = version
+        # this is the same as relparams["RAWREL"] but we can't get
+        # that yet...
+        if relver == str(fedfind.helpers.get_current_release(branched=True) + 1):
+            relver = "rawhide"
+        updrepo = f"https://download.copr.fedorainfracloud.org/results/{update}/fedora-{relver}-{arch}"
+        # now we got the URL, sanitize the weird characters to avoid filename issues
+        update = update.replace("/", "_").replace("@", "_")
+        advkey = "COPR"
+        advval = update
+        baseparams = {}
+        secboot = False
+        if not version:
+            raise TriggerException("Must provide version when scheduling a COPR!")
     else:
         # normal update case
         build = 'Update-{0}'.format(update)
@@ -590,6 +611,7 @@ def jobs_from_update(
             # find version in update data
             version = updic['release']['version']
         baseparams = {}
+        secboot = True
         # chunk the nvr list, to avoid awkward problems with very
         # long values like https://progress.opensuse.org/issues/121054
         chunksize = 20
@@ -634,6 +656,17 @@ def jobs_from_update(
                        "release is same as update release. This may cause some tests to fail "
                        "if that is not true.")
         relparams["CURRREL"] = version
+
+    if not secboot:
+        # when testing scratch builds and COPRs, packages that should
+        # be SB-signed will not be, so boot may fail with SB enabled;
+        # override the default SB-enabled pflash files with SB-disabled
+        # ones and untoggle UEFI_SECURE
+        baseparams.update({
+            'UEFI_PFLASH_CODE': '%INSECURE_PFLASH_CODE%',
+            'UEFI_PFLASH_VARS': '%INSECURE_PFLASH_VARS%',
+            'UEFI_SECURE': '',
+        })
 
     # find oldest release
     try:

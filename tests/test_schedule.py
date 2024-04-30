@@ -928,6 +928,9 @@ def test_jobs_from_update_kojitask(fakeclient, fakecurrr, fakecurrs):
         'FLAVOR': 'updates-everything-boot-iso',
         'CURRREL': '29',
         'RAWREL': '30',
+        'UEFI_PFLASH_CODE': '%INSECURE_PFLASH_CODE%',
+        'UEFI_PFLASH_VARS': '%INSECURE_PFLASH_VARS%',
+        'UEFI_SECURE': '',
         'UP1REL': '27',
         'UP2REL': '26',
     }
@@ -998,6 +1001,53 @@ def test_jobs_from_update_kojitag(fakeclient, fakecurrr, fakecurrs):
     # check we error out if no release is passed
     with pytest.raises(schedule.TriggerException):
         ret = schedule.jobs_from_update('TAG_f39-python', flavors=['everything-boot-iso'])
+
+@mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])
+@mock.patch('fedfind.helpers.get_current_release', return_value=29)
+@mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
+def test_jobs_from_update_copr(fakeclient, fakecurrr, fakecurrs):
+    """Test jobs_from_update works as expected when passed a COPR
+    name. We don't need to recheck everything, just the differing vars.
+    """
+    # the OpenQA_Client instance mock
+    fakeinst = fakeclient.return_value
+    # for now, return no 'jobs' (for the dupe query), one 'id' (for
+    # the post request)
+    fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
+    # simple case
+    ret = schedule.jobs_from_update('COPR_@foo/somecopr', version='28', flavors=['everything-boot-iso'])
+    # should get one job for one flavor
+    assert ret == [1]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # one flavor, one call
+    assert len(posts) == 1
+    parmdict = posts[0][1]["data"]
+    assert parmdict == {
+        'DISTRI': 'fedora',
+        'VERSION': '28',
+        'ARCH': 'x86_64',
+        'BUILD': 'COPR_@foo/somecopr-NOREPORT',
+        'COPR': '_foo_somecopr',
+        'ADVISORY_OR_TASK': '_foo_somecopr',
+        'UPDATE_OR_TAG_REPO': 'https://download.copr.fedorainfracloud.org/results/@foo/somecopr/fedora-28-x86_64',
+        '_OBSOLETE': '1',
+        '_ONLY_OBSOLETE_SAME_BUILD': '1',
+        'START_AFTER_TEST': '',
+        'QEMU_HOST_IP': '172.16.2.2',
+        'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
+        'FLAVOR': 'updates-everything-boot-iso',
+        'CURRREL': '29',
+        'RAWREL': '30',
+        'UEFI_PFLASH_CODE': '%INSECURE_PFLASH_CODE%',
+        'UEFI_PFLASH_VARS': '%INSECURE_PFLASH_VARS%',
+        'UEFI_SECURE': '',
+        'UP1REL': '27',
+        'UP2REL': '26',
+    }
+    # check we error out if no release is passed
+    with pytest.raises(schedule.TriggerException):
+        ret = schedule.jobs_from_update('COPR_@foo/somecopr', flavors=['everything-boot-iso'])
 
 @mock.patch("fedfind.helpers.download_json", return_value=COREOSJSON)
 @mock.patch("fedfind.helpers.get_current_stables", return_value=[33, 34, 35])
