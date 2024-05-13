@@ -1,6 +1,7 @@
 fedfind>=3.3.0
 fedora-messaging
 openqa-client>=1.1
+requests
 setuptools
 six
 resultsdb_api>=2.1.5

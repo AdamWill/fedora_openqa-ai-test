@@ -18,7 +18,7 @@
 # Author:   Adam Williamson <awilliam@redhat.com>
 
 # these are all kinda inappropriate for pytest patterns
-# pylint: disable=old-style-class, no-init, protected-access, no-self-use, unused-argument
+# pylint: disable=old-style-class, no-init, protected-access, no-self-use, unused-argument, too-many-arguments
 
 """Tests for the CLI code."""
 
@@ -30,6 +30,7 @@ import copy
 from unittest import mock
 
 # external imports
+from freezegun import freeze_time
 import pytest
 
 # 'internal' imports
@@ -399,4 +400,153 @@ class TestCommandReport:
         if fakerdb in fakes:
             assert fake.call_args[1]['resultsdb_url'] == rdbu
 
+
+class TestCommandBlocked:
+    """Tests for the command_blocked function."""
+
+    @pytest.mark.parametrize("report", [True, False])
+    @mock.patch("fedora_openqa.cli.OpenQA_Client", autospec=True)
+    @mock.patch("requests.post", autospec=True)
+    @mock.patch("fedfind.helpers.download_json", autospec=True)
+    @mock.patch("fedora_openqa.report.resultsdb_report", autospec=True)
+    def test_blocked(self, fakereport, fakedljson, fakepost, fakeclient, report):
+        """
+        Test the blocked subcommand works as expected, with a bunch of
+        fake data that boils down to one 'missed' result we report as
+        complete and one 'missed' result we report as not finished.
+        Tests both with and without --report.
+        """
+        fakedljson.side_effect = [
+            # fake getting two pages of data from bodhi, trimmed to
+            # the fields we care about
+            {
+                "updates": [
+                    {
+                        "test_gating_status": "passed",
+                        "critpath_groups": "core critical-path-build",
+                        "release": {"version": "41"},
+                        "alias": "FEDORA-2024-f39890a065",
+                        "url": "https://bodhi.fedoraproject.org/updates/FEDORA-2024-f39890a065"
+                    },
+                    {
+                        "test_gating_status": "failed",
+                        "critpath_groups": "core critical-path-compose",
+                        "release": {"version": "40"},
+                        "alias": "FEDORA-2024-e1daa5bda2",
+                        "url": "https://bodhi.fedoraproject.org/updates/FEDORA-2024-e1daa5bda2"
+                    }
+                ],
+                "pages": 2
+            },
+            {
+                "updates": [
+                    {
+                        "test_gating_status": "failed",
+                        "critpath_groups": "",
+                        "release": {"version": "39"},
+                        "alias": "FEDORA-2024-6da0169ae7",
+                        "url": "https://bodhi.fedoraproject.org/updates/FEDORA-2024-6da0169ae7"
+                    },
+                    {
+                        "test_gating_status": "waiting",
+                        "critpath_groups": "critical-path-gnome",
+                        "release": {"version": "41"},
+                        "alias": "FEDORA-2024-dd49d10899",
+                        "url": "https://bodhi.fedoraproject.org/updates/FEDORA-2024-dd49d10899"
+                    }
+                ],
+                "pages": 2
+            }
+        ]
+        # fake getting appropriate greenwave responses for each of the
+        # three updates we should get here for
+        fakepost.return_value.json.side_effect = [
+            {
+                # trimmed, we only care if it's there or not
+                "unsatisfied_requirements": [{"item": {"item": "FEDORA-2024-e1daa5bda2", "type": "bodhi_update"}}],
+                "results": [
+                    {
+                        # should be ignored
+                        "outcome": "INFO",
+                        "ref_url": "https://openqa.fedoraproject.org/tests/2622431",
+                        "submit_time": "2024-05-13T16:16:33.036460"
+                    },
+                    {
+                        # should be considered
+                        "outcome": "RUNNING",
+                        "ref_url": "https://openqa.fedoraproject.org/tests/2622432",
+                        # old enough to count
+                        "submit_time": "2024-05-13T16:16:33.036460"
+                    }
+                ]
+            },
+            {
+                "unsatisfied_requirements": [{"item": {"item": "FEDORA-2024-6da0169ae7", "type": "bodhi_update"}}],
+                "results": [
+                    {
+                        # should be considered
+                        "outcome": "QUEUED",
+                        "ref_url": "https://openqa.fedoraproject.org/tests/2622433",
+                        # too new
+                        "submit_time": "2024-05-15T16:16:33.036460"
+                    },
+                    {
+                        # should be considered
+                        "outcome": "QUEUED",
+                        "ref_url": "https://openqa.fedoraproject.org/tests/2622434",
+                        # old enough
+                        "submit_time": "2024-05-13T16:16:33.036460"
+                    }
+                ]
+            },
+            {
+                # should be ignored
+                "unsatisfied_requirements": [],
+                "results": [
+                    {
+                        # would be considered if there were unsatisfied reqs
+                        "outcome": "RUNNING",
+                        "ref_url": "https://openqa.fedoraproject.org/tests/2622433",
+                        # old enough
+                        "submit_time":"2024-05-13T16:16:33.036460"
+                    }
+                ]
+            }
+        ]
+        # fake appropriate openQA client responses for the two jobs we
+        # should get here for
+        fakeclient().get_jobs.side_effect = [
+            [{"id": 2622432, "result": "passed"}],
+            [{"id": 2622434, "result": "none"}]
+        ]
+        command = ["blocked"]
+        if report:
+            command.append("--report")
+        args = cli.parse_args(command)
+        with freeze_time("2024-05-15 00:00:00", tz_offset=0):
+            cli.command_blocked(args)
+        assert fakedljson.call_count == 2
+        url = "https://bodhi.fedoraproject.org/updates/?status=testing&critpath=True"
+        # ew, tuple syntax
+        assert fakedljson.call_args_list == [((url,),), ((f"{url}&page=2",),)]
+        assert fakepost.call_count == 3
+        assert fakeclient().get_jobs.call_count == 2
+        assert fakeclient().get_jobs.call_args_list == [
+            ({"jobs": ["2622432"], "filter_dupes": False},),
+            ({"jobs": ["2622434"], "filter_dupes": False},)
+        ]
+        if report:
+            assert fakereport.call_count == 1
+            # check we actually try to report the right job
+            assert fakereport.call_args == (
+                {
+                    "resultsdb_url": None,
+                    "openqa_hostname": None,
+                    "openqa_baseurl": None,
+                    "jobs": [2622432],
+                    "do_report": True
+                },
+            )
+        else:
+            assert fakereport.call_count == 0
 # vim: set textwidth=120 ts=8 et sw=4:

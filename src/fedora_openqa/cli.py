@@ -25,12 +25,16 @@
 
 # Standard libraries
 import argparse
+import datetime
 from functools import partial
+import json
 import logging
 import sys
 
 # External dependencies
 import fedfind.helpers
+from openqa_client.client import OpenQA_Client
+import requests
 from resultsdb_api import ResultsDBapiException
 
 # Internal dependencies
@@ -162,6 +166,72 @@ def command_report(args):
             except (report.LoginError, ResultsDBapiException) as e:
                 logger.error("Reporting failed: %s", e)
 
+def command_blocked(args):
+    """
+    Find updates blocked from stable because a finished test has not
+    been reported, and optionally fix them.
+    """
+    url = "https://bodhi.fedoraproject.org/updates/?status=testing&critpath=True"
+    resp = fedfind.helpers.download_json(url)
+    client = None
+    updates = [update for update in resp["updates"] if update["test_gating_status"] in ("failed", "waiting")]
+    print("Got updates page 1...")
+    if resp["pages"] > 1:
+        for i in range(2, resp["pages"] + 1):
+            newurl = f"{url}&page={i}"
+            resp = fedfind.helpers.download_json(newurl)
+            updates.extend(
+                [update for update in resp["updates"] if update["test_gating_status"] in ("failed", "waiting")]
+            )
+            print(f"Got updates page {i} of {resp['pages']}")
+    for update in updates:
+        # query greenwave for update
+        url = "https://greenwave.fedoraproject.org/api/v1.0/decision"
+        contexts = []
+        if update["critpath_groups"]:
+            for group in update["critpath_groups"].split():
+                contexts.insert(0, f"bodhi_update_push_stable_{group}_critpath")
+        else:
+            contexts = ["bodhi_update_push_stable"]
+        resp = requests.post(url, headers={'Content-Type': 'application/json'}, data=json.dumps(
+            {
+                "product_version": f"fedora-{update['release']['version']}",
+                "decision_context": contexts,
+                "subject": [{"item": update["alias"], "type": "bodhi_update"}],
+                "verbose": True
+            }
+        )).json()
+        if not resp["unsatisfied_requirements"]:
+            continue
+        incompletes = [result for result in resp["results"] if result["outcome"] in ("QUEUED", "RUNNING")]
+        now = datetime.datetime.now(datetime.timezone.utc)
+        # can't compare naive to aware, and getting an aware version
+        # of the submit_time is a pain before Python 3.11
+        now = now.replace(tzinfo=None)
+        olds = [
+            res["ref_url"] for res in incompletes
+            if now - datetime.datetime.fromisoformat(res["submit_time"]) > datetime.timedelta(hours=8)
+        ]
+        if not olds:
+            continue
+        print(update["url"])
+        if not client:
+            # this is hardcoded as this check can only
+            # work on prod
+            client = OpenQA_Client("openqa.fedoraproject.org")
+        # gets just the openQA job ID
+        olds = [old.split("/")[-1] for old in olds]
+        olds = client.get_jobs(jobs=olds, filter_dupes=False)
+        finished = [str(old["id"]) for old in olds if old["result"] != "none"]
+        for job in [str(old["id"]) for old in olds if str(old["id"]) not in finished]:
+            print("UNFINISHED OLD RESULT: " + job)
+        for job in finished:
+            print("FINISHED OLD RESULT: " + job)
+        if args.report and finished:
+            # bit weird but the easiest way to do this
+            # resultsdb_url not implemented as not needed
+            command_report(parse_args(["report", "--resultsdb"] + finished))
+
 
 ### ARGUMENT PARSING AND SUB-COMMAND INIT
 
@@ -287,6 +357,15 @@ def parse_args(args=None):
         "--resultsdb-url", help="ResultsDB URL to report to (default: "
         "http://localhost:5001/api/v2.0/)")
     parser_report.set_defaults(func=command_report)
+
+    parser_blocked = subparsers.add_parser(
+        'blocked', description="Find updates blocked because a completed test has not been reported to resultsdb "
+        "and, optionally, report them."
+    )
+    parser_blocked.add_argument(
+        "--report", action="store_true", default=False, help="Whether to submit results"
+    )
+    parser_blocked.set_defaults(func=command_blocked)
 
     parser.add_argument(
         '--log-file', '-f', help="If given, log into specified file. When not provided, stdout"
