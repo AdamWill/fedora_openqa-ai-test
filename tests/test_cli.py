@@ -417,17 +417,11 @@ class TestCommandBlocked:
         Tests both with and without --report.
         """
         fakedljson.side_effect = [
-            # fake getting two pages of data from bodhi, trimmed to
-            # the fields we care about
+            # fake getting two pages of data from bodhi for the failed
+            # query and one for the waiting query, trimmed to the
+            # fields we care about
             {
                 "updates": [
-                    {
-                        "test_gating_status": "passed",
-                        "critpath_groups": "core critical-path-build",
-                        "release": {"version": "41"},
-                        "alias": "FEDORA-2024-f39890a065",
-                        "url": "https://bodhi.fedoraproject.org/updates/FEDORA-2024-f39890a065"
-                    },
                     {
                         "test_gating_status": "failed",
                         "critpath_groups": "core critical-path-compose",
@@ -447,6 +441,11 @@ class TestCommandBlocked:
                         "alias": "FEDORA-2024-6da0169ae7",
                         "url": "https://bodhi.fedoraproject.org/updates/FEDORA-2024-6da0169ae7"
                     },
+],
+                "pages": 2
+            },
+            {
+                "updates": [
                     {
                         "test_gating_status": "waiting",
                         "critpath_groups": "critical-path-gnome",
@@ -455,7 +454,7 @@ class TestCommandBlocked:
                         "url": "https://bodhi.fedoraproject.org/updates/FEDORA-2024-dd49d10899"
                     }
                 ],
-                "pages": 2
+                "pages": 1
             }
         ]
         # fake getting appropriate greenwave responses for each of the
@@ -525,10 +524,11 @@ class TestCommandBlocked:
         args = cli.parse_args(command)
         with freeze_time("2024-05-15 00:00:00", tz_offset=0):
             cli.command_blocked(args)
-        assert fakedljson.call_count == 2
-        url = "https://bodhi.fedoraproject.org/updates/?status=testing&critpath=True"
+        assert fakedljson.call_count == 3
+        furl = "https://bodhi.fedoraproject.org/updates/?gating=failed&status=pending&status=testing"
+        wurl = "https://bodhi.fedoraproject.org/updates/?gating=waiting&status=pending&status=testing"
         # ew, tuple syntax
-        assert fakedljson.call_args_list == [((url,),), ((f"{url}&page=2",),)]
+        assert fakedljson.call_args_list == [((furl,),), ((f"{furl}&page=2",),), ((wurl,),)]
         assert fakepost.call_count == 3
         assert fakeclient().get_jobs.call_count == 2
         assert fakeclient().get_jobs.call_args_list == [

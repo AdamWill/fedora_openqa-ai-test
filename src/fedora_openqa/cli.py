@@ -171,19 +171,21 @@ def command_blocked(args):
     Find updates blocked from stable because a finished test has not
     been reported, and optionally fix them.
     """
-    url = "https://bodhi.fedoraproject.org/updates/?status=testing&critpath=True"
-    resp = fedfind.helpers.download_json(url)
+    updates = []
     client = None
-    updates = [update for update in resp["updates"] if update["test_gating_status"] in ("failed", "waiting")]
-    print("Got updates page 1...")
-    if resp["pages"] > 1:
-        for i in range(2, resp["pages"] + 1):
-            newurl = f"{url}&page={i}"
-            resp = fedfind.helpers.download_json(newurl)
-            updates.extend(
-                [update for update in resp["updates"] if update["test_gating_status"] in ("failed", "waiting")]
-            )
-            print(f"Got updates page {i} of {resp['pages']}")
+    # FIXME: can be reduced to one query if
+    # https://github.com/fedora-infra/bodhi/pull/5658 is merged
+    for gating in ("failed", "waiting"):
+        url = f"https://bodhi.fedoraproject.org/updates/?gating={gating}&status=pending&status=testing"
+        resp = fedfind.helpers.download_json(url)
+        updates.extend(resp["updates"])
+        print(f"Got {gating} updates page 1...")
+        if resp["pages"] > 1:
+            for i in range(2, resp["pages"] + 1):
+                newurl = f"{url}&page={i}"
+                resp = fedfind.helpers.download_json(newurl)
+                updates.extend(resp["updates"])
+                print(f"Got updates page {i} of {resp['pages']}")
     for update in updates:
         # query greenwave for update
         url = "https://greenwave.fedoraproject.org/api/v1.0/decision"
