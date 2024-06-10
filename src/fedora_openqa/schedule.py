@@ -106,6 +106,8 @@ UPDATE_FLAVORS = {
     "critical-path-gnome": ("workstation", "workstation-upgrade", "workstation-live-iso", "silverblue-dvd_ostree-iso"),
     "critical-path-kde": ("kde", "kde-live-iso"),
     "critical-path-server": ("server", "server-upgrade"),
+    # kde and server include the 'standard' group, workstation does not
+    "critical-path-standard": ("kde", "kde-live-iso", "server", "server-upgrade"),
 }
 
 
