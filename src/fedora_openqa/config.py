@@ -109,6 +109,14 @@ WANTED = [
     },
     {
         "match": {
+            "subvariant": "i3",
+            "type": "live",
+            "format": "iso",
+            "arch": "x86_64",
+        },
+    },
+    {
+        "match": {
             "subvariant": "Silverblue",
             "type": "dvd-ostree",
             "format": "iso",

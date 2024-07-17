@@ -174,6 +174,16 @@ class TestGetImages:
                 "live"
             ),
             (
+                "i3-live-iso",
+                "x86_64",
+                {
+                    "ISO_URL": f"{COMPURL}Spins/x86_64/iso/Fedora-i3-Live-x86_64-{COMPVR}.iso",
+                    "TOOLBOX_IMAGE": toolboxx64
+                },
+                "i3",
+                "live"
+            ),
+            (
                 "Silverblue-dvd_ostree-iso",
                 "x86_64",
                 {
@@ -517,12 +527,12 @@ def test_jobs_from_compose(fakerun, ffmock02):
     # simple case
     ret = schedule.jobs_from_compose(COMPURL)
 
-    # 7 images, 1 x86_64 upgrade flavor, 1 universal arch
-    assert fakerun.call_count == 9
+    # 8 images, 1 x86_64 upgrade flavor, 1 universal arch
+    assert fakerun.call_count == 10
 
-    # the list of job ids should be 9 1s, as each fakerun call
+    # the list of job ids should be 10 1s, as each fakerun call
     # returns [1]
-    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(9)])
+    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(10)])
 
     for argtup in fakerun.call_args_list:
         # check rel identification bits got passed properly
@@ -638,8 +648,8 @@ def test_jobs_from_compose(fakerun, ffmock02):
     fakerun.reset_mock()
     with mock.patch.object(fedfind.release.RawhideNightly, 'https_url_generic', None):
         ret = schedule.jobs_from_compose(COMPURL)
-        # 7 images but *not* the upgrade flavors (inc. universal)
-        assert fakerun.call_count == 7
+        # 8 images but *not* the upgrade flavors (inc. universal)
+        assert fakerun.call_count == 8
 
     # check triggerexception is raised when appropriate
     with mock.patch('fedfind.release.get_release', side_effect=ValueError("Oops!")):
@@ -658,7 +668,7 @@ def test_jobs_from_compose_tag(fakeclient, fakerun, ffmock02):
     # reset this in case previous test failed partway through
     schedule.CONFIG.set("schedule", "arches", "x86_64")
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(9)])
+    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(10)])
     # find the args that openqa_request was last called with
     reqargs = fakeclient.return_value.openqa_request.call_args
     assert reqargs[0] == ('POST', 'groups/1/comments')
@@ -680,7 +690,7 @@ def test_jobs_from_compose_tag_comment_failed(fakeclient, fakerun, ffmock02):
     )
     ret = schedule.jobs_from_compose(COMPURL)
     # this shouldn't error out
-    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(9)])
+    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(10)])
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
 @mock.patch.object(fedfind.release.RawhideNightly, 'label', 'RC-1.5')
@@ -689,7 +699,7 @@ def test_jobs_from_compose_label(fakerun, ffmock02):
     if there is one.
     """
     ret = schedule.jobs_from_compose(COMPURL)
-    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(9)])
+    assert ret == ('Fedora-Rawhide-20230502.n.0', [1 for _ in range(10)])
     assert fakerun.call_args[1]["label"] == "RC-1.5"
 
 @mock.patch('fedora_openqa.schedule.run_openqa_jobs', return_value=[1], autospec=True)
