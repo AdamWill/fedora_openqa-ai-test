@@ -536,7 +536,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             else:
                 locator = build
                 # special case: for ELN, the locator needs to be the compose URL
-                if version == "ELN":
+                if version.lower() == "eln":
                     locator = job["settings"]["LOCATION"]
                 rdbpartial = partial(FedoraComposeResult, locator, tc_name='compose.' + tc_name)
 
