@@ -321,7 +321,7 @@ def wiki_report(wiki_hostname=None, jobs=None, build=None, do_report=True, openq
     jobs = [
         job for job in jobs
         if "coreos" not in job['settings'].get("SUBVARIANT", "").lower()
-        and job['settings']['VERSION'] != "ELN"
+        and job['settings']['VERSION'].lower() != "eln"
     ]
     if not jobs:
         logger.debug("wiki_report: All jobs were CoreOS, update or Koji task jobs, no wiki reporting possible!")
@@ -524,7 +524,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
             else:
                 locator = build
                 # special case: for ELN, the locator needs to be the compose URL
-                if version == "ELN":
+                if version.lower() == "eln":
                     locator = job["settings"]["LOCATION"]
                 rdbpartial = partial(FedoraImageResult, imagename, locator, tc_name='compose.' + tc_name)
 
