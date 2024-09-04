@@ -275,6 +275,8 @@ UPDATETL = {
     # non-critpath container-y packages to run container tests on
     'containernetworking-plugins': ('container',),
 }
+# same for ELN
+ELNUPDATETL = {}
 
 for path in ('/etc/fedora-openqa',
              '{0}/.config/fedora-openqa'.format(os.path.expanduser('~'))):
@@ -295,8 +297,17 @@ for path in ('/etc/fedora-openqa',
     try:
         # load UPDATETL override config file
         fname = '{0}/updatetl.json'.format(path)
-        with open(fname, 'r') as fout:
+        with open(fname, 'r', encoding='utf-8') as fout:
             UPDATETL = json.load(fout)
+    except IOError:
+        # file not found
+        pass
+
+    try:
+        # load ELNUPDATETL override config file
+        fname = '{0}/elnupdatetl.json'.format(path)
+        with open(fname, 'r', encoding='utf-8') as fout:
+            ELNUPDATETL = json.load(fout)
     except IOError:
         # file not found
         pass

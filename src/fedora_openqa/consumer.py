@@ -77,11 +77,11 @@ class OpenQAScheduler(object):
     def _check_mainline(self, body):
         """
         Given a message containing the standard Bodhi 'update' dict,
-        decide whether it's for mainline Fedora or not. We have to do
-        this on a couple of paths, so share the code.
+        decide whether it's for mainline Fedora or ELN, or not. We
+        have to do this on a couple of paths, so share the code.
         """
         reldict = body.get("update", {}).get('release', {})
-        if reldict.get('id_prefix') != 'FEDORA' or reldict.get('name') == 'ELN':
+        if reldict.get('id_prefix') != 'FEDORA':
             advisory = body.get("update", {}).get('alias')
             self.logger.debug("%s doesn't look like a mainline Fedora update, no jobs scheduled", advisory)
             return False

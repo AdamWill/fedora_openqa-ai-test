@@ -35,7 +35,7 @@ import pytest
 
 # 'internal' imports
 import fedora_openqa.schedule as schedule
-from fedora_openqa.schedule import UPDATE_FLAVORS
+from fedora_openqa.schedule import UPDATE_FLAVORS, ELN_UPDATE_FLAVORS
 
 # these are just used to keep some line lengths short...
 COMPURL = 'https://kojipkgs.fedoraproject.org/compose/rawhide/Fedora-Rawhide-20230502.n.0/compose/'
@@ -79,6 +79,21 @@ UPDATEJSON = {
     ],
     'release': {
         'version': '25'
+    }
+}
+# simpler update JSON for an ELN update
+ELNUPDATEJSON = {
+    'builds': [
+        {
+          'epoch': 0,
+          'nvr': 'python-cryptography-43.0.0-3.eln142',
+          'release_id': 46,
+          'signed': False,
+          'type': 'rpm'
+        }
+    ],
+    'release': {
+        'version': 'eln'
     }
 }
 # trimmed CoreOS build metadata JSON, used for scheduling CoreOS jobs
@@ -890,6 +905,35 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
             assert post[1]['data']['HDD_1'] in ['disk_f25_server_3_ppc64le.qcow2',
                                            'disk_f25_desktop_4_ppc64le.qcow2',
                                            'disk_f25_kde_4_ppc64le.qcow2']
+
+@mock.patch('fedfind.helpers.get_current_stables', return_value=[24, 25])
+@mock.patch('fedfind.helpers.get_current_release', return_value=25)
+@mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
+def test_jobs_from_update_eln(fakeclient, fakecurrr, fakecurrs):
+    """Test jobs_from_update with an ELN update."""
+    # many assertions below depend on the number of update flavors
+    # we have; instead of changing them all every time we change
+    # that, we update this constant
+    allflavors = set()
+    for flavlist in ELN_UPDATE_FLAVORS.values():
+        allflavors.update(flavlist)
+    numflavors = len(allflavors)
+    # the OpenQA_Client instance mock
+    fakeinst = fakeclient.return_value
+    # for now, return no 'jobs' (for the dupe query), one 'id' (for
+    # the post request)
+    fakeinst.openqa_request.return_value = {'jobs': [], 'ids': [1]}
+    # simple case, using release detection
+    ret = schedule.jobs_from_update('FEDORA-2024-32f9547504', updic=ELNUPDATEJSON)
+    # should get as many jobs (all with id 1 due to the mock return
+    # value) as we have flavors
+    assert ret == [1 for i in range(numflavors)]
+    # find the POST calls
+    posts = [call for call in fakeinst.openqa_request.call_args_list if call[0][0] == 'POST']
+    # should be as many calls as we have flavors
+    assert len(posts) == numflavors
+    parmdict = posts[0][1]['data']
+    assert parmdict['VERSION'] == 'eln'
 
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])
 @mock.patch('fedfind.helpers.get_current_release', return_value=29)

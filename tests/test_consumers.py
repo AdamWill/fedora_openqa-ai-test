@@ -251,45 +251,29 @@ NONFRETRIGGER = Message(
     }
 )
 
-# Message for ELN (should be ignored)
+# Message for ELN, two critpath groups
 # based on
-# https://apps.fedoraproject.org/datagrepper/v2/id?id=5db774c7-e064-4c88-ad0f-14cb1db63c9d&is_raw=true&size=extra-large
-# but tweaked to have critpath True, so it'd be more likely to get
-# wrongly scheduled if our code for filtering out ELN updates is bad
+# https://apps.fedoraproject.org/datagrepper/v2/id?id=053e4892-eda1-41e8-8f84-7b0c640bc1f6&is_raw=true&size=extra-large
 ELNREADY = Message(
     topic="org.fedoraproject.prod.bodhi.update.status.testing.koji-build-group.build.complete",
     body={
         "re-trigger": False,
         "artifact": {
-          "release": "eln",
           "type": "koji-build-group",
           "builds": [
             {
-              "component": "flatseal",
-              "id": 2196491,
-              "issuer": "distrobuildsync-eln/jenkins-continuous-infra.apps.ci.centos.org",
-              "nvr": "flatseal-2.0.1-1.eln126",
-              "scratch": False,
-              "task_id": 100775538,
+              "id": 2541168,
+              "nvr": "python-cryptography-43.0.0-3.eln142",
+              "task_id": 122953079,
               "type": "koji-build"
             }
-          ],
-          "repository": "https://bodhi.fedoraproject.org/updates/FEDORA-2023-93373477e7",
-          "id": "FEDORA-2023-93373477e7-1a19d6c10fd4ec79f7e69e0705136b9bf422c828"
+          ]
         },
-        "contact": {
-          "docs": "https://docs.fedoraproject.org/en-US/ci/",
-          "team": "Fedora CI",
-          "email": "admin@fp.o",
-          "name": "Bodhi"
-        },
-        "version": "0.2.2",
         "agent": "bodhi",
-        "generated_at": "2022-04-30T04:40:03.670552Z",
         "update": {
-          "alias": "FEDORA-2023-93373477e7",
+          "alias": "FEDORA-2024-32f9547504",
           "critpath": True,
-          "critpath_groups": "critical-path-build",
+          "critpath_groups": "critical-path-compose critical-path-server",
           "release": {
             "branch": "eln",
             "dist_tag": "eln",
@@ -301,6 +285,13 @@ ELNREADY = Message(
         }
     }
 )
+
+# Like TLCREATE but for ELN - should schedule no jobs as pki-core is
+# not in ELNUPDATETL
+ELNTLCREATE = copy.deepcopy(ELNREADY)
+ELNTLCREATE.body['update']['critpath'] = False
+ELNTLCREATE.body['update']['critpath_groups'] = ""
+ELNTLCREATE.body['update']['builds'] = [{"epoch": 0, "nvr": "pki-core-10.3.5-11.fc24", "signed": False}]
 
 # Critpath "request testing" message. These are huge, so this is heavily
 # edited. Since Bodhi 8, we should *not* trigger on these
@@ -526,7 +517,8 @@ class TestConsumers:
             (RETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),
             (RETRIGGER, False, None, "FEDORA-2023-1f3e17882f", "39"),
             (NONFRETRIGGER, True, False, None, None),
-            (ELNREADY, True, False, None, None),
+            (ELNREADY, False, {'everything-boot-iso'}, None, None),
+            (ELNTLCREATE, False, False, None, None),
             # we should never schedule for 'request.testing' or 'update.edit'
             # messages since Bodhi 8
             (CRITPATHRT, False, False, None, None),

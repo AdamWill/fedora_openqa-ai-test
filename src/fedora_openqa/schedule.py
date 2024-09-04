@@ -39,7 +39,7 @@ from openqa_client.client import OpenQA_Client
 import openqa_client.exceptions
 
 # Internal dependencies
-from .config import WANTED, CONFIG, UPDATETL
+from .config import WANTED, CONFIG, UPDATETL, ELNUPDATETL
 
 logger = logging.getLogger(__name__)
 
@@ -108,6 +108,13 @@ UPDATE_FLAVORS = {
     "critical-path-server": ("server", "server-upgrade"),
     # kde and server include the 'standard' group, workstation does not
     "critical-path-standard": ("kde", "kde-live-iso", "server", "server-upgrade"),
+}
+# same, but for ELN, where we don't test as much stuff
+ELN_UPDATE_FLAVORS = {
+    "core": ("everything-boot-iso",),
+    "critical-path-anaconda": ("everything-boot-iso",),
+    "critical-path-base": ("everything-boot-iso",),
+    "critical-path-compose": ("everything-boot-iso",),
 }
 
 
@@ -486,25 +493,31 @@ def get_critpath_flavors(updic):
     flavors = set()
     cpgroups = updic.get("critpath_groups")
     if cpgroups:
+        sourceflavs = UPDATE_FLAVORS
+        if updic.get("release", {}).get("version") == "eln":
+            sourceflavs = ELN_UPDATE_FLAVORS
         cpgroups = cpgroups.split(" ")
         for cpgroup in cpgroups:
-            flavors.update(UPDATE_FLAVORS.get(cpgroup, tuple()))
+            flavors.update(sourceflavs.get(cpgroup, tuple()))
     return flavors
 
 
 def get_testlist_flavors(updic):
     """Given the dict for an update, determine any flavors from
-    the UPDATETL config list.
+    the UPDATETL or ELNUPDATETL config list.
     """
     flavors = set()
+    tl = UPDATETL
+    if updic.get("release", {}).get("version") == "eln":
+        tl = ELNUPDATETL
     for build in updic.get('builds', []):
         # get just the package name by splitting the NVR. This
         # assumes all NVRs actually contain a V and an R.
         # Happily, RPM rejects dashes in version or release.
         pkgname = build['nvr'].rsplit('-', 2)[0]
         # now check the list and adjust flavors
-        if pkgname in UPDATETL:
-            flavors.update(UPDATETL[pkgname])
+        if pkgname in tl:
+            flavors.update(tl[pkgname])
     return flavors
 
 
@@ -537,7 +550,10 @@ def jobs_from_update(
         version = str(version)
     if not flavors:
         flavors = set()
-        for flavlist in UPDATE_FLAVORS.values():
+        sourceflavs = UPDATE_FLAVORS
+        if updic and updic.get("release", {}).get("version") == "eln":
+            sourceflavs = ELN_UPDATE_FLAVORS
+        for flavlist in sourceflavs.values():
             flavors.update(flavlist)
     if not arch:
         # set a default in a way that works neatly with the CLI bits
@@ -683,7 +699,7 @@ def jobs_from_update(
     jobs = []
 
     for flavor in flavors:
-        if int(version) == oldest and 'upgrade' in flavor:
+        if 'upgrade' in flavor and (not version.isdigit() or int(version) == oldest):
             # we don't want to run upgrade tests in this case; we
             # don't support upgrade from EOL releases, and we don't
             # keep the necessary base disk images around
