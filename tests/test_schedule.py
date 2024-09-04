@@ -461,10 +461,18 @@ def test_run_openqa_jobs(fakedupes, fakeclient, fakecurr, ffmock02):
     assert instance.openqa_request.call_args[0][2]['BUILD'] == 'Fedora-Rawhide-20230502.n.0-EXTRA'
 
     # check openqa_hostname is passed through
+    instance.reset_mock()
     schedule.run_openqa_jobs(
         param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'Rawhide', rel.location,
         openqa_hostname='somehost')
     assert fakeclient.call_args[0][0] == 'somehost'
+
+    # check we set QEMUCPU for ELN composes
+    instance.reset_mock()
+    schedule.run_openqa_jobs(
+        param_urls, flavor, arch, subvariant, imagetype, 'Fedora-Rawhide-20230502.n.0', 'eln', rel.location,
+        openqa_hostname='somehost')
+    assert instance.openqa_request.call_args[0][2]['QEMUCPU'] == 'Haswell'
 
     # check we don't crash or fail to schedule if get_current_release
     # fails
@@ -934,6 +942,7 @@ def test_jobs_from_update_eln(fakeclient, fakecurrr, fakecurrs):
     assert len(posts) == numflavors
     parmdict = posts[0][1]['data']
     assert parmdict['VERSION'] == 'eln'
+    assert parmdict['QEMUCPU'] == 'Haswell'
 
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[28, 29])
 @mock.patch('fedfind.helpers.get_current_release', return_value=29)

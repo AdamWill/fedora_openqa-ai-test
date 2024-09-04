@@ -287,6 +287,11 @@ def run_openqa_jobs(param_urls, flavor, arch, subvariant, imagetype, build, vers
 
     params.update(param_urls)
 
+    if version.lower() == "eln" and "QEMUCPU" not in params:
+        # ELN has a higher CPU baseline, our default Nehalem will not
+        # boot it
+        params["QEMUCPU"] = "Haswell"
+
     client = OpenQA_Client(openqa_hostname)
 
     if not force:
@@ -685,6 +690,11 @@ def jobs_from_update(
             'UEFI_PFLASH_VARS': '%INSECURE_PFLASH_VARS%',
             'UEFI_SECURE': '',
         })
+
+    if version.lower() == "eln" and "QEMUCPUS" not in baseparams:
+        # ELN has a higher CPU baseline, our default Nehalem will not
+        # boot it
+        baseparams["QEMUCPU"] = "Haswell"
 
     # find oldest release
     try:
