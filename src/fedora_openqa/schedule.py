@@ -428,7 +428,7 @@ def jobs_from_compose(location, wanted=None, force=False, extraparams=None, open
     if (
         jobs
         and getattr(rel, 'type', '') == 'production'
-        and getattr(rel, 'product', '') == 'Fedora'
+        and getattr(rel, 'dist', '') == 'Fedora'
         and getattr(rel, 'release', '').lower() != 'eln'
     ):
         client = OpenQA_Client(openqa_hostname)
