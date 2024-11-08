@@ -82,16 +82,6 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
-    "QA:Testcase_Anaconda_User_Interface_VNC": {
-        "section": "User interface",
-        "env": "Result",
-        "type": "Installation",
-    },
-    "QA:Testcase_Anaconda_User_Interface_VNC_Vncconnect": {
-        "section": "User interface",
-        "env": "Result",
-        "type": "Installation",
-    },
     "QA:Testcase_Anaconda_User_Interface_serial_console": {
         "section": "User interface",
         "env": "$RUNARCH$",
@@ -1213,20 +1203,6 @@ TESTSUITES = {
     "install_kickstart_firewall_configured": [
         "QA:Testcase_kickstart_firewall_configured",
     ],
-    "install_vnc_server": [
-        "QA:Testcase_Anaconda_User_Interface_VNC",
-    ],
-    # _server is the key test here: it will only pass if client
-    # passes, and the wiki test is not passed unless both pass, so
-    # no need to list anything for _client on its own
-    "install_vnc_client": [],
-    "install_vncconnect_server": [
-        "QA:Testcase_Anaconda_User_Interface_VNC_Vncconnect",
-    ],
-    # _server is the key test here: it will only pass if client
-    # passes, and the wiki test is not passed unless both pass, so
-    # no need to list anything for _client on its own
-    "install_vncconnect_client": [],
     "install_serial_console": [
         "QA:Testcase_Anaconda_User_Interface_serial_console",
     ],
