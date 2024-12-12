@@ -199,7 +199,7 @@ class OpenQAScheduler(object):
 
         # get the critpath flavors
         cpflavors = schedule.get_critpath_flavors(update)
-        if cpflavors or update.get("critpath"):
+        if cpflavors or (update.get("critpath") and not update.get("critpath_groups")):
             self.logger.info("Scheduling openQA jobs for critical path update %s", advisory)
             if cpflavors:
                 flavors.extend(cpflavors)

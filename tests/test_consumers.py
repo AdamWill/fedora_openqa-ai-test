@@ -171,6 +171,12 @@ NONRETRIGGER = Message(
 NONCRITCREATE = copy.deepcopy(NONRETRIGGER)
 NONCRITCREATE.body['update']['critpath'] = False
 
+# Message with one critpath group, but it's one we schedule no flavors
+# for (should result in no jobs)
+CPGNFCREATE = copy.deepcopy(NONCRITCREATE)
+CPGNFCREATE.body['update']['critpath'] = True
+CPGNFCREATE.body['update']['critpath_groups'] = "critical-path-build"
+
 # Non-critpath, one-flavor-listed update message
 TLCREATE = copy.deepcopy(NONRETRIGGER)
 TLCREATE.body['update']['critpath'] = False
@@ -505,6 +511,8 @@ class TestConsumers:
             (NONRETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),
             # not critpath and not listed, so no jobs
             (NONCRITCREATE, False, False, None, None),
+            # critpath but group has no associated flavors, so no jobs
+            (CPGNFCREATE, False, False, None, None),
             # TLCREATE contains only a 'server'-listed package
             (TLCREATE, False, {'server', 'server-upgrade'}, None, None),
             # TL2CREATE contains both 'server' and 'container'-listed
