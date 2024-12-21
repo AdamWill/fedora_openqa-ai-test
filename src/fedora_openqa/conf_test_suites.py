@@ -82,6 +82,11 @@ TESTCASES = {
         "env": "Result",
         "type": "Installation",
     },
+    "QA:Testcase_Anaconda_User_Interface_RDP": {
+        "section": "User interface",
+        "env": "Result",
+        "type": "Installation",
+    },
     "QA:Testcase_Anaconda_User_Interface_serial_console": {
         "section": "User interface",
         "env": "$RUNARCH$",
@@ -481,6 +486,13 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "Server",
     },
+    "install_rdp_server": [
+        "QA:Testcase_Anaconda_User_Interface_RDP",
+    ],
+    # _server is the key test here: it will only pass if client
+    # passes, and the wiki test is not passed unless both pass, so
+    # no need to list anything for _client on its own
+    "install_rdp_client": [],
     "QA:Testcase_freeipa_trust_server_installation": {
         "env": "$RUNARCH$",
         "type": "Server",
