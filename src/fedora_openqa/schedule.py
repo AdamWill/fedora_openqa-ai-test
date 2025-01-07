@@ -129,7 +129,7 @@ def _get_images(rel, wanted=None):
     toolboxes = {
         img["arch"]: img["direct_url"] for img in rel.all_images
         if img["subvariant"] == "Container_Toolbox"
-        and img["type"] == "docker"
+        and img["type"] in ("container", "docker")
         and img["format"] == "tar.xz"
     }
     if not wanted:
