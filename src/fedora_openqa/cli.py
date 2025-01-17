@@ -255,6 +255,17 @@ def run():
     args.func(args)
 
 
+def int_or_eln(arg):
+    """Used for the release argument for subcommands that have it.
+    Accepts integers or the string "eln".
+    """
+    if arg.isdigit():
+        return arg
+    if arg in ("eln", "ELN"):
+        return "eln"
+    raise ValueError("release must be an integer or 'eln'!")
+
+
 def parse_args(args=None):
     """Parse arguments with argparse. Args can be passed in for
     testing as args; usually, will parse sys.argv.
@@ -288,16 +299,19 @@ def parse_args(args=None):
     parser_update = subparsers.add_parser('update', description="Schedule jobs for a specific update.")
     parser_update.add_argument('update', help="The update ID (e.g. 'FEDORA-2017-b07d628952')", metavar='UPDATE')
     parser_update.add_argument('--release', help="The release the update is for (e.g. '25'), automatically "
-                               "determined if omitted", type=int, metavar="NN")
+                               "determined if omitted", type=int_or_eln, metavar="NN")
     parser_task = subparsers.add_parser('task', description="Schedule jobs for a specific Koji task.")
     parser_task.add_argument('task', help="The task ID(s), comma-separated (e.g. '32099714')", metavar='TASK')
-    parser_task.add_argument('release', help="The release the task is for (e.g. '25')", type=int, metavar="NN")
+    parser_task.add_argument('release', help="The release the task is for (e.g. '25')", type=int_or_eln, metavar="NN")
     parser_tag = subparsers.add_parser('tag', description="Schedule jobs for a specific Koji tag.")
     parser_tag.add_argument('tag', help="The tag (e.g. 'f39-python')", metavar='TAG')
-    parser_tag.add_argument('release', help="The release the tag is for (e.g. '25')", type=int, metavar="NN")
+    parser_tag.add_argument('release', help="The release the tag is for (e.g. '25')", type=int_or_eln, metavar="NN")
     parser_copr = subparsers.add_parser('copr', description="Schedule jobs for a specific COPR repository.")
     parser_copr.add_argument('copr', help="The COPR spec (e.g. '@python/python3.13')", metavar='COPR')
-    parser_copr.add_argument('release', help="The release to test the COPR for (e.g. '25')", type=int, metavar="NN")
+    parser_copr.add_argument(
+        'release',
+        help="The release to test the COPR for (e.g. '25')", type=int_or_eln, metavar="NN"
+    )
 
     for (updtaskparser, targetstr) in (
         (parser_update, 'update'),

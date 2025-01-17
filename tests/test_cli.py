@@ -184,7 +184,7 @@ class TestCommandUpdateTask:
         # first arg should be target
         assert fakejfu.call_args[0][0] == target
         # second should be release
-        assert fakejfu.call_args[1]['version'] == 25
+        assert fakejfu.call_args[1]['version'] == '25'
         # flavors kwarg should be false-y (not, e.g., [None])
         assert not fakejfu.call_args[1]['flavors']
         # should print out list of scheduled jobs
@@ -208,6 +208,23 @@ class TestCommandUpdateTask:
                 cli.command_update_task(args)
             assert fakejfu.call_args[1]['flavors'] == {'container', 'kde', 'kde-live-iso'}
             fakejson.return_value = UPDATEJSON
+
+        # check 'eln' and 'ELN' are valid but other strings are not
+        for el in ('eln', 'ELN'):
+            newargs = list(testargs)
+            newargs[newargs.index('25')] = el
+            args = cli.parse_args(newargs)
+            with pytest.raises(SystemExit) as excinfo:
+                cli.command_update_task(args)
+            # should exit 0
+            assert not excinfo.value.code
+            assert fakejfu.call_args[1]['version'] == 'eln'
+        fooargs = list(testargs)
+        fooargs[fooargs.index('25')] = 'foobar'
+        with pytest.raises(SystemExit) as excinfo:
+            args = cli.parse_args(fooargs)
+        # should fail
+        assert excinfo.value.code
 
         # check 'flavor'
         args = cli.parse_args(
