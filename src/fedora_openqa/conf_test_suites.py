@@ -1299,6 +1299,9 @@ TESTSUITES = {
     "help_viewer": [
         "QA:Testcase_desktop_app_basic",
     ],
+    "gwenview": [
+        "QA:Testcase_desktop_app_basic",
+    ],
     "server_firewall_default": [
         "QA:Testcase_Server_firewall_default",
     ],
