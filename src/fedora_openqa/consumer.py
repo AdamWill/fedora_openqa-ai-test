@@ -81,7 +81,7 @@ class OpenQAScheduler(object):
         have to do this on a couple of paths, so share the code.
         """
         reldict = body.get("update", {}).get('release', {})
-        if reldict.get('id_prefix') != 'FEDORA':
+        if reldict.get('id_prefix') != 'FEDORA' or reldict.get('name') == 'ELN':
             advisory = body.get("update", {}).get('alias')
             self.logger.debug("%s doesn't look like a mainline Fedora update, no jobs scheduled", advisory)
             return False
