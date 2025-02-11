@@ -37,6 +37,7 @@ import fedfind.helpers
 import fedfind.release
 from openqa_client.client import OpenQA_Client
 import openqa_client.exceptions
+import requests
 
 # Internal dependencies
 from .config import WANTED, CONFIG, UPDATETL, ELNUPDATETL
@@ -670,6 +671,23 @@ def jobs_from_update(
         'QEMU_HOST_IP': '172.16.2.2',
         'NICTYPE_USER_OPTIONS': 'net=172.16.2.0/24',
     })
+
+    # include whether updates-testing is active for the release; this
+    # determines whether we use the buildroot repo or not
+    try:
+        relid = f"f{version}"
+        if version.lower() == "eln":
+            relid = "eln"
+        resp = requests.get(f"https://bodhi.fedoraproject.org/releases/{relid}")
+        if resp.json()["create_automatic_updates"]:
+            # we want to use the buildroot repo for any release where
+            # Bodhi *does* automatically create updates - these are
+            # releases behaving 'like Rawhide', no updates-testing,
+            # most builds go stable immediately
+            baseparams["BUILDROOT_REPO"] = f"{relid}-build"
+    except requests.exceptions.RequestException:
+        # guess it's not active
+        pass
 
     # get the release params
     relparams = _get_releases(release=version)

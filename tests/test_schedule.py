@@ -32,6 +32,7 @@ from unittest import mock
 import fedfind.release
 import openqa_client
 import pytest
+import requests
 
 # 'internal' imports
 import fedora_openqa.schedule as schedule
@@ -717,11 +718,14 @@ def test_jobs_from_compose_unsupported(fakerun):
     ret = schedule.jobs_from_compose('https://kojipkgs.fedoraproject.org/compose/updates/Fedora-Atomic-27-updates-testing-20180123.0/compose/')
     assert ret == ('', [])
 
+@mock.patch('requests.get', autospec=True)
 @mock.patch('fedfind.helpers.get_current_stables', return_value=[24, 25])
 @mock.patch('fedfind.helpers.get_current_release', return_value=25)
 @mock.patch('fedora_openqa.schedule.OpenQA_Client', autospec=True)
-def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
+def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakeget):
     """Tests for jobs_from_update."""
+    # let's act as if this release has updates-testing active
+    fakeget.return_value.json.return_value = {"create_automatic_updates": False}
     # many assertions below depend on the number of update flavors
     # we have; instead of changing them all every time we change
     # that, we update this constant
@@ -782,6 +786,8 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
     # fakecurrr returns 25 as the 'branched release' so code thinks
     # 'rawhide release' is 26
     fakeinst.openqa_request.reset_mock()
+    # let's test the buildroot repo thing here
+    fakeget.return_value.json.return_value = {"create_automatic_updates": True}
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26', updic=UPDATEJSON)
     assert ret == [1 for i in range(numflavors)]
     # check we got all the posts and set version to the number
@@ -791,6 +797,7 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
     parmdicts = [call[1]["data"] for call in posts]
     for parmdict in parmdicts:
         assert parmdict["VERSION"] == "26"
+        assert parmdict["BUILDROOT_REPO"] == "f26-build"
 
     # check we don't crash or fail to schedule if get_current_release
     # or get_current_stables fail
@@ -800,6 +807,13 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs):
     ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26', updic=UPDATEJSON)
     assert ret == [1 for i in range(numflavors)]
     fakecurrs.side_effect = None
+
+    # also if the bodhi query to decide whether to use buildroot fails
+    fakeinst.openqa_request.reset_mock()
+    fakeget.side_effect = requests.exceptions.ConnectionError()
+    ret = schedule.jobs_from_update('FEDORA-2017-b07d628952', version='26', updic=UPDATEJSON)
+    assert ret == [1 for i in range(numflavors)]
+    fakeget.side_effect = None
 
     # check we don't schedule upgrade jobs when update is for oldest
     # stable release
