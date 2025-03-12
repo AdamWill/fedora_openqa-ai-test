@@ -1328,6 +1328,9 @@ TESTSUITES = {
     "gwenview": [
         "QA:Testcase_desktop_app_basic",
     ],
+    "kwrite": [
+        "QA:Testcase_desktop_app_basic",
+    ],
     "server_firewall_default": [
         "QA:Testcase_Server_firewall_default",
     ],
@@ -1462,6 +1465,8 @@ TESTSUITES = {
     "sysmon": [],
     "tour": [],
     "weather": [],
+    # KDE app tests that aren't in the matrix
+    "kcalc": [],
     # we don't have a wiki test that exactly matches this, though
     # possibly we should
     "secure_boot_fallback": [],
