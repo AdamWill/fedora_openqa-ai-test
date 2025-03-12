@@ -587,6 +587,11 @@ TESTCASES = {
         "type": "Desktop",
         "section": "$RUNARCH$",
     },
+    "QA:Testcase_desktop_keyring": {
+        "env": "$SUBVARIANT$",
+        "type": "Desktop",
+        "section": "$RUNARCH$",
+    },
     "QA:Testcase_workstation_core_applications": {
         "env": "$SUBVARIANT$",
         "type": "Desktop",
@@ -1291,6 +1296,9 @@ TESTSUITES = {
     # (not even together with release_identification), it only *partly*
     # covers it, so we cannot report any results from it
     "desktop_background": [],
+    "desktop_keyring": [
+        "QA:Testcase_desktop_keyring",
+    ],
     # this test is also a partial check for QA:Testcase_desktop_menus
     # but we cannot really mark that as passed if this passes as it
     # does not test *everything* required there
