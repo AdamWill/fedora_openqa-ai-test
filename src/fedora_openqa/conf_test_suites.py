@@ -1473,6 +1473,8 @@ TESTSUITES = {
     # this test implements QA:Testcase_window_manager but so far only
     # partially, so we can't mark it as passed
     "navigation": [],
+    # there isn't exactly a matching test case for this...
+    "i3_tiling": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
