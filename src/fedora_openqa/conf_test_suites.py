@@ -283,6 +283,16 @@ TESTCASES = {
         "env": "$BOOTMETHOD$",
         "type": "Installation",
     },
+    "QA:Testcase_partitioning_webui_custom_standard_partition_xfs": {
+        "section": "WebUI custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
+    "QA:Testcase_partitioning_webui_custom_standard_partition_ext4": {
+        "section": "WebUI custom storage configuration",
+        "env": "$BOOTMETHOD$",
+        "type": "Installation",
+    },
     "QA:Testcase_Kickstart_File_Path_Ks_Cfg": {
         "section": "Kickstart",
         "env": "Result",
@@ -1158,6 +1168,14 @@ TESTSUITES = {
         "QA:Testcase_Anaconda_User_Interface_Graphical",
         "QA:Testcase_Anaconda_user_creation",
         "QA:Testcase_Package_Sets_Minimal_Package_Install",
+    ],
+    "install_webui_ext4": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_webui_custom_standard_partition_ext4",
+    ],
+    "install_webui_xfs": [
+        "QA:Testcase_install_to_VirtIO",
+        "QA:Testcase_partitioning_webui_custom_standard_partition_xfs",
     ],
     "install_package_set_kde": [
         "QA:Testcase_install_to_VirtIO",
