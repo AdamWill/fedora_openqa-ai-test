@@ -622,7 +622,7 @@ def resultsdb_report(resultsdb_url=None, jobs=None, build=None, do_report=True,
                 return
             # this happens if we try to report results for an old
             # live respin compose for some reason
-            if "discovered compose" in str(err) and "does not match" in str(err):
+            if "discovered " in str(err) and "does not match" in str(err):
                 logger.error("trying to report result for non-current live respin compose, "
                              "this will not work!")
                 return
