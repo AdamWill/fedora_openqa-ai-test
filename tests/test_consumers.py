@@ -525,7 +525,7 @@ class TestConsumers:
             (RETRIGGER, True, None, "FEDORA-2023-1f3e17882f", "39"),
             (RETRIGGER, False, None, "FEDORA-2023-1f3e17882f", "39"),
             (NONFRETRIGGER, True, False, None, None),
-            (ELNREADY, False, False, None, None),
+            (ELNREADY, False, {'everything-boot-iso'}, None, None),
             (ELNTLCREATE, False, False, None, None),
             # we should never schedule for 'request.testing' or 'update.edit'
             # messages since Bodhi 8
