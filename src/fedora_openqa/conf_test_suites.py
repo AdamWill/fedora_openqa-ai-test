@@ -1466,6 +1466,10 @@ TESTSUITES = {
     "navigation": [],
     # there isn't exactly a matching test case for this...
     "i3_tiling": [],
+    # there's no sanity test case for this, though maybe there should be
+    "check_packages_signed": [],
+    # ditto
+    "uefi_no_fallback": [],
 }
 
 # vim: set textwidth=120 ts=8 et sw=4:
