@@ -655,10 +655,6 @@ TESTCASES = {
         "env": "$RUNARCH$",
         "type": "General",
     },
-    "QA:Testcase_Zezere_Ignition": {
-        "env": "$RUNARCH$",
-        "type": "General",
-    },
     "QA:Testcase_toolbox": {
         "section": "$RUNARCH$",
         "env": "$SUBVARIANT$",
@@ -1435,11 +1431,6 @@ TESTSUITES = {
     ],
     "iot_clevis": [
         "QA:Testcase_Clevis",
-    ],
-    # server is just support here
-    "iot_zezere_server": [],
-    "iot_zezere_ignition": [
-        "QA:Testcase_Zezere_Ignition",
     ],
     "toolbox": [
         "QA:Testcase_toolbox",
