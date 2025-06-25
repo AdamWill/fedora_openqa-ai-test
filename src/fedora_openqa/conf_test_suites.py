@@ -1312,7 +1312,7 @@ TESTSUITES = {
     "loupe": [
         "QA:Testcase_desktop_app_basic",
     ],
-    "evince": [
+    "papers": [
         "QA:Testcase_desktop_app_basic",
     ],
     "gnome_text_editor": [

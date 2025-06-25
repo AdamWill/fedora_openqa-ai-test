@@ -79,7 +79,7 @@ def _uniqueres_replacements(job, tcdict):
     # descriptions like "file manager". so we need to map
     apps = {
         "archiver": "archive manager",
-        "evince": "document viewer",
+        "papers": "document viewer",
         "gnome_text_editor": "text editor",
         "kwrite": "text editor",
         "loupe": "image viewer",
