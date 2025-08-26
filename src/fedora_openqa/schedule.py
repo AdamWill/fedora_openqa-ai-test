@@ -66,6 +66,7 @@ FORMAT_TO_PARAM = {
 # flavors; and so on.
 UPDATE_FLAVORS = {
     "core": (
+        "cloud",
         "container",
         "server",
         "server-upgrade",
@@ -85,6 +86,7 @@ UPDATE_FLAVORS = {
     ),
     "critical-path-apps": ("kde", "server", "workstation"),
     "critical-path-base": (
+        "cloud",
         "container",
         "server",
         "server-upgrade",
@@ -96,7 +98,11 @@ UPDATE_FLAVORS = {
         "everything-boot-iso",
         "silverblue-dvd_ostree-iso",
     ),
+    "critical-path-cloud": (
+        "cloud",
+    ),
     "critical-path-compose": (
+        "cloud",
         # podman and its deps are in this group
         "container",
         "everything-boot-iso",

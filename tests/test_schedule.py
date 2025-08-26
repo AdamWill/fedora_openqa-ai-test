@@ -842,6 +842,11 @@ def test_jobs_from_update(fakeclient, fakecurrr, fakecurrs, fakeget):
         'jobs': [
             {
                 'settings': {
+                    'FLAVOR': 'updates-cloud',
+                },
+            },
+            {
+                'settings': {
                     'FLAVOR': 'updates-container',
                 },
             },
