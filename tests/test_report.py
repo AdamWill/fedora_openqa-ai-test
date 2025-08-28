@@ -97,7 +97,7 @@ def test_uniqueres_replacements(jobdict01):
     # 'app' replacements
     for (tname, expected) in (
         ("loupe", "image viewer"),
-        ("evince", "document viewer"),
+        ("papers", "document viewer"),
         ("gnome_text_editor", "text editor"),
         ("desktop_terminal", "terminal emulator"),
     ):
