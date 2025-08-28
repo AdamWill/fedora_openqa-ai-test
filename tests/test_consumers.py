@@ -368,38 +368,6 @@ CRITPATHEDITUC = copy.deepcopy(CRITPATHEDIT)
 CRITPATHEDITUC.body["new_builds"] = []
 CRITPATHEDITUC.body["removed_builds"] = []
 
-# ELN successful compose message. Tests should run
-ELNCOMPOSE = Message(
-    topic="org.fedoraproject.prod.odcs.compose.state-changed",
-    body={
-        "compose": {
-            "pungi_compose_id": "Fedora-ELN-20230619.1",
-            "state": 2,
-            "state_name": "done",
-            "state_reason": "Compose is generated successfully",
-            "toplevel_url": "https://odcs.fedoraproject.org/composes/odcs-28282",
-        },
-        "event": "state-changed"
-    }
-)
-
-# ELN compose message which wasn't for a state change
-ELNCOMPOSENOTSC = copy.deepcopy(ELNCOMPOSE)
-ELNCOMPOSENOTSC.body["event"] = "someotherevent"
-
-# ELN compose message where the state isn't 'done'
-ELNCOMPOSENOTDONE = copy.deepcopy(ELNCOMPOSE)
-ELNCOMPOSENOTDONE.body["compose"]["state"] = 3
-
-# ODCS compose message which isn't for ELN
-ODCSCOMPOSENOTELN = copy.deepcopy(ELNCOMPOSE)
-ODCSCOMPOSENOTELN.body["compose"]["pungi_compose_id"] = "odcs-28283-1-20230619.t.0"
-
-# ODCS compose message with the compose ID set to None - this broke
-# us in the real world, once
-ODCSCOMPOSENOCID = copy.deepcopy(ELNCOMPOSE)
-ODCSCOMPOSENOCID.body["compose"]["pungi_compose_id"] = None
-
 # Successful FCOS build message
 FCOSBUILD = Message(
     topic="org.fedoraproject.prod.coreos.build.state.change",
@@ -534,11 +502,6 @@ class TestConsumers:
             (CRITPATHEDIT, True, False, None, None),
             (CRITPATHEDITUC, False, False, None, None),
             (CRITPATHEDITUC, True, False, None, None),
-            (ELNCOMPOSE, True, None, None, None),
-            (ELNCOMPOSENOTSC, True, False, None, None),
-            (ELNCOMPOSENOTDONE, True, False, None, None),
-            (ODCSCOMPOSENOTELN, True, False, None, None),
-            (ODCSCOMPOSENOCID, True, False, None, None),
             (FCOSBUILD, False, None, None, None),
             (FCOSBUILDNOTF, False, False, None, None),
             (FCOSBUILDNOTS, False, False, None, None)

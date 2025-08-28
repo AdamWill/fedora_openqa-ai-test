@@ -263,6 +263,7 @@ def jobdict03():
             "HDD_1": "disk_IoT-dvd_ostree-iso_64bit.qcow2",
             "IMAGETYPE": "dvd-ostree",
             "ISO": "Fedora-IoT-IoT-ostree-x86_64-33-20200513.0.iso",
+            # pylint: disable=line-too-long
             "ISO_URL": "https://kojipkgs.fedoraproject.org/compose/iot/Fedora-IoT-33-20200513.0/compose/IoT/x86_64/iso/Fedora-IoT-IoT-ostree-x86_64-33-20200513.0.iso",
             "LABEL": "RC-20200513.0",
             "LOCATION": "https://kojipkgs.fedoraproject.org/compose/iot/Fedora-IoT-33-20200513.0/compose",
@@ -447,7 +448,7 @@ def jobdict06():
     return {
         "assets": {
             "iso": [
-                "Fedora-ELN-20230619.1-x86_64-boot.iso"
+                "Fedora-eln-20250827.n.2-x86_64-boot.iso"
             ]
         },
         "assigned_worker_id": 78,
@@ -473,7 +474,7 @@ def jobdict06():
                 "result": "passed"
             }
         ],
-        "name": "fedora-ELN-BaseOS-boot-iso-x86_64-BuildFedora-ELN-20230619.1-install_default@uefi",
+        "name": "fedora-ELN-BaseOS-boot-iso-x86_64-BuildFedora-eln-20250827.n.2-install_default@uefi",
         "parents": {
             "Chained": [],
             "Directly chained": [],
@@ -486,18 +487,19 @@ def jobdict06():
             "ARCH": "x86_64",
             "ARCH_BASE_MACHINE": "64bit",
             "BACKEND": "qemu",
-            "BUILD": "Fedora-ELN-20230619.1",
+            "BUILD": "Fedora-eln-20250827.n.2",
             "CURRREL": "38",
             "DEPLOY_UPLOAD_TEST": "install_default_upload",
             "DISTRI": "fedora",
             "FLAVOR": "BaseOS-boot-iso",
             "IMAGETYPE": "boot",
-            "ISO": "Fedora-ELN-20230619.1-x86_64-boot.iso",
-            "ISO_URL": "https://odcs.fedoraproject.org/composes/odcs-28282/compose/BaseOS/x86_64/iso/Fedora-ELN-20230619.1-x86_64-boot.iso",
+            "ISO": "Fedora-eln-20250827.n.2-x86_64-boot.iso",
+            # pylint: disable=line-too-long
+            "ISO_URL": "https://kojipkgs.fedoraproject.org/compose/eln/Fedora-eln-20250827.n.2/compose/BaseOS/x86_64/iso/Fedora-eln-20250827.n.2-x86_64-boot.iso",
             "LABEL": "Alpha-0.1687161601",
-            "LOCATION": "https://odcs.fedoraproject.org/composes/odcs-28282/compose/",
+            "LOCATION": "https://kojipkgs.fedoraproject.org/compose/eln/Fedora-eln-20250827.n.2/compose/",
             "MACHINE": "uefi",
-            "NAME": "01982167-fedora-ELN-BaseOS-boot-iso-x86_64-BuildFedora-ELN-20230619.1-install_default@uefi",
+            "NAME": "01982167-fedora-ELN-BaseOS-boot-iso-x86_64-BuildFedora-eln-20250827.n.2-install_default@uefi",
             "NICTYPE_USER_OPTIONS": "net=172.16.2.0/24",
             "PACKAGE_SET": "default",
             "PART_TABLE_TYPE": "gpt",
@@ -562,29 +564,29 @@ def ffimg01():
 @pytest.fixture(scope="function")
 def ffimg02():
     """A pre-canned fedfind image dict, for the x86_64 BaseOS DVD from
-    Fedora-ELN-20230619.1.
+    Fedora-eln-20250827.n.2.
     """
     return {
         "variant": "BaseOS",
         "arch": "x86_64",
         "bootable": True,
         "checksums": {
-            "sha256": "d87a353dc1c68b5d6cfd381f5e68738f4435499a579020c3bb328bd27ddde0e2"
+            "sha256": "8a8396d37e9acbc7c95f4dc72e5bd1adfde71a6c569b62a598e2e5d803b0be70"
         },
         "disc_count": 1,
         "disc_number": 1,
         "format": "iso",
-        "implant_md5": "8351713601685df9bf5183792a9787ab",
-        "mtime": 1687162748,
-        "path": "BaseOS/x86_64/iso/Fedora-ELN-20230619.1-x86_64-boot.iso",
-        "size": 774379520,
+        "implant_md5": "b0626aac85ed15059b007e253b117f8b",
+        "mtime": 1756332835,
+        "path": "BaseOS/x86_64/iso/Fedora-eln-20250827.n.2-x86_64-boot.iso",
+        "size": 1088778240,
         "subvariant": "BaseOS",
         "type": "boot",
         # pylint: disable=line-too-long
-        "url": "https://odcs.fedoraproject.org/composes/odcs-28282/compose/BaseOS/x86_64/iso/Fedora-ELN-20230619.1-x86_64-boot.iso",
+        "url": "https://kojipkgs.fedoraproject.org/compose/eln/Fedora-eln-20250827.n.2/compose/BaseOS/x86_64/iso/Fedora-eln-20250827.n.2-x86_64-boot.iso",
         # pylint: disable=line-too-long
-        "direct_url": "https://odcs.fedoraproject.org/composes/odcs-28282/compose/BaseOS/x86_64/iso/Fedora-ELN-20230619.1-x86_64-boot.iso",
-        "volume_id": "Fedora-ELN-BaseOS-x86_64"
+        "direct_url": "https://kojipkgs.fedoraproject.org/compose/eln/Fedora-eln-20250827.n.2/compose/BaseOS/x86_64/iso/Fedora-eln-20250827.n.2-x86_64-boot.iso",
+        "volume_id": "Fedora-eln-BaseOS-x86_64"
     }
 
 @pytest.fixture(scope="function")
@@ -620,7 +622,7 @@ def ffmd01():
 @pytest.fixture(scope="function")
 def ffmd02():
     """Incomplete metadata dict for fedfind mocking; provides enough
-    data (on Fedora-ELN-20230619.1) to avoid round trips for
+    data (on Fedora-eln-20250827.n.2) to avoid round trips for
     compose ID purposes.
     """
     return {
@@ -631,17 +633,17 @@ def ffmd02():
             },
             "payload": {
                 "compose": {
-                    "date": "20230619",
-                    "id": "Fedora-ELN-20230619.1",
-                    "respin": 1,
-                    "type": "production"
+                    "date": "20250827",
+                    "id": "Fedora-eln-20250827.n.2",
+                    "respin": 2,
+                    "type": "nightly"
                 },
                 "release": {
                     "internal": False,
                     "name": "Fedora",
                     "short": "Fedora",
                     "type": "ga",
-                    "version": "ELN"
+                    "version": "eln"
                 },
             },
         },
@@ -655,9 +657,9 @@ def ffmock(ffmd01, ffmd02, ffimg01, ffimg02):
     the test can modify them if it wants.
     """
     mdpatch = mock.patch.object(fedfind.release.RawhideNightly, 'metadata', ffmd01)
-    mdpatch2 = mock.patch.object(fedfind.release.ElnCompose, 'metadata', ffmd02)
+    mdpatch2 = mock.patch.object(fedfind.release.ElnNightly, 'metadata', ffmd02)
     imgpatch = mock.patch.object(fedfind.release.RawhideNightly, 'all_images', [ffimg01])
-    imgpatch2 = mock.patch.object(fedfind.release.ElnCompose, 'all_images', [ffimg02])
+    imgpatch2 = mock.patch.object(fedfind.release.ElnNightly, 'all_images', [ffimg02])
     mdpatch.start()
     mdpatch2.start()
     imgpatch.start()
