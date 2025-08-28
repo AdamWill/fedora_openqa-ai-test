@@ -5,7 +5,7 @@
         name: ensure-tox
     - name: Install all Python versions to test
       package:
-        name: ['python37', 'python38', 'python39', 'python310']
+        name: ['python3.8', 'python3.9', 'python3.10', 'python3.11', 'python3.12', 'python3.13']
         state: present
       become: yes
     - name: Run tox
