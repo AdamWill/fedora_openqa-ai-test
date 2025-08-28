@@ -35,6 +35,7 @@ import pytest
 
 # 'internal' imports
 import fedora_openqa.consumer
+from fedora_openqa.schedule import TriggerException
 
 # Passed test message
 PASSMSG = Message(
@@ -632,5 +633,19 @@ class TestConsumers:
         assert fake_report.call_args[1]['openqa_hostname'] == expected['oqah']
         assert fake_report.call_args[1]['resultsdb_url'] == expected['rdburl']
         fake_report.reset_mock()
+
+    @mock.patch("fedora_openqa.schedule.jobs_from_compose", autospec=True)
+    def test_schedule_no_jobs(self, fake_jfc, caplog):
+        """Test a couple of paths through compose scheduling where no
+        jobs are created.
+        """
+        fake_jfc.side_effect = TriggerException("foobar")
+        PRODSCHED(FINISHEDCOMPOSE)
+        assert "No openQA jobs run! foobar" in caplog.text
+        caplog.clear()
+        fake_jfc.side_effect = None
+        fake_jfc.return_value = ("Fedora-Atomic-25-20170206.0", [])
+        PRODSCHED(FINISHEDCOMPOSE)
+        assert "No openQA jobs run!" in caplog.text
 
 # vim: set textwidth=120 ts=8 et sw=4:
