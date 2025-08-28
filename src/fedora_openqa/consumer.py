@@ -67,8 +67,6 @@ class OpenQAScheduler(object):
             return self._consume_compose(message.body)
         elif 'coreos' in message.topic:
             return self._consume_fcosbuild(message.body)
-        elif 'odcs' in message.topic:
-            return self._consume_odcs(message.body)
         elif 'bodhi.update.status.testing' in message.topic:
             # from Bodhi 8.0 onwards, this message should always and
             # only be published when we want to run tests:
@@ -116,23 +114,6 @@ class OpenQAScheduler(object):
             else:
                 self.logger.debug("No openQA jobs run, likely already tested")
 
-    def _compose_schedule(self, location, description):
-        """Shared schedule, log, return code for _consume_compose and
-        _consume_odcs.
-        """
-        self.logger.info("Scheduling openQA jobs for compose %s", description)
-        try:
-            # pylint: disable=no-member
-            (compose, jobs) = schedule.jobs_from_compose(location, openqa_hostname=self.openqa_hostname)
-        except schedule.TriggerException as err:
-            self.logger.warning("No openQA jobs run! %s", err)
-            return
-        if jobs:
-            self.logger.info("openQA jobs run on compose %s: "
-                      "%s", compose, ' '.join(str(job) for job in jobs))
-        else:
-            self.logger.warning("No openQA jobs run!")
-
     def _consume_compose(self, body):
         """Consume a 'compose' type message."""
         status = body.get('status')
@@ -141,7 +122,18 @@ class OpenQAScheduler(object):
 
         if 'FINISHED' in status and location:
             # We have a complete pungi4 compose
-            self._compose_schedule(location, compstr)
+            self.logger.info("Scheduling openQA jobs for compose %s", compstr)
+            try:
+                # pylint: disable=no-member
+                (compose, jobs) = schedule.jobs_from_compose(location, openqa_hostname=self.openqa_hostname)
+            except schedule.TriggerException as err:
+                self.logger.warning("No openQA jobs run! %s", err)
+                return
+            if jobs:
+                self.logger.info("openQA jobs run on compose %s: "
+                          "%s", compose, ' '.join(str(job) for job in jobs))
+            else:
+                self.logger.warning("No openQA jobs run!")
 
     def _consume_fcosbuild(self, body):
         """Consume an FCOS build state change message."""
@@ -158,25 +150,6 @@ class OpenQAScheduler(object):
             self.logger.info("openQA jobs run: %s", ' '.join(str(job) for job in jobs))
         else:
             self.logger.info("No openQA jobs run!")
-
-    def _consume_odcs(self, body):
-        """Consume an ODCS compose state change message."""
-        # this is intentionally written to blow up if required info is
-        # missing from the message, as that would likely indicate a
-        # message format change and we'd need to handle that
-        if body["compose"]["state"] != 2:
-            self.logger.debug("Not a 'finished success' message, ignoring")
-            return
-        if body["event"] != "state-changed":
-            self.logger.debug("Not a state change message, ignoring")
-            return
-        cid = body["compose"].get("pungi_compose_id") or ""
-        if not cid.startswith("Fedora-ELN"):
-            self.logger.debug("Not an ELN compose, ignoring")
-            return
-        url = body["compose"]["toplevel_url"]
-        desc = f"{cid} at {url}"
-        self._compose_schedule(url, desc)
 
     def _consume_update(self, body, force=True):
         """

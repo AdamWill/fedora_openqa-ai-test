@@ -97,7 +97,7 @@ def test_uniqueres_replacements(jobdict01):
     # 'app' replacements
     for (tname, expected) in (
         ("loupe", "image viewer"),
-        ("evince", "document viewer"),
+        ("papers", "document viewer"),
         ("gnome_text_editor", "text editor"),
         ("desktop_terminal", "terminal emulator"),
     ):
@@ -436,7 +436,7 @@ class TestWikiReport:
         assert ret == []
 
 
-    def test_coreos_noreport(self, fake_getpassed, wikimock, oqaclientmock, jobdict06):
+    def test_eln_noreport(self, fake_getpassed, wikimock, oqaclientmock, jobdict06):
         """Check we do no reporting for Fedora ELN jobs."""
         # adjust the OpenQA_Client instance mock to return jobdict06
         instmock = oqaclientmock[1]
@@ -528,7 +528,7 @@ class TestResultsDBReport:
         instmock = oqaclientmock[1]
         instmock.get_jobs.return_value = [jobdict06]
         fosreport.resultsdb_report(jobs=[1])
-        assert fakeres.call_args[1]['item'] == "Fedora-ELN-20230619.1-x86_64-boot.iso"
+        assert fakeres.call_args[1]['item'] == "Fedora-eln-20250827.n.2-x86_64-boot.iso"
         assert fakeres.call_args[1]['ref_url'] == "https://some.url/tests/1982167"
         assert fakeres.call_args[1]['testcase']['name'] == "compose.install_default"
         assert fakeres.call_args[1]['firmware'] == "uefi"
