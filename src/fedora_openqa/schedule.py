@@ -462,6 +462,9 @@ def jobs_from_fcosbuild(buildurl, flavors=None, force=False, extraparams=None, o
     for the same version and flavor; if it's True, we will always
     create jobs.
     """
+    # this was a testing message inadvertently sent to prod fedmsg
+    if buildurl == "https://builds.coreos.fedoraproject.org/prod/streams/rawhide/builds/44.20250903.91.0/x86_64":
+        return []
     flavdict = {
         "CoreOS-colive-iso": ("live-iso", "colive", "ISO_URL"),
     }

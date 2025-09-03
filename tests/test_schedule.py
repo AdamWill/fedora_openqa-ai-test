@@ -1179,5 +1179,10 @@ def test_jobs_from_fcosbuild(fakeclient, fakecurrr, fakecurrs, fakejson):
     # should still only have one call
     assert len(posts) == 1
 
+def test_jobs_from_fcosbuild_skip():
+    """Test skipping a specific broken message."""
+    brokenurl = "https://builds.coreos.fedoraproject.org/prod/streams/rawhide/builds/44.20250903.91.0/x86_64"
+    assert schedule.jobs_from_fcosbuild(brokenurl) == []
+
 
 # vim: set textwidth=120 ts=8 et sw=4:
