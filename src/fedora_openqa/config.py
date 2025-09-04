@@ -266,6 +266,14 @@ WANTED = [
             "format": "iso",
             "arch": "aarch64",
         },
+    },
+    {
+        "match": {
+            "subvariant": "KDE",
+            "type": "raw-xz",
+            "format": "raw.xz",
+            "arch": "aarch64",
+        },
     }
 ]
 

@@ -324,7 +324,18 @@ class TestGetImages:
                 },
                 "Cloud_Base",
                 "qcow2"
-            )
+            ),
+            (
+                "KDE-raw_xz-raw.xz",
+                "aarch64",
+                {
+                    # pylint: disable=line-too-long
+                    "HDD_2_DECOMPRESS_URL": f"{COMPURL}Spins/aarch64/images/Fedora-KDE-{COMPVR}.aarch64.raw.xz",
+                    "TOOLBOX_IMAGE": toolboxa64
+                },
+                "KDE",
+                "raw-xz"
+            ),
         ]
 
     def test_wanted_arg(self):
